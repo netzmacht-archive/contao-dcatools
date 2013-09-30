@@ -1,0 +1,561 @@
+<?php
+
+/**
+ * Contao Open Source CMS
+ *
+ * Copyright (C) 2005-2013 Leo Feyer
+ *
+ * @package   netzmacht-dcatools
+ * @author    netzmacht creative David Molineus
+ * @license   MPL/2.0
+ * @copyright 2013 netzmacht creative David Molineus
+ */
+
+namespace Netzmacht\DcaTools\Palette;
+
+use Netzmacht\DcaTools\DataContainer;
+use Netzmacht\DcaTools\DcaTools;
+use Netzmacht\DcaTools\Field;
+use Netzmacht\DcaTools\Node\Child;
+use Netzmacht\DcaTools\Node\FieldContainer;
+use Netzmacht\DcaTools\Node\Node;
+use Netzmacht\DcaTools\Node\SelectorContainer;
+use Symfony\Component\EventDispatcher\Event;
+
+
+/**
+ * Class Palette provides methods for manipulating palette
+ * @package Netzmacht\Prototype\Palette
+ */
+class Palette extends Child
+{
+
+	/**
+	 * Legends of the palette
+	 * @var Legend[]
+	 */
+	protected $arrLegends = array();
+
+
+	/**
+	 * Constructor
+	 * @param $strName
+	 * @param DataContainer $objDataContainer
+	 */
+	public function __construct($strName, DataContainer $objDataContainer)
+	{
+		$definition =& $objDataContainer->getDefinition();
+
+		if(!isset($definition['palettes'][$strName]))
+		{
+			$definition['palettes'][$strName] = '';
+		}
+
+		parent::__construct($strName, $objDataContainer, $definition['palettes'][$strName]);
+
+		$this->addListener('change', array($this, 'updateDefinition'));
+
+		$this->loadFromDefinition();
+	}
+
+
+	/**
+	 * Get Iterator for all legend
+	 *
+	 * @return \ArrayIterator
+	 */
+	public function getIterator()
+	{
+		return new \ArrayIterator($this->arrLegends);
+	}
+
+
+	/**
+	 * Add Field
+	 *
+	 * @param Field $objField
+	 * @param string $strLegend
+	 * @param Field|string|null $reference
+	 * @param $intPosition
+	 *
+	 * @return $this
+	 */
+	public function addField(Field $objField, $strLegend, $reference=null, $intPosition=Palette::POS_LAST)
+	{
+		$this->getLegend($strLegend)->addField($objField, $reference, $intPosition);
+
+		return $this;
+	}
+
+
+	/**
+	 * Get an Field
+	 *
+	 * @param string $strName
+	 *
+	 * @return Field
+	 *
+	 * @throws \RuntimeException if Field does not exists
+	 */
+	public function getField($strName)
+	{
+		foreach($this->arrLegends as $objLegend)
+		{
+			if($objLegend->hasField($strName))
+			{
+				return $objLegend->getField($strName);
+			}
+		}
+
+		throw new \RuntimeException("Field '$strName' does not exists.");
+	}
+
+
+	/**
+	 * @return array|Field[]
+	 */
+	public function getFields()
+	{
+		$arrFields = array();
+
+		foreach($this->arrLegends as $objLegend)
+		{
+			$arrFields = array_merge($arrFields, $objLegend->getFields());
+		}
+
+		return $arrFields;
+	}
+
+
+	/**
+	 * Check if field exists in container
+	 *
+	 * @param string $strName
+	 *
+	 * @return bool
+	 */
+	public function hasField($strName)
+	{
+		foreach($this->arrLegends as $objLegend)
+		{
+			if($objLegend->hasField($strName))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+
+	/**
+	 * Remove a field from the container
+	 *
+	 * @param string $strName
+	 * @param bool $blnFromDataContainer
+	 *
+	 * @return $this
+	 */
+	public function removeField($strName, $blnFromDataContainer=false)
+	{
+		$strName = is_object($strName) ? $strName->getName() : $strName;
+
+		foreach($this->getLegends() as $objLegend)
+		{
+			if($objLegend->hasField($strName))
+			{
+				$objLegend->removeField($strName, $blnFromDataContainer);
+			}
+		}
+
+		return $this;
+	}
+
+
+	/**
+	 * Get all fields and also include activated fields in supalettes
+	 *
+	 * @return array
+	 */
+	public function getActiveFields()
+	{
+		$arrFields = array();
+
+		foreach($this->getFields() as $objField)
+		{
+			$arrFields[$objField->getName()] = $objField;
+
+			if($objField->isSelector() && $objField->hasActiveSubPalette())
+			{
+				$arrFields = array_merge($arrFields, $objField->getActiveSubPalette()->getFields());
+			}
+		}
+
+		return $arrFields;
+	}
+
+
+	/**
+	 * Move field to new position
+	 *
+	 * @param Field $objField
+	 * @param string $strLegend
+	 * @param null $reference
+	 * @param int $intPosition
+	 *
+	 * @return $this
+	 */
+	public function moveField(Field $objField, $strLegend, $reference=null, $intPosition=FieldContainer::POS_LAST)
+	{
+		$this->getLegend($strLegend)->moveField($objField, $reference, $intPosition);
+
+		return $this;
+	}
+
+
+	/**
+	 * Get all subpalettes. Includes
+	 *
+	 * @param bool $blnActive
+	 *
+	 * @return SubPalette[]
+	 */
+	public function getSubPalettes($blnActive=false)
+	{
+		$arrSubPalettes = array();
+
+		if(!$blnActive)
+		{
+			return $this->getDataContainer()->getSubPalettes();
+		}
+
+		foreach($this->getSelectors() as $objField)
+		{
+			if($objField->hasActiveSubPalette())
+			{
+				$objSubPalette = $objField->getActiveSubPalette();
+				$arrSubPalettes[$objSubPalette->getName()] = $objSubPalette;
+			}
+		}
+
+		return $arrSubPalettes;
+	}
+
+
+	/**
+	 * Get a legend
+	 *
+	 * @param $strName
+	 *
+	 * @return Legend
+	 *
+	 * @throws \RuntimeException
+	 */
+	public function getLegend($strName)
+	{
+		if($this->hasLegend($strName))
+		{
+			return $this->arrLegends[$strName];
+		}
+
+		throw new \RuntimeException("Legend '$strName' does not exists");
+	}
+
+
+	/**
+	 * Get all legends
+	 *
+	 * @return Legend[]
+	 */
+	public function getLegends()
+	{
+		return $this->arrLegends;
+	}
+
+
+	/**
+	 * Test is legend exists
+	 *
+	 * @param $strName
+	 *
+	 * @return bool
+	 */
+	public function hasLegend($strName)
+	{
+		if($strName instanceof Legend)
+		{
+			$strName = $strName->getName();
+		}
+
+		return isset($this->arrLegends[$strName]);
+	}
+
+
+	/**
+	 * add existing legend to palette
+	 *
+	 * @param Legend|string $objLegend
+	 * @param string|Legend|null $reference
+	 * @param int $intPosition
+	 *
+	 * @return $this
+	 *
+	 * @throws \RuntimeException
+	 */
+	public function addLegend($objLegend, $reference=null, $intPosition=Palette::POS_LAST)
+	{
+		if(is_string($objLegend))
+		{
+			$objLegend = new Legend($objLegend, $this->getDataContainer(), $this);
+		}
+
+		if($this->hasLegend($objLegend))
+		{
+			throw new \RuntimeException("Legend '{$objLegend->getName()}' is already added.");
+		}
+
+		$objLegend->addListener('remove', array($this, 'legendListener'));
+		$objLegend->addListener('change', array($this, 'legendListener'));
+
+		$this->addAtPosition($this->arrLegends, $objLegend, $reference, $intPosition);
+		$objLegend->dispatch('change');
+
+		return $this;
+	}
+
+
+	/**
+	 * Remove legend of palette
+	 *
+	 * @param string $strName
+	 *
+	 * @return $this
+	 */
+	public function removeLegend($strName)
+	{
+		$strName = is_object($strName) ? $strName->getName() : $strName;
+
+		if($this->hasLegend($strName))
+		{
+			$objLegend = $this->arrLegends[$strName];
+			unset($this->arrLegends[$strName]);
+			$this->dispatch('change');
+		}
+
+		return $this;
+	}
+
+
+	/**
+	 * @param $objLegend
+	 * @param null $reference
+	 * @param $intPosition
+	 * @return $this
+	 */
+	public function moveLegend($objLegend, $reference=null, $intPosition=Palette::POS_LAST)
+	{
+		$objLegend = is_string($objLegend) ? $this->getLegend($objLegend) : $objLegend;
+
+		if($this->hasLegend($objLegend))
+		{
+			unset($this->arrLegends[$objLegend->getName()]);
+		}
+
+		$this->addAtPosition($this->arrLegends, $objLegend, $reference, $intPosition);
+		$objLegend->dispatch('move');
+
+		return $this;
+	}
+
+
+	/**
+	 * Load definition from the dca
+	 *
+	 * @return $this;
+	 */
+	protected function loadFromDefinition()
+	{
+		$arrDefinition = explode(';', $this->getDefinition());
+
+		// go throw each legend
+		foreach($arrDefinition as $strLegend)
+		{
+			if($strLegend == '')
+			{
+				continue;
+			}
+
+			$arrFields = explode(',', $strLegend);
+
+			// extract legend title and modifier
+			preg_match('/\{(.*)_legend(:hide)?\}/', $arrFields[0], $matches);
+			array_shift($arrFields);
+
+			$objLegend = new Legend($matches[1], $this->getDataContainer(), $this);
+
+			if(isset($matches[2]))
+			{
+				$objLegend->addModifier('hide');
+			}
+
+			// create each field
+			foreach($arrFields as $strField)
+			{
+				if($strField == '')
+				{
+					continue;
+				}
+
+				$objField = clone $this->getDataContainer()->getField($strField);
+
+				// prevent faulty dca breaks loading
+				try {
+					$objLegend->addField($objField);
+				}
+				catch(\RuntimeException $e){}
+			}
+
+			// prevent faulty dca breaks loading
+			try {
+				$this->addLegend($objLegend);
+			}
+			catch(\RuntimeException $e){}
+
+		}
+
+		return $this;
+	}
+
+
+	/**
+	 * @param bool $blnActive
+	 * @return mixed|string
+	 */
+	public function toString($blnActive=false)
+	{
+		$strExport = '';
+
+		foreach($this->getLegends() as $objLegend)
+		{
+			$strFields = $objLegend->toString($blnActive);
+
+			if($strFields)
+			{
+				$strExport .= $strFields . ';';
+			}
+
+		}
+
+		return $strExport;
+	}
+
+
+	/**
+	 * @param bool $blnActive
+	 * @return array|mixed
+	 */
+	public function toArray($blnActive=false)
+	{
+		$arrExport = array();
+
+		foreach($this->getLegends() as $objLegend)
+		{
+			$arrExport = array_merge($arrExport, $objLegend->toArray($blnActive));
+		}
+
+		return $arrExport;
+	}
+
+
+	/**
+	 * Append Palette to an table
+	 * @param Table $objTable
+	 * @param null $strReference
+	 * @param $intPosition
+	 *
+	 * @return Palette
+	 */
+	public function appendTo(DataContainer $objDataContainer, $strReference=null, $intPosition=Base::POS_LAST)
+	{
+		if(!$objDataContainer->hasPalette($this))
+		{
+			$this->objParent = $objDataContainer;
+			$objDataContainer->addPalette($this, $strReference, $intPosition);
+		}
+
+		return $this;
+	}
+
+
+	/**
+	 * remove Palette
+	 * @return Palette
+	 */
+	public function remove()
+	{
+		$this->getDataContainer()->removePalette($this);
+
+		return $this;
+	}
+
+
+
+
+	/**
+	 * Listen to field changes
+	 *
+	 * @param Event $objEvent
+	 *
+	 * @return void
+	 */
+	public function fieldListener(Event $objEvent)
+	{
+		switch($objEvent->getName())
+		{
+			case 'change':
+				$this->dispatch('change');
+				break;
+		}
+	}
+
+
+	public function legendListener(Event $objEvent)
+	{
+		if(DcaTools::doAutoUpdate())
+		{
+			$this->updateDefinition();
+		}
+	}
+
+
+	/**
+	 * Extend an existing node of the same type
+	 *
+	 * @param Node $objNode
+	 *
+	 * @return $this
+	 *
+	 * @throws \RuntimeException
+	 */
+	public function extend($objNode)
+	{
+		if(is_string($objNode))
+		{
+			$objNode = $this->getDataContainer()->getPalette($objNode);
+		}
+		elseif(!$objNode instanceof Palette)
+		{
+			throw new \RuntimeException("Node '{$objNode->getName()}' is not a Palette");
+		}
+
+		foreach($objNode->getLegends() as $strName => $objLegend)
+		{
+			$this->arrLegends[$strName] = clone $objLegend;
+		}
+
+		$this->dispatch('change');
+
+		return $this;
+	}
+
+}

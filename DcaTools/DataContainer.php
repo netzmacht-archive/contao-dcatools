@@ -449,11 +449,11 @@ class DataContainer extends FieldContainer
 	 */
 	public function getSelectors()
 	{
-		foreach(array_keys($this->definition['palettes']['__selector__']) as $strName)
+		foreach($this->definition['palettes']['__selector__'] as $strName)
 		{
 			if(!isset($this->arrSelectors[$strName]))
 			{
-				$this->getField($strName);
+				$this->arrSelectors[$strName] = $this->getField($strName);
 			}
 		}
 

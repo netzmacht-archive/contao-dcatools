@@ -1,0 +1,30 @@
+{
+    "name":"netzmacht/contao-dcatools",
+    "description":"",
+    "keywords":["dca", "datacontainer", "palettes", 'devtool'],
+    "type":"contao-module",
+    "license":"LGPL-3.0+",
+    "authors":[
+        {
+            "name":"David Molineus",
+            "email":"mail@netzmacht.de",
+            "homepage":"http://www.netzmacht.de",
+            "role":"Project leader"
+        }
+    ],
+    "require":{
+        "php":">=5.3",
+        "contao/core":">=3.1",
+        "symfony/event-dispatcher":">=2.3"
+    },
+    "autoload":{
+        "classmap":["DcaTools"]
+    },
+    "extra":{
+        "contao": {
+            "symlinks":{
+                "prototype": "system/modules/prototype"
+            }
+        }
+    }
+}

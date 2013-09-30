@@ -214,22 +214,26 @@ class Palette extends Child
 
 
 	/**
-	 * Get all subpalettes. Includes
-	 *
-	 * @param bool $blnActive
+	 * Get all subpalettes, same as DataContainer->getSubPalettes
 	 *
 	 * @return SubPalette[]
 	 */
-	public function getSubPalettes($blnActive=false)
+	public function getSubPalettes()
+	{
+		return $this->getDataContainer()->getSubPalettes();
+	}
+
+
+	/**
+	 * Get all active subpalettes
+	 *
+	 * @return SubPalette[]
+	 */
+	public function getActiveSubPalettes()
 	{
 		$arrSubPalettes = array();
 
-		if(!$blnActive)
-		{
-			return $this->getDataContainer()->getSubPalettes();
-		}
-
-		foreach($this->getSelectors() as $objField)
+		foreach($this->getDataContainer()->getSelectors() as $objField)
 		{
 			if($objField->hasActiveSubPalette())
 			{

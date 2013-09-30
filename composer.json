@@ -23,7 +23,6 @@
     "extra":{
         "contao": {
             "symlinks":{
-                "prototype": "system/modules/prototype"
             }
         }
     }

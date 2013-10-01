@@ -20,7 +20,7 @@
     "extra":{
         "contao": {
             "symlinks":{
-                "/":"system/modules/dcatools"
+                "src/system/modules/dcatools":"system/modules/dcatools"
             }
         }
     }

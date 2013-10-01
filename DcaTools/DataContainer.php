@@ -14,6 +14,7 @@
 namespace Netzmacht\DcaTools;
 
 use Netzmacht\DcaTools\Model\DcGeneralModel;
+use Netzmacht\DcaTools\Node\FieldAccess;
 use Netzmacht\DcaTools\Node\FieldContainer;
 use Netzmacht\DcaTools\Node\Node;
 use Netzmacht\DcaTools\Palette\Palette;
@@ -25,7 +26,7 @@ use Symfony\Component\EventDispatcher\Event;
  * Class DataContainer
  * @package Netzmacht\DcaTools
  */
-class DataContainer extends FieldContainer
+class DataContainer extends FieldContainer implements FieldAccess
 {
 
 	/**
@@ -254,7 +255,7 @@ class DataContainer extends FieldContainer
 		{
 			$objField = $this->getField($strName);
 			unset($this->arrFields[$strName]);
-			$objField->dispatch('removeFromDataContainer');
+			$objField->dispatch('delete');
 		}
 
 		return $this;
@@ -262,17 +263,17 @@ class DataContainer extends FieldContainer
 
 
 	/**
-	 * @param $strName
+	 * @param string $strName
 	 *
 	 * @return Field
 	 */
 	public function createField($strName)
 	{
 		$objField = new Field($strName, $this);
-		$objField->addListener('removeFromDataContainer', array($this, 'fieldListener'));
+		$objField->addListener('delete', array($this, 'fieldListener'));
 
 		$this->arrFields[$strName] = $objField;
-		$this->dispatch('fieldsChange');
+		$this->dispatch('change');
 
 		return $this->arrFields[$strName];
 	}

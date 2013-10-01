@@ -7,7 +7,7 @@
  * To change this template use File | Settings | File Templates.
  */
 
-namespace Netzmacht\DcaTools\Button;
+namespace Netzmacht\DcaTools\Event;
 
 use Netzmacht\DcaTools\Event\Event;
 
@@ -16,7 +16,7 @@ use Netzmacht\DcaTools\Event\Event;
  * Class ContaoCallback
  * @package Netzmacht\DcaTools\Button
  */
-class ContaoCallback extends ButtonEvent
+class ButtonCallback extends Button
 {
 
 	/**

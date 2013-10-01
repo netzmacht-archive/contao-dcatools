@@ -11,7 +11,7 @@
  * @copyright 2013 netzmacht creative David Molineus
  */
 
-namespace Netzmacht\DcaTools\Button;
+namespace Netzmacht\DcaTools;
 
 use Netzmacht\DcaTools\DataContainer;
 use Netzmacht\DcaTools\Node\Child;

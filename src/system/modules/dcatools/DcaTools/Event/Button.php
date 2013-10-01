@@ -7,7 +7,7 @@
  * To change this template use File | Settings | File Templates.
  */
 
-namespace Netzmacht\DcaTools\Button;
+namespace Netzmacht\DcaTools\Event;
 
 use Netzmacht\DcaTools\Event\Config;
 use Netzmacht\DcaTools\Event\Event;
@@ -19,7 +19,7 @@ use Netzmacht\DcaTools\Event\Event;
  *
  * @package Netzmacht\DcaTools\Button
  */
-abstract class ButtonEvent extends Event
+abstract class Button extends Event
 {
 
 	/**

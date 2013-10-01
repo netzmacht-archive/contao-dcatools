@@ -11,7 +11,7 @@ namespace Netzmacht\DcaTools;
 
 
 use DcGeneral\Callbacks\ContaoStyleCallbacks;
-use Netzmacht\DcaTools\Button\ContaoCallback;
+use Netzmacht\DcaTools\Event\ButtonCallback;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 
 class DcaTools
@@ -130,7 +130,7 @@ class DcaTools
 			{
 				$GLOBALS['TL_DCA'][$dc->table]['list']['global_operations'][$strButton]['events']['native'][] = array
 				(
-					'Netzmacht\DcaTools\Button\ContaoStyleCallbacks', 'execute', array
+					'Netzmacht\DcaTools\Event\ButtonCallback', 'execute', array
 					(
 						'callback' =>  $arrButton['button_callback']
 					)

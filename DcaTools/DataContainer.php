@@ -51,7 +51,10 @@ class DataContainer extends FieldContainer
 
 
 	/**
+	 * Constructor
+	 *
 	 * @param $strName
+	 * @param \Model|\Database\Result|\Model|\DcGeneral\Data\ModelInterface|null $objRecord
 	 */
 	public function __construct($strName, $objRecord=null)
 	{
@@ -80,7 +83,7 @@ class DataContainer extends FieldContainer
 
 
 	/**
-	 * @return \Database\Result|\Model|DcGeneral\Data\ModelInterface
+	 * @return \Database\Result|\Model|\DcGeneral\Data\ModelInterface
 	 */
 	public function getRecord()
 	{
@@ -110,7 +113,7 @@ class DataContainer extends FieldContainer
 			$this->objRecord = new DcGeneralModel($objRecord);
 		}
 		else {
-		throw new \RuntimeException("Type of Record is not supported");
+			throw new \RuntimeException("Type of Record is not supported");
 		}
 
 		return $this;
@@ -137,10 +140,52 @@ class DataContainer extends FieldContainer
 			throw new \RuntimeException("Node '{$objNode->getName()}' is not a DataContainer");
 		}
 
-		$this->arrFields        = array_merge($objNode->getFields(), $this->arrFields);
-		$this->arrPalettes      = array_merge($objNode->getPalettes(), $this->arrPalettes);
-		$this->arrSubPalettes   = array_merge($objNode->getSubPalettes(), $this->arrSubPalettes);
-		$this->arrSelectors     = array_merge($objNode->getSelectors(), $this->arrSelectors);
+		$arrSelectors = $objNode->getSelectors();
+
+		// extend Fields and make sure that and Fields are cloned
+		foreach($objNode->getFields() as $strField => $objField)
+		{
+			if(isset($this->arrFields[$strField]))
+			{
+				$this->arrFields[$strField]->extend($objField);
+			}
+			else
+			{
+				$this->arrFields[$strField] = clone $objField;
+				$this->arrFields[$strField]->setDataContainer($this);
+			}
+
+			if(isset($arrSelectors[$strField]))
+			{
+				$this->arrSelectors[$strField] = $this->arrFields[$strField];
+			}
+		}
+
+		// extend Palettes and make sure that Legends and Fields are also combined
+		foreach($objNode->getPalettes() as $strPalette => $objPalette)
+		{
+			if(isset($this->arrPalettes[$strPalette]))
+			{
+				$this->arrPalettes[$strPalette]->extend($objPalette);
+			}
+			else {
+				$this->arrPalettes[$strPalette] = $objPalette;
+			}
+		}
+
+		// extend SubPalettes and make sure that Legends and Fields are also combined
+		foreach($objNode->getSubPalettes() as $strPalette => $objPalette)
+		{
+			if(isset($this->arrSubPalettes[$strPalette]))
+			{
+				$this->arrSubPalettes[$strPalette]->extend($objPalette);
+			}
+			else {
+				$this->arrSubPalettes[$strPalette] = $objPalette;
+			}
+		}
+
+		$this->dispatch('change');
 	}
 
 
@@ -283,31 +328,55 @@ class DataContainer extends FieldContainer
 	/**
 	 * Add a new Palette to the DataContainer
 	 *
-	 * @param string|Palette $Palette
+	 * @param string|Palette $palette
 	 *
 	 * @return $this
 	 *
 	 * @throws \RuntimeException
 	 */
-	public function addPalette($Palette)
+	public function addPalette($palette)
 	{
-		if(!$Palette instanceof Palette)
+		if(!$palette instanceof Palette)
 		{
-			$Palette = new Palette($Palette, $this);
+			$palette = new Palette($palette, $this);
+			$strEvent = 'create';
 		}
 		else
 		{
-			$Palette->setDataContainer($this);
+			$palette->setDataContainer($this);
+			$strEvent = 'move';
 		}
 
-		if(isset($this->arrPalettes[$Palette->getName()]))
+		if(isset($this->arrPalettes[$palette->getName()]))
 		{
-			throw new \RuntimeException("Palette '{$Palette->getName()}' already exists.");
+			throw new \RuntimeException("Palette '{$palette->getName()}' already exists.");
 		}
 
-		$this->arrPalettes[$Palette->getName()] = $Palette;
+		$palette->addListener('create', array($this, 'paletteListener'));
+		$palette->addListener('change', array($this, 'paletteListener'));
+		$palette->addListener('move',   array($this, 'paletteListener'));
+		$palette->addListener('remove', array($this, 'paletteListener'));
+
+		$this->arrPalettes[$palette->getName()] = $palette;
+		$this->arrPalettes[$palette->getName()]->dispatch($strEvent);
 
 		return $this;
+	}
+
+	/**
+	 * Create a new Palette
+	 *
+	 * @param $strName
+	 *
+	 * @return Palette
+	 *
+	 * @throws \RuntimeException
+	 */
+	public function createPalette($strName)
+	{
+		$this->createPalette($strName);
+
+		return $this->getPalette($strName);
 	}
 
 
@@ -331,13 +400,31 @@ class DataContainer extends FieldContainer
 	{
 		if($this->hasPalette($strName))
 		{
-			$this->arrPalettes[$strName]->remove();
+			$objPalette = $this->arrPalettes[$strName];
+			unset($this->arrPalettes[$strName]);
+			$objPalette->dispatch('remove');
 		}
-
-		unset($this->arrPalettes[$strName]);
 
 		return $this;
 	}
+
+
+	/**
+	 * Create a new SubPalette
+	 *
+	 * @param $strName
+	 *
+	 * @return SubPalette
+	 *
+	 * @throws \RuntimeException
+	 */
+	public function createSubPalette($strName)
+	{
+		$this->addSubPalette($strName);
+
+		return $this->getSubPalette($strName);
+	}
+
 
 	/**
 	 * @return SubPalette[]
@@ -397,10 +484,12 @@ class DataContainer extends FieldContainer
 		if(!$subPalette instanceof SubPalette)
 		{
 			$subPalette = new SubPalette($subPalette, $this);
+			$strEvent = 'create';
 		}
 		else
 		{
 			$subPalette->setDataContainer($this);
+			$strEvent = 'move';
 		}
 
 		if(isset($this->arrSubPalettes[$subPalette->getName()]))
@@ -408,7 +497,13 @@ class DataContainer extends FieldContainer
 			throw new \RuntimeException("SubPalette '{$subPalette->getName()}' already exists.");
 		}
 
+		$subPalette->addListener('create', array($this, 'subPaletteListener'));
+		$subPalette->addListener('change', array($this, 'subPaletteListener'));
+		$subPalette->addListener('move',   array($this, 'subPaletteListener'));
+		$subPalette->addListener('remove', array($this, 'subPaletteListener'));
+
 		$this->arrSubPalettes[$subPalette->getName()] = $subPalette;
+		$this->arrSubPalettes[$subPalette->getName()]->dispatch($strEvent);
 
 		return $this;
 	}
@@ -436,8 +531,9 @@ class DataContainer extends FieldContainer
 	{
 		if($this->hasSubPalette($strName))
 		{
-			$this->arrSubPalettes[$strName]->dispatch('remove');
+			$objSubPalette = $this->arrSubPalettes[$strName];
 			unset($this->arrSubPalettes[$strName]);
+			$objSubPalette->dispatch('remove');
 		}
 
 		return $this;
@@ -537,11 +633,7 @@ class DataContainer extends FieldContainer
 	 */
 	public function removeSelector($strName)
 	{
-		if($this->hasSelector($strName))
-		{
-			$this->arrSelectors[$strName]->remove();
-		}
-
+		// only unset, because field can still exists
 		unset($this->arrSelectors[$strName]);
 
 		return $this;
@@ -549,39 +641,110 @@ class DataContainer extends FieldContainer
 
 
 	/**
+	 * Listen to field events
+	 *
 	 * @param Event $objEvent
+	 *
 	 * @return mixed
 	 */
 	public function fieldListener(Event $objEvent)
 	{
 		/** @var $objField Field */
 		$objField = $objEvent->getDispatcher();
+		$strName = $objField->getName();
 
-		if($objEvent->getName() == 'removeFromDataContainer')
+		if($objEvent->getName() == 'delete')
 		{
 			foreach($this->getPalettes() as $objPalette)
 			{
-				if($objPalette->hasField($objField->getName()))
+				if($objPalette->hasField($strName))
 				{
-					$objPalette->removeField($objField->getName());
+					$objPalette->removeField($strName);
 				}
 			}
 
 			foreach($this->getSubPalettes() as $objSubPalette)
 			{
-				if($objSubPalette->hasField($objField->getName()))
+				if($objSubPalette->hasField($strName))
 				{
-					$objSubPalette->removeField($objField->getName());
+					$objSubPalette->removeField($strName);
 				}
 			}
 
 			if($objField->isSelector())
 			{
-				$key = array_search($objField->getName(), $this->definition['palettes']['__selector__']);
+				$key = array_search($strName, $this->definition['palettes']['__selector__']);
 				unset($this->definition['palettes']['__selector__'][$key]);
 			}
+
+			$this->dispatch('change');
 		}
 	}
+
+
+	/**
+	 * Listen to field events
+	 *
+	 * @param Event $objEvent
+	 *
+	 * @return mixed
+	 */
+	protected function paletteListener(Event $objEvent)
+	{
+		switch($objEvent->getName())
+		{
+			case 'rename':
+				/** @var $objEvent \Netzmacht\DcaTools\Event\Event */
+				$objConfig = $objEvent->getConfig();
+				$objDispatcher = $objEvent->getDispatcher();
+
+				/** @var $objDispatcher Palette */
+				$this->arrPalettes[$objDispatcher->getName()] = $this->arrPalettes[$objConfig->get('origin')];
+				unset($this->arrPalettes[$objConfig->get('origin')]);
+
+				// no break
+
+			case 'create':
+			case 'change':
+			case 'move':
+			case 'remove':
+				$this->dispatch('change');
+				break;
+		}
+	}
+
+
+	/**
+	 * Listen to field events
+	 *
+	 * @param Event $objEvent
+	 *
+	 * @return mixed
+	 */
+	protected function subPaletteListener(Event $objEvent)
+	{
+		switch($objEvent->getName())
+		{
+			case 'rename':
+				/** @var $objEvent \Netzmacht\DcaTools\Event\Event */
+				$objConfig = $objEvent->getConfig();
+				$objDispatcher = $objEvent->getDispatcher();
+
+				/** @var $objDispatcher SubPalette */
+				$this->arrSubPalettes[$objDispatcher->getName()] = $this->arrSubPalettes[$objConfig->get('origin')];
+				unset($this->arrSubPalettes[$objConfig->get('origin')]);
+
+				// no break
+
+			case 'create':
+			case 'change':
+			case 'move':
+			case 'remove':
+				$this->dispatch('change');
+				break;
+		}
+	}
+
 
 	/**
 	 * @return mixed|void
@@ -589,6 +752,31 @@ class DataContainer extends FieldContainer
 	public function remove()
 	{
 		unset($GLOBALS['TL_DCA'][$this->getName()]);
+
+		$this->dispatch('remove');
+	}
+
+
+	/**
+	 * Trigger update definition of child elements
+	 *
+	 */
+	public function updateDefinition()
+	{
+		foreach($this->arrFields as $objField)
+		{
+			$objField->updateDefinition();
+		}
+
+		foreach($this->arrSubPalettes as $objPalette)
+		{
+			$objPalette->updateDefinition();
+		}
+
+		foreach($this->arrPalettes as $objPalette)
+		{
+			$objPalette->updateDefinition();
+		}
 	}
 
 }

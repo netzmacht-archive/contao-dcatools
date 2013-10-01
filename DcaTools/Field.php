@@ -16,6 +16,7 @@ namespace Netzmacht\DcaTools;
 use Netzmacht\DcaTools\Node\Child;
 use Netzmacht\DcaTools\Node\FieldContainer;
 use Netzmacht\DcaTools\Node\Node;
+use Netzmacht\DcaTools\Palette\SubPalette;
 
 /**
  * Class Field
@@ -24,7 +25,7 @@ use Netzmacht\DcaTools\Node\Node;
 class Field extends Child
 {
 	/**
-	 * @var Container
+	 * @var FieldContainer
 	 */
 	protected $objParent;
 
@@ -45,7 +46,7 @@ class Field extends Child
 
 
 	/**
-	 * @return Container|FieldContainer
+	 * @return FieldContainer
 	 */
 	public function getParent()
 	{
@@ -56,12 +57,17 @@ class Field extends Child
 	/**
 	 * Test if field is an selector or update value
 	 *
-	 * return $this if value is updated
+	 * @param bool $blnSelector add as selector
 	 *
 	 * @return bool|$this
 	 */
-	public function isSelector()
+	public function isSelector($blnSelector=null)
 	{
+		if($blnSelector)
+		{
+			$this->getDataContainer()->addSelector($this);
+		}
+
 		return $this->getDataContainer()->hasSelector($this);
 	}
 
@@ -88,7 +94,7 @@ class Field extends Child
 
 
 	/**
-	 * Get activated sub palette. Method does not check if element is an selector and if subpalette exists.
+	 * Get activated sub palette. Method does not check if element is an selector and if SubPalette exists.
 	 * Methods has to be called before
 	 *
 	 * @return SubPalette|null
@@ -143,10 +149,10 @@ class Field extends Child
 
 
 	/**
-	 * Append field to legend or supalette
+	 * Append field to legend or SubPalette
 	 *
 	 * @param FieldContainer $objContainer
-	 * @param null $strReferenceField
+	 * @param null $reference
 	 * @param null $intPosition
 	 *
 	 * @return $this
@@ -198,7 +204,7 @@ class Field extends Child
 
 
 	/**
-	 * @param bool $blnUpdateParent
+	 * @param bool $blnRemoveFromDataContainer
 	 *
 	 * @return $this
 	 */
@@ -214,7 +220,10 @@ class Field extends Child
 	 * Extend an existing node of the same type
 	 *
 	 * @param Node $objNode
+	 *
 	 * @return $this
+	 *
+	 * @throws \RuntimeException
 	 */
 	public function extend($objNode)
 	{
@@ -235,6 +244,7 @@ class Field extends Child
 
 
 	/**
+	 * Export as string
 	 * @return mixed
 	 */
 	public function toString()
@@ -244,11 +254,22 @@ class Field extends Child
 
 
 	/**
+	 * Export to array wil return string because fields are handled as string in meta palettes
+	 *
 	 * @return mixed
 	 */
 	public function toArray()
 	{
 		return $this->getName();
+	}
+
+
+	/**
+	 * Update definition
+	 */
+	public function updateDefinition()
+	{
+		// TODO not supported so far, will update the global field settings in a future version
 	}
 
 

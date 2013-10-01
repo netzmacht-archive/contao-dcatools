@@ -17,9 +17,9 @@ use Netzmacht\DcaTools\DataContainer;
 use Netzmacht\DcaTools\DcaTools;
 use Netzmacht\DcaTools\Field;
 use Netzmacht\DcaTools\Node\Child;
+use Netzmacht\DcaTools\Node\FieldAccess;
 use Netzmacht\DcaTools\Node\FieldContainer;
 use Netzmacht\DcaTools\Node\Node;
-use Netzmacht\DcaTools\Node\SelectorContainer;
 use Symfony\Component\EventDispatcher\Event;
 
 
@@ -27,7 +27,7 @@ use Symfony\Component\EventDispatcher\Event;
  * Class Palette provides methods for manipulating palette
  * @package Netzmacht\Prototype\Palette
  */
-class Palette extends Child
+class Palette extends Child implements FieldAccess
 {
 
 	/**
@@ -73,16 +73,16 @@ class Palette extends Child
 	/**
 	 * Add Field
 	 *
-	 * @param Field $objField
+	 * @param Field|string $field
 	 * @param string $strLegend
 	 * @param Field|string|null $reference
 	 * @param $intPosition
 	 *
 	 * @return $this
 	 */
-	public function addField(Field $objField, $strLegend, $reference=null, $intPosition=Palette::POS_LAST)
+	public function addField($field, $strLegend='default', $reference=null, $intPosition=Palette::POS_LAST)
 	{
-		$this->getLegend($strLegend)->addField($objField, $reference, $intPosition);
+		$this->getLegend($strLegend)->addField($field, $reference, $intPosition);
 
 		return $this;
 	}
@@ -198,23 +198,77 @@ class Palette extends Child
 	/**
 	 * Move field to new position
 	 *
-	 * @param Field $objField
+	 * @param Field|string $field
 	 * @param string $strLegend
 	 * @param null $reference
 	 * @param int $intPosition
 	 *
 	 * @return $this
 	 */
-	public function moveField(Field $objField, $strLegend, $reference=null, $intPosition=FieldContainer::POS_LAST)
+	public function moveField($field, $strLegend='default', $reference=null, $intPosition=FieldContainer::POS_LAST)
 	{
-		$this->getLegend($strLegend)->moveField($objField, $reference, $intPosition);
+		$this->getLegend($strLegend)->moveField($field, $reference, $intPosition);
 
 		return $this;
 	}
 
 
 	/**
-	 * Get all subpalettes, same as DataContainer->getSubPalettes
+	 * Create a new field
+	 *
+	 * @param string $strName
+	 * @param string $strLegend legend name
+	 *
+	 * @return Field
+	 */
+	public function createField($strName, $strLegend='default')
+	{
+		return $this->getLegend($strLegend)->createField($strName);
+	}
+
+
+	/**
+	 * Check if container has selector fields
+	 *
+	 * @return bool
+	 */
+	public function hasSelectors()
+	{
+		foreach($this->getLegends() as $objLegend)
+		{
+			if($objLegend->hasSelectors())
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+
+	/**
+	 * Get all selectors containing to the
+	 *
+	 * @return Field[]
+	 */
+	public function getSelectors()
+	{
+		$arrSelectors = array();
+
+		foreach($this->getLegends() as $objLegend)
+		{
+			if($objLegend->hasSelectors())
+			{
+				$arrSelectors = array_merge($arrSelectors, $objLegend->getSelectors());
+			}
+		}
+
+		return $arrSelectors;
+	}
+
+
+	/**
+	 * Get all SubPalettes, same as DataContainer->getSubPalettes
 	 *
 	 * @return SubPalette[]
 	 */
@@ -225,7 +279,7 @@ class Palette extends Child
 
 
 	/**
-	 * Get all active subpalettes
+	 * Get all active SubPalettes
 	 *
 	 * @return SubPalette[]
 	 */
@@ -318,32 +372,53 @@ class Palette extends Child
 			throw new \RuntimeException("Legend '{$objLegend->getName()}' is already added.");
 		}
 
+		$objLegend->addListener('move',   array($this, 'legendListener'));
 		$objLegend->addListener('remove', array($this, 'legendListener'));
 		$objLegend->addListener('change', array($this, 'legendListener'));
 
 		$this->addAtPosition($this->arrLegends, $objLegend, $reference, $intPosition);
-		$objLegend->dispatch('change');
+		$objLegend->dispatch('move');
 
 		return $this;
 	}
 
 
 	/**
+	 * Create a new legend
+	 *
+	 * @param $strName
+	 *
+	 * @return Legend
+	 *
+	 * @throws \RuntimeException
+	 */
+	public function createLegend($strName)
+	{
+		$this->addLegend($strName);
+
+		return $this->getLegend($strName);
+	}
+
+
+	/**
 	 * Remove legend of palette
 	 *
-	 * @param string $strName
+	 * @param Legend|string $legend
+	 * @param bool $blnFromAllPalettes
 	 *
 	 * @return $this
 	 */
-	public function removeLegend($strName)
+	public function removeLegend($legend, $blnFromAllPalettes=false)
 	{
-		$strName = is_object($strName) ? $strName->getName() : $strName;
+		$strName = is_object($legend) ? $legend->getName() : $legend;
 
 		if($this->hasLegend($strName))
 		{
 			$objLegend = $this->arrLegends[$strName];
 			unset($this->arrLegends[$strName]);
-			$this->dispatch('change');
+
+			$strEvent = $blnFromAllPalettes ? 'delete' : 'remove';
+			$objLegend->dispatch($strEvent);
 		}
 
 		return $this;
@@ -432,7 +507,10 @@ class Palette extends Child
 
 
 	/**
+	 * Export to string
+	 *
 	 * @param bool $blnActive
+	 *
 	 * @return mixed|string
 	 */
 	public function toString($blnActive=false)
@@ -455,6 +533,8 @@ class Palette extends Child
 
 
 	/**
+	 * Export to array
+	 *
 	 * @param bool $blnActive
 	 * @return array|mixed
 	 */
@@ -472,18 +552,19 @@ class Palette extends Child
 
 
 	/**
-	 * Append Palette to an table
-	 * @param Table $objTable
+	 * Append Palette to a DataContainer
+	 *
+	 * @param DataContainer $objDataContainer
 	 * @param null $strReference
 	 * @param $intPosition
 	 *
 	 * @return Palette
 	 */
-	public function appendTo(DataContainer $objDataContainer, $strReference=null, $intPosition=Base::POS_LAST)
+	public function appendTo(DataContainer $objDataContainer, $strReference=null, $intPosition=Palette::POS_LAST)
 	{
 		if(!$objDataContainer->hasPalette($this))
 		{
-			$this->objParent = $objDataContainer;
+			$this->objDataContainer = $objDataContainer;
 			$objDataContainer->addPalette($this, $strReference, $intPosition);
 		}
 
@@ -501,8 +582,6 @@ class Palette extends Child
 
 		return $this;
 	}
-
-
 
 
 	/**
@@ -523,11 +602,34 @@ class Palette extends Child
 	}
 
 
+	/**
+	 * @param Event $objEvent
+	 */
 	public function legendListener(Event $objEvent)
 	{
-		if(DcaTools::doAutoUpdate())
+		switch($objEvent->getName())
 		{
-			$this->updateDefinition();
+			case 'rename':
+				/** @var $objEvent \Netzmacht\DcaTools\Event\Event */
+				$objConfig = $objEvent->getConfig();
+				$objDispatcher = $objEvent->getDispatcher();
+
+				/** @var $objDispatcher Legend */
+				$this->arrLegends[$objDispatcher->getName()] = $this->arrLegends[$objConfig->get('origin')];
+				unset($this->arrLegends[$objConfig->get('origin')]);
+
+				// no break here
+
+			case 'move':
+			case 'remove':
+			case 'change':
+				if(DcaTools::doAutoUpdate())
+				{
+					$this->updateDefinition();
+				}
+
+				$this->dispatch('change');
+				break;
 		}
 	}
 

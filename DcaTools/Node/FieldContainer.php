@@ -19,10 +19,10 @@ use Symfony\Component\EventDispatcher\Event;
 
 
 /**
- * Class Container is an abstract class as base for subpalettes and legends which contains fields
+ * Class Container is an abstract class as base for SubPalettes and Legends which contains fields
  * @package Netzmacht\DcaTools\Palette
  */
-abstract class FieldContainer extends Child implements \IteratorAggregate, Exportable
+abstract class FieldContainer extends Child implements FieldAccess, Exportable
 {
 
 	/**
@@ -34,7 +34,7 @@ abstract class FieldContainer extends Child implements \IteratorAggregate, Expor
 	/**
 	 * Add a field
 	 *
-	 * @param Field $objField
+	 * @param Field|string $field
 	 * @param string|Field|null $reference field reference
 	 * @param int $intPosition Position where to insert
 	 *
@@ -42,30 +42,35 @@ abstract class FieldContainer extends Child implements \IteratorAggregate, Expor
 	 *
 	 * @throws \RuntimeException
 	 */
-	public function addField($objField, $reference=null, $intPosition=Node::POS_LAST)
+	public function addField($field, $reference=null, $intPosition=Node::POS_LAST)
 	{
-		if(is_string($objField))
+		if(is_string($field))
 		{
-			$strName = $objField;
-			if($this->getDataContainer()->hasField($objField))
+			// get base field of DataContainer
+			if($this->getDataContainer()->hasField($field))
 			{
-				$objField = clone $this->getDataContainer()->getField($objField);
+				$field = clone $this->getDataContainer()->getField($field);
 			}
 			else
 			{
-				$objField = clone $this->getDataContainer()->createField($objField);
+				$field = clone $this->getDataContainer()->createField($field);
 			}
 		}
-		elseif($this->hasField($objField))
+		elseif($this->hasField($field))
 		{
-			throw new \RuntimeException("Field '{$objField->getName()}' already exists.");
+			throw new \RuntimeException("Field '{$field->getName()}' already exists.");
 		}
 
-		$objField->addListener('change', array($this, 'fieldListener'));
-		$objField->addListener('remove', array($this, 'fieldListener'));
+		// register FieldContainer to Field events
+		$field->addListener('move',   array($this, 'fieldListener'));
+		$field->addListener('change', array($this, 'fieldListener'));
+		$field->addListener('remove', array($this, 'fieldListener'));
 
-		$this->addAtPosition($this->arrFields, $objField, $reference, $intPosition);
-		$objField->dispatch('change');
+		// register DataContainer to delete event
+		$field->addListener('delete', array($this->getDataContainer()), 'fieldListener');
+
+		$this->addAtPosition($this->arrFields, $field, $reference, $intPosition);
+		$field->dispatch('move');
 
 		return $this;
 	}
@@ -103,25 +108,24 @@ abstract class FieldContainer extends Child implements \IteratorAggregate, Expor
 	/**
 	 * Check if field exists in container
 	 *
-	 * @param string $strName
+	 * @param string|Field $field
 	 *
 	 * @return bool
 	 */
-	public function hasField($strName)
+	public function hasField($field)
 	{
-		if($strName instanceof Field)
-		{
-			$strName = $strName->getName();
-		}
-
-		return isset($this->arrFields[$strName]);
+		return isset($this->arrFields[(string) $field]);
 	}
 
 
 	/**
+	 * Create a new field
+	 *
 	 * @param $strName
 	 *
 	 * @return Field
+	 *
+	 * @throws \RuntimeException
 	 */
 	public function createField($strName)
 	{
@@ -142,45 +146,25 @@ abstract class FieldContainer extends Child implements \IteratorAggregate, Expor
 
 
 	/**
-	 * Get iterator for accessing fields
-	 *
-	 * @return \ArrayIterator
-	 */
-	public function getIterator()
-	{
-		return new \ArrayIterator($this->arrFields);
-	}
-
-
-	/**
 	 * Remove a field from the container
 	 *
-	 * @param string $strName
+	 * @param Field|string $field
 	 * @param bool $blnFromDataContainer
 	 *
 	 * @return $this
 	 */
-	public function removeField($strName, $blnFromDataContainer=false)
+	public function removeField($field, $blnFromDataContainer=false)
 	{
+		$strName = (string) $field;
+
 		if($this->hasField($strName))
 		{
-			if($strName instanceof Field)
-			{
-				$strName = $strName->getName();
-			}
-
-			if($blnFromDataContainer)
-			{
-				$this->arrFields[$strName]->dispatch('removeFromDataContainer');
-			}
-			else {
-				$this->arrFields[$strName]->dispatch('remove');
-			}
+			$strEvent = $blnFromDataContainer ? 'delete' : 'remove';
+			$this->arrFields[$strName]->dispatch($strEvent);
 
 			unset($this->arrFields[$strName]);
+			$this->dispatch('change');
 		}
-
-		$this->dispatch('change');
 
 		return $this;
 	}
@@ -189,19 +173,31 @@ abstract class FieldContainer extends Child implements \IteratorAggregate, Expor
 	/**
 	 * Move field to new position
 	 *
-	 * @param Field $objField
+	 * @param Field|string $field
 	 * @param null $reference
 	 * @param $intPosition
 	 * @return $this
 	 */
-	public function moveField(Field $objField, $reference=null, $intPosition=FieldContainer::POS_LAST)
+	public function moveField($field, $reference=null, $intPosition=FieldContainer::POS_LAST)
 	{
-		if($this->hasField($objField))
+		if(is_string($field))
 		{
-			unset($this->arrFields[$objField->getName()]);
+			$strName = $field;
+			$objField = $this->getField($strName);
+		}
+		else
+		{
+			$objField = $field;
+			$strName = $objField->getName();
+
+		}
+
+		if($this->hasField($strName))
+		{
+			unset($this->arrFields[$strName]);
 
 			$this->addAtPosition($this->arrFields, $objField, $reference, $intPosition);
-			$objField->dispatch('change');
+			$objField->dispatch('move');
 		}
 		else
 		{
@@ -209,6 +205,40 @@ abstract class FieldContainer extends Child implements \IteratorAggregate, Expor
 		}
 
 		return $this;
+	}
+
+
+	/**
+	 * Get all fields and also include activated fields in SubPalettes
+	 *
+	 * @return array
+	 */
+	public function getActiveFields()
+	{
+		$arrFields = array();
+
+		foreach($this->getFields() as $objField)
+		{
+			$arrFields[$objField->getName()] = $objField;
+
+			if($objField->isSelector() && $objField->hasActiveSubPalette())
+			{
+				$arrFields = array_merge($arrFields, $objField->getActiveSubPalette()->getActiveFields());
+			}
+		}
+
+		return $arrFields;
+	}
+
+
+	/**
+	 * Get iterator for accessing fields
+	 *
+	 * @return \ArrayIterator
+	 */
+	public function getIterator()
+	{
+		return new \ArrayIterator($this->arrFields);
 	}
 
 
@@ -240,11 +270,11 @@ abstract class FieldContainer extends Child implements \IteratorAggregate, Expor
 	{
 		$arrSelectors = array();
 
-		foreach($this->getFields() as $objField)
+		foreach($this->getFields() as $strName => $objField)
 		{
 			if($objField->isSelector())
 			{
-				$arrSelectors[$objField->getName()] = $objField;
+				$arrSelectors[$strName] = $objField;
 			}
 		}
 
@@ -283,6 +313,18 @@ abstract class FieldContainer extends Child implements \IteratorAggregate, Expor
 	{
 		switch($objEvent->getName())
 		{
+			case 'rename':
+				/** @var $objEvent \Netzmacht\DcaTools\Event\Event */
+				$objConfig = $objEvent->getConfig();
+				$objDispatcher = $objEvent->getDispatcher();
+
+				/** @var $objDispatcher Field */
+				$this->arrFields[$objDispatcher->getName()] = $this->arrFields[$objConfig->get('origin')];
+				unset($this->arrFields[$objConfig->get('origin')]);
+
+				// no break
+
+			case 'move':
 			case 'change':
 			case 'remove':
 				if(DcaTools::doAutoUpdate())
@@ -290,6 +332,7 @@ abstract class FieldContainer extends Child implements \IteratorAggregate, Expor
 					$this->updateDefinition();
 				}
 
+				// propagate changes
 				$this->dispatch('change');
 				break;
 		}

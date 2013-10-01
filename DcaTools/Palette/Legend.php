@@ -47,6 +47,7 @@ class Legend extends FieldContainer
 	 */
 	public function __construct($strName, DataContainer $objDataContainer, Palette $objPalette)
 	{
+		// no fields stored so far
 		$definition = '';
 
 		parent::__construct($strName, $objDataContainer, $definition);
@@ -106,29 +107,6 @@ class Legend extends FieldContainer
 
 
 	/**
-	 * Get all fields and also include activated fields in SubPalettes
-	 *
-	 * @return array
-	 */
-	public function getActiveFields()
-	{
-		$arrFields = array();
-
-		foreach($this->getFields() as $objField)
-		{
-			$arrFields[$objField->getName()] = $objField;
-
-			if($objField->isSelector() && $objField->hasActiveSubPalette())
-			{
-				$arrFields = array_merge($arrFields, $objField->getActiveSubPalette()->getFields());
-			}
-		}
-
-		return $arrFields;
-	}
-
-
-	/**
 	 * Append legend to a Palette
 	 *
 	 * @param Palette $objPalette
@@ -160,6 +138,10 @@ class Legend extends FieldContainer
 
 	/**
 	 * Move Palette to new place
+	 *
+	 * @param Legend|string $reference
+	 *
+	 * @return $this
 	 */
 	public function appendAfter($reference)
 	{
@@ -171,6 +153,10 @@ class Legend extends FieldContainer
 
 	/**
 	 * Move Palette to new place
+	 *
+	 * @param Legend|string $reference
+	 *
+	 * @return $this
 	 */
 	public function appendBefore($reference)
 	{
@@ -228,28 +214,27 @@ class Legend extends FieldContainer
 	/**
 	 * Extend an existing node of the same type
 	 *
-	 * @param Node $objNode
+	 * @param Legend $node
 	 *
 	 * @return $this
 	 *
 	 * @throws \RuntimeException
 	 */
-	public function extend($objNode)
+	public function extend($node)
 	{
-		if(is_string($objNode))
+		if(is_string($node))
 		{
-			$objNode = $this->getPalette()->getLegend($objNode);
+			$objNode = $this->getPalette()->getLegend($node);
 		}
-		elseif(get_class($objNode) != get_class($this))
+		elseif(get_class($node) != get_class($this))
 		{
-			throw new \RuntimeException("Node '{$objNode->getName()}' is not the same Node type");
+			throw new \RuntimeException("Node '{$node->getName()}' is not the same Node type");
 		}
 
-		/** @var $objNode FieldContainer */
-
-		$this->arrFields = array_merge($this->arrFields, $objNode->getFields());
+		$this->arrFields = array_merge($this->arrFields, $node->getFields());
 		$this->dispatch('change');
 
 		return $this;
 	}
+
 }

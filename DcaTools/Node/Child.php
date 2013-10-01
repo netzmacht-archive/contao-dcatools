@@ -64,16 +64,14 @@ abstract class Child extends Node
 	 */
 	public function setDataContainer(DataContainer $objDataContainer)
 	{
-		// nothing changed
-		if($this->getDataContainer() == $objDataContainer)
+		if($this->getDataContainer() != $objDataContainer)
 		{
-			return $this;
+			// data container is changed, so element is deleted from origin one,
+			$this->dispatch('delete');
+
+			$this->objDataContainer = $objDataContainer;
+			$this->objDataContainer->dispatch('change');
 		}
-
-		$this->dispatch('removeFromDataContainer');
-
-		$this->objDataContainer = $objDataContainer;
-		$this->objDataContainer->dispatch('change');
 
 		return $this;
 	}
@@ -113,7 +111,7 @@ abstract class Child extends Node
 	{
 		if($objElement->getDataContainer() != $this->getDataContainer())
 		{
-			throw new \RuntimeException("Tables are not identical");
+			throw new \RuntimeException("DataContainers are not identical");
 		}
 
 		if($strReference === null || $strReference === static::POS_LAST)

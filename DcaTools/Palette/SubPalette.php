@@ -52,32 +52,35 @@ class SubPalette extends FieldContainer
 	/**
 	 * Extend an existing node of the same type
 	 *
-	 * @param Node $objNode
+	 * @param SubPalette $node
 	 *
 	 * @return $this
 	 *
 	 * @throws \RuntimeException
 	 */
-	public function extend($objNode)
+	public function extend($node)
 	{
-		if(is_string($objNode))
+		if(is_string($node))
 		{
-			$objNode = $this->getDataContainer()->getSubPalette($objNode);
+			$node = $this->getDataContainer()->getSubPalette($node);
 		}
-		elseif(get_class($objNode) != get_class($this))
+		elseif(get_class($node) != get_class($this))
 		{
-			throw new \RuntimeException("Node '{$objNode->getName()}' is not the same Node type");
+			throw new \RuntimeException("Node '{$node->getName()}' is not the same Node type");
 		}
 
 		/** @var $objNode FieldContainer */
 
-		$this->arrFields = array_merge($this->arrFields, $objNode->getFields());
+		$this->arrFields = array_merge($this->arrFields, $node->getFields());
 		$this->dispatch('change');
 
 		return $this;
 	}
 
 
+	/**
+	 * Load fields from definition
+	 */
 	protected function loadFromDefinition()
 	{
 		$arrFields = explode(',', $this->getDefinition());

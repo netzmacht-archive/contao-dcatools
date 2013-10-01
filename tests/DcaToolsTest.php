@@ -7,8 +7,9 @@
  * To change this template use File | Settings | File Templates.
  */
 
-require_once dirname(dirname(__FILE__)) . ''
+require_once dirname(dirname(__FILE__)) . 'DcaTools/';
 
-class DcaToolsTest {
+class DcaToolsTest
+{
 
 }

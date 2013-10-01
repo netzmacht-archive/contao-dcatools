@@ -14,7 +14,7 @@
 namespace Netzmacht\DcaTools\Node;
 
 use Netzmacht\DcaTools\DcaTools;
-use Symfony\Component\EventDispatcher\Event;
+use Netzmacht\DcaTools\Event\Event;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 
 /**
@@ -102,15 +102,17 @@ abstract class Node extends EventDispatcher implements Exportable
 	 */
 	public function setName($strName)
 	{
-		if($this->strName !== null)
-		{
-			throw new \RuntimeException('Node can not be renamed');
-		}
+		$arrConfig = array('origin' => $this->strName);
+		$strEvent = ($this->strName != '') ? 'move' : 'change';
+
 		$this->strName = $strName;
+		$this->dispatch($strEvent, new Event($arrConfig));
 	}
 
 
 	/**
+	 * Get Definition as reference
+	 *
 	 * @return mixed
 	 */
 	public function &getDefinition()
@@ -122,7 +124,7 @@ abstract class Node extends EventDispatcher implements Exportable
 	/**
 	 * Extend an existing node of the same type
 	 *
-	 * @param string|Node
+	 * @param Node|string node or name of the node
 	 *
 	 * @return $this
 	 */
@@ -133,13 +135,18 @@ abstract class Node extends EventDispatcher implements Exportable
 	/**
 	 * Copy node to a new one
 	 *
-	 * @param $strName
+	 * @param $strName new name
 	 *
 	 * @return mixed
 	 */
-	public function copy($strName)
+	public function copy($strName=null)
 	{
 		$objCopy = clone $this;
+
+		if($strName)
+		{
+			$objCopy->setName($strName);
+		}
 
 		return $objCopy;
 	}
@@ -156,10 +163,24 @@ abstract class Node extends EventDispatcher implements Exportable
 
 
 	/**
-	 * @param Event $objEvent
+	 * Update the definition of current element
 	 */
 	public function updateDefinition()
 	{
 		$this->definition = $this->toString();
+	}
+
+
+	/**
+	 * Dispatch the event, will create an DcaTools event if none given
+	 */
+	public function dispatch($strEvent, \Symfony\Component\EventDispatcher\Event $objEvent=null)
+	{
+		if($objEvent === null)
+		{
+			$objEvent = new Event();
+		}
+
+		parent::dispatch($strEvent, $objEvent);
 	}
 }

@@ -17,12 +17,10 @@
         "contao/core":">=3.1",
         "symfony/event-dispatcher":">=2.3"
     },
-    "autoload":{
-        "classmap":["DcaTools"]
-    },
     "extra":{
         "contao": {
             "symlinks":{
+                "/":"system/modules/dcatools"
             }
         }
     }

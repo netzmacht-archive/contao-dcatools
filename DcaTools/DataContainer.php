@@ -13,6 +13,7 @@
 
 namespace Netzmacht\DcaTools;
 
+use Netzmacht\DcaTools\Button\Button;
 use Netzmacht\DcaTools\Model\DcGeneralModel;
 use Netzmacht\DcaTools\Node\FieldAccess;
 use Netzmacht\DcaTools\Node\FieldContainer;
@@ -28,6 +29,11 @@ use Symfony\Component\EventDispatcher\Event;
  */
 class DataContainer extends FieldContainer implements FieldAccess
 {
+
+	/**
+	 * @var Button[]
+	 */
+	protected $arrButtons = array();
 
 	/**
 	 * @var Palette[]
@@ -195,7 +201,7 @@ class DataContainer extends FieldContainer implements FieldAccess
 	 * @param $strName
 	 * @return mixed
 	 */
-	public function copy($strName)
+	public function copy($strName=null)
 	{
 		$objCopy = parent::copy($strName);
 		$objCopy->dispatch('change');
@@ -636,6 +642,202 @@ class DataContainer extends FieldContainer implements FieldAccess
 	{
 		// only unset, because field can still exists
 		unset($this->arrSelectors[$strName]);
+
+		return $this;
+	}
+
+
+	/**
+	 * Get all buttons
+	 *
+	 * @param string $strScope global for global buttons else local one will be loaded
+	 */
+	public function getButtons($strScope='local')
+	{
+		if($strScope == 'global')
+		{
+			$strConfig = 'global_operations';
+			$strCallback = 'globalButtonCallback';
+		}
+		else {
+			$strConfig = 'operations';
+			$strCallback = 'buttonCallback';
+		}
+
+		// add button callback for every operation
+		foreach($this->definition['list'][$strConfig] as $strButton => $arrDefinition)
+		{
+			// button already exists
+			if(!$this->hasButton($strButton) || isset($this->arrButtons[$strScope][$strButton]))
+			{
+				continue;
+			}
+
+			// make sure that existing callbacks will be called
+			if(isset($arrDefinition['button_callback']))
+			{
+				$GLOBALS['TL_DCA'][$this->getName()]['list'][$strConfig][$strButton]['events']['generate'][] = array
+				(
+					array('ContaoStyleCallbacks', 'execute', array(
+						$arrDefinition['button_callback'],
+						9
+					))
+				);
+			}
+
+			$GLOBALS['TL_DCA'][$this->getName()][$strConfig][$strButton]['button_callback'] = array
+			(
+				'Netzmacht\DcaTools\DcaTools', $strCallback . $strButton
+			);
+
+			$this->arrButtons[$strScope][$strButton] = new Button($strButton, $strScope, $this);
+		}
+
+	}
+
+
+	/**
+	 * Get an button
+	 *
+	 * @param $strName
+	 * @param string $strScope
+	 *
+	 * @return mixed
+	 *
+	 * @throws \RuntimeException
+	 */
+	public function getButton($strName, $strScope='local')
+	{
+		if($this->hasButton($strName, $strScope))
+		{
+			if(!isset($this->arrButtons[$strScope][$strName]))
+			{
+				$this->arrButtons[$strScope][$strName] = new Button($strName, $strScope, $this);
+			}
+
+			return $this->arrButtons[$strScope][$strName];
+		}
+
+		throw new \RuntimeException("Button '$strName' does not exist.");
+	}
+
+
+	/**
+	 * Add a button to the data container
+	 *
+	 * @param $strName
+	 * @param string $strScope
+	 *
+	 * @return $this
+	 *
+	 * @throws \RuntimeException
+	 */
+	public function addButton($strName, $strScope='local')
+	{
+		if(isset($this->arrButtons[$strScope][(string)$strName]))
+		{
+			throw new \RuntimeException("Button '$strName' already exists");
+		}
+
+		if(is_string($strName))
+		{
+			$objButton = new Button($strName, $strScope, $this);
+		}
+		else {
+			$objButton = $strName;
+			$objButton->setScope($strScope);
+		}
+
+		$this->arrButtons[$strScope][$strName] = $objButton;
+		$this->arrButtons[$strScope][$strName]->dispatch('move');
+
+		return $this;
+	}
+
+
+	/**
+	 * Create a new button
+	 *
+	 * @param $strName
+	 * @param string $strScope
+	 *
+	 * @return Button
+	 */
+	public function createButton($strName, $strScope='local')
+	{
+		$this->addButton($strName, $strScope);
+
+		return $this->getButton($strName, $strScope);
+	}
+
+
+	/**
+	 * Test if button exists
+	 *
+	 * @param $strName
+	 * @param string $strScope
+	 *
+	 * @return bool
+	 */
+	public function hasButton($strName, $strScope='local')
+	{
+		$strConfig = $strScope == 'global' ? 'global_operations' : 'operations';
+
+		if($strName == 'all' && $strScope == 'global')
+		{
+			return true;
+		}
+
+		return isset($this->definition['list'][$strConfig][$strName]);
+	}
+
+
+	/**
+	 * @param Button $objButton
+	 * @param null $reference
+	 * @param $intPosition
+	 *
+	 * @return $this
+	 */
+	public function moveButton(Button $objButton, $reference=null, $intPosition=Palette::POS_LAST)
+	{
+		$strScope = $objButton->getScope();
+
+		if($this->hasButton($objButton, $strScope))
+		{
+			unset($this->arrButtons[$strScope][$objButton->getName()]);
+		}
+
+		$this->addAtPosition($this->arrButtons[$strScope], $objButton, $reference, $intPosition);
+		$objButton->dispatch('move');
+
+		return $this;
+	}
+
+
+	/**
+	 * Remove button from DataContainer
+	 *
+	 * @param string|Button $button
+	 * @param string $strScope
+	 *
+	 * @return $this
+	 */
+	public function removeButton($button, $strScope='local')
+	{
+		if(is_object($button))
+		{
+			$strScope = $button->getScope();
+			$button = $button->getName();
+		}
+
+		if(isset($this->arrButtons[$strScope][$button]))
+		{
+			/** @var Button $objButton */
+			$objButton = $this->arrButtons[$strScope][$button];
+			unset($this->arrButtons[$strScope][$button]);
+			$objButton->dispatch('remove');
+		}
 
 		return $this;
 	}

@@ -1,0 +1,9 @@
+<?php /** @var Netzmacht\DcaTools\Operation $operation */ if($operation->getScope() == 'local'): ?>
+<a href="<?php echo $operation->getHref(); ?>" title="<?php echo $operation->getTitle(); ?>" <?php echo $operation->getAttributes(); ?>>
+	<img src="<?php echo $operation->getIcon(); ?>" alt="<img src="<?php echo $operation->getLabel(); ?>">
+</a>
+<?php else: ?>
+<a href="<?php echo $operation->getHref(); ?>" title="<?php echo $operation->getTitle(); ?>" class="<?php echo $operation->getIcon(); ?> <?php echo $operation->getAttributes(); ?>>
+	<?php echo $operation->getLabel(); ?>
+</a>
+<?php endif; ?>

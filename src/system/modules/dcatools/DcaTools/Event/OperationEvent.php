@@ -1,10 +1,14 @@
 <?php
+
 /**
- * Created by JetBrains PhpStorm.
- * User: david
- * Date: 01.10.13
- * Time: 10:51
- * To change this template use File | Settings | File Templates.
+ * Contao Open Source CMS
+ *
+ * Copyright (C) 2005-2013 Leo Feyer
+ *
+ * @package   netzmacht-dcatools
+ * @author    netzmacht creative David Molineus
+ * @license   MPL/2.0
+ * @copyright 2013 netzmacht creative David Molineus
  */
 
 namespace Netzmacht\DcaTools\Event;
@@ -19,14 +23,8 @@ use Netzmacht\DcaTools\Event\Event;
  *
  * @package Netzmacht\DcaTools\Button
  */
-abstract class Button extends Event
+abstract class OperationEvent extends Event
 {
-
-	/**
-	 * @var Button
-	 */
-	protected $objButton;
-
 
 	/**
 	 * Constructor
@@ -36,15 +34,15 @@ abstract class Button extends Event
 	public function __construct(Config $objConfig=null)
 	{
 		parent::__construct($objConfig);
-
-		$this->objButton = $this->getDispatcher();
 	}
 
+
 	/**
-	 * Execute the Button event
-	 *
-	 * @return mixed
+	 * @return \Netzmacht\DcaTools\Operation
 	 */
-	abstract public function execute();
+	public function getOperation()
+	{
+		return $this->getDispatcher();
+	}
 
 }

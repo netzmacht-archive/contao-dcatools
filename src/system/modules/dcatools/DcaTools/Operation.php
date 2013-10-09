@@ -19,7 +19,7 @@ use Symfony\Component\EventDispatcher\EventDispatcher;
 
 
 /**
- * Class Button provides a generic class which allows to define multiple events being triggered when a button component
+ * Class Operation provides a generic class which allows to define multiple events being triggered when a button component
  * of Contao DCA is generated. The button will be loaded using DcaTools::buttonCallback
  *
  * Following events are supported:
@@ -27,16 +27,16 @@ use Symfony\Component\EventDispatcher\EventDispatcher;
  *  - validate:     Can set the button as disabled or hidden.
  *  - generate:     Called when button is generated, use this for influencing the output.
  *
- * @package Netzmacht\DcaTools\Button
+ * @package Netzmacht\DcaTools\Operation
  */
-class Button extends Child
+class Operation extends Child
 {
 
 	/**
-	 * Button Template
+	 * Operation Template
 	 * @var string
 	 */
-	protected $strTemplate = 'be_button';
+	protected $strTemplate = 'be_operation';
 
 
 	/**
@@ -54,6 +54,48 @@ class Button extends Child
 
 
 	/**
+	 * @var string
+	 */
+	protected $strAttributes;
+
+
+	/**
+	 * @var string
+	 */
+	protected $strLabel;
+
+
+	/**
+	 * @var string
+	 */
+	protected $strTitle;
+
+
+	/**
+	 * @var string
+	 */
+	protected $strHref;
+
+
+	/**
+	 * @var string
+	 */
+	protected $strIcon;
+
+
+	/**
+	 * @var bool
+	 */
+	protected $blnDisabled;
+
+
+	/**
+	 * @var bool
+	 */
+	protected $blnHidden;
+
+
+	/**
 	 * Constructor
 	 * @param $strName
 	 * @param DataContainer $strScope
@@ -66,7 +108,7 @@ class Button extends Child
 
 		parent::__construct($strName, $objDataContainer, $definition['list'][$strConfig][$strName]);
 
-		// load events from definition
+		// load event listeners from definition
 		if(isset($this->definition['events']) && is_array($this->definition['events']))
 		{
 			foreach($this->definition['events'] as $strEvent => $arrListeners)
@@ -85,51 +127,117 @@ class Button extends Child
 			}
 		}
 
+		// initiate button from definition
+		$this->setLabel(isset($definition['label'][0]) ? $definition['label'][0] : $strName);
+		$this->setTitle(isset($definition['label'][1]) ? $definition['label'][1] : $strName);
+		$this->setIcon($definition['icon']);
+		$this->setHref($definition['href']);
+		$this->setAttributes($definition['attributes']);
+
 		$this->strScope = $strScope;
 		$this->dispatch('initialize');
 	}
 
 
 	/**
-	 * Magic Contao style
-	 *
-	 * @param $strKey
-	 * @param $value
+	 * @param string $strAttributes
 	 */
-	public function __set($strKey, $value)
+	public function setAttributes($strAttributes)
 	{
-		$this->definition[$strKey] = $value;
+		$this->strAttributes = $strAttributes;
 	}
 
 
 	/**
-	 * Magic Contao style
-	 *
-	 * @param $strKey
-	 *
-	 * @return mixed
+	 * @return string
 	 */
-	public function __get($strKey)
+	public function getAttributes()
 	{
-		if(isset($this->definition[$strKey]))
+		return $this->strAttributes;
+	}
+
+
+	/**
+	 * @param string $strHref
+	 */
+	public function setHref($strHref)
+	{
+		$this->strHref = \Controller::addToUrl($strHref);
+	}
+
+
+	/**
+	 * @return string
+	 */
+	public function getHref()
+	{
+		return $this->strHref;
+	}
+
+
+	/**
+	 * @param string $strIcon
+	 */
+	public function setIcon($strIcon)
+	{
+		$this->strIcon = $strIcon;
+	}
+
+
+	/**
+	 * @return string
+	 */
+	public function getIcon()
+	{
+		return $this->strIcon;
+	}
+
+
+	/**
+	 * @param string $strLabel
+	 */
+	public function setLabel($strLabel)
+	{
+		if($this->getDataContainer()->hasRecord())
 		{
-			return $this->definition[$strKey];
+			$strLabel = sprintf($strLabel, $this->getDataContainer()->getRecord()->id);
 		}
+
+		$this->strLabel = $strLabel;
 	}
 
 
 	/**
-	 * Validate if button can be shown
-	 *
-	 * @return bool
+	 * @return string
 	 */
-	public function validate()
+	public function getLabel()
 	{
-		$this->dispatch('validate');
-
-		return !$this->hidden;
+		return $this->strLabel;
 	}
 
+
+	/**
+	 * @param string $strTitle
+	 */
+	public function setTitle($strTitle)
+	{
+		if($this->getDataContainer()->hasRecord())
+		{
+			$strTitle = sprintf($strTitle, $this->getDataContainer()->getRecord()->id);
+		}
+
+		$this->strTitle = $strTitle;
+	}
+
+
+	/**
+	 * @return string
+	 */
+	public function getTitle()
+	{
+		return $this->strTitle;
+	}
+	
 
 	/**
 	 * @return string
@@ -175,45 +283,68 @@ class Button extends Child
 	 */
 	public function setScope($strScope)
 	{
-		$this->strScoppe = $strScope;
+		$this->strScope = $strScope;
+	}
+
+
+	/**
+	 * Hide Operation
+	 */
+	public function hide()
+	{
+		$this->blnHidden = true;
+	}
+
+
+	/**
+	 * @return bool
+	 */
+	public function isHidden()
+	{
+		return $this->blnHidden;
+	}
+
+
+	/**
+	 * Disable operation. Operation will be displayed as disabled
+	 */
+	public function disable()
+	{
+		$this->blnDisabled = true;
+	}
+
+
+
+	/**
+	 * @return bool
+	 */
+	public function isDisabled()
+	{
+		return $this->blnDisabled;
 	}
 
 
 	/**
 	 * @return string
 	 */
-	public function generate($arrRow, $href, $label, $title, $icon, $attributes, $strTable)
+	public function generate()
 	{
-		$this->row = $arrRow;
-		$this->href = $href;
-		$this->label = $label;
-		$this->title = $title;
-		$this->icon = $icon;
-		$this->attributes = $attributes;
-		$this->table = $strTable;
+		// default generate event
+		$this->dispatch('generate');
 
-		if(!$this->validate())
+		if($this->isHidden())
 		{
 			return '';
 		}
 
-		// default generate event
-		$this->dispatch('generate');
-
-		// used for contao native callback
-		$this->dispatch('native');
-
-		// everything which shall be called after contao native callback
-		$this->dispatch('render');
-
-		// This is for Contao style button callbacks which can be wrapped in an event
+		// This is for Contao style button callbacks which are wrapped in an event
 		if($this->strBuffer != '')
 		{
 			return $this->strBuffer;
 		}
 
 		$objTemplate = new \BackendTemplate($this->strTemplate);
-		$objTemplate->setData($this->definition);
+		$objTemplate->button = $this;
 
 		return $objTemplate->parse();
 	}
@@ -221,11 +352,11 @@ class Button extends Child
 
 	/**
 	 * Remove child from parent
-	 * @return mixed
+	 * @return $this
 	 */
 	public function remove()
 	{
-		$this->getDataContainer()->removeButton($this);
+		$this->getDataContainer()->removeOperation($this);
 
 		return $this;
 	}
@@ -236,7 +367,7 @@ class Button extends Child
 	 */
 	public function toString()
 	{
-		return '';
+		return $this->generate();
 	}
 
 
@@ -252,7 +383,7 @@ class Button extends Child
 	/**
 	 * Extend an existing node of the same type
 	 *
-	 * @param Button
+	 * @param Operation $node
 	 *
 	 * @return $this
 	 */

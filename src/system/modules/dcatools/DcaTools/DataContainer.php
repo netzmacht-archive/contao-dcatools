@@ -13,7 +13,7 @@
 
 namespace Netzmacht\DcaTools;
 
-use Netzmacht\DcaTools\Button\Button;
+use Netzmacht\DcaTools\Operation;
 use Netzmacht\DcaTools\Model\DcGeneralModel;
 use Netzmacht\DcaTools\Node\FieldAccess;
 use Netzmacht\DcaTools\Node\FieldContainer;
@@ -31,9 +31,9 @@ class DataContainer extends FieldContainer implements FieldAccess
 {
 
 	/**
-	 * @var Button[]
+	 * @var Operation[]
 	 */
-	protected $arrButtons = array();
+	protected $arrOperations = array();
 
 	/**
 	 * @var Palette[]
@@ -124,6 +124,15 @@ class DataContainer extends FieldContainer implements FieldAccess
 		}
 
 		return $this;
+	}
+
+
+	/**
+	 * return @bool
+	 */
+	public function hasRecord()
+	{
+		return ($this->objRecord !== null);
 	}
 
 
@@ -648,27 +657,27 @@ class DataContainer extends FieldContainer implements FieldAccess
 
 
 	/**
-	 * Get all buttons
+	 * Get all operations
 	 *
-	 * @param string $strScope global for global buttons else local one will be loaded
+	 * @param string $strScope global for global operations else local one will be loaded
 	 */
-	public function getButtons($strScope='local')
+	public function getOperations($strScope='local')
 	{
 		if($strScope == 'global')
 		{
 			$strConfig = 'global_operations';
-			$strCallback = 'globalButtonCallback';
+			$strCallback = 'globalOperationCallback';
 		}
 		else {
 			$strConfig = 'operations';
-			$strCallback = 'buttonCallback';
+			$strCallback = 'operationCallback';
 		}
 
-		// add button callback for every operation
-		foreach($this->definition['list'][$strConfig] as $strButton => $arrDefinition)
+		// add operation callback for every operation
+		foreach($this->definition['list'][$strConfig] as $strOperation => $arrDefinition)
 		{
-			// button already exists
-			if(!$this->hasButton($strButton) || isset($this->arrButtons[$strScope][$strButton]))
+			// operation already exists
+			if(!$this->hasOperation($strOperation) || isset($this->arrOperations[$strScope][$strOperation]))
 			{
 				continue;
 			}
@@ -676,7 +685,7 @@ class DataContainer extends FieldContainer implements FieldAccess
 			// make sure that existing callbacks will be called
 			if(isset($arrDefinition['button_callback']))
 			{
-				$GLOBALS['TL_DCA'][$this->getName()]['list'][$strConfig][$strButton]['events']['generate'][] = array
+				$GLOBALS['TL_DCA'][$this->getName()]['list'][$strConfig][$strOperation]['events']['generate'][] = array
 				(
 					array('ContaoStyleCallbacks', 'execute', array(
 						$arrDefinition['button_callback'],
@@ -685,19 +694,19 @@ class DataContainer extends FieldContainer implements FieldAccess
 				);
 			}
 
-			$GLOBALS['TL_DCA'][$this->getName()][$strConfig][$strButton]['button_callback'] = array
+			$GLOBALS['TL_DCA'][$this->getName()][$strConfig][$strOperation]['button_callback'] = array
 			(
-				'Netzmacht\DcaTools\DcaTools', $strCallback . $strButton
+				'Netzmacht\DcaTools\DcaTools', $strCallback . $strOperation
 			);
 
-			$this->arrButtons[$strScope][$strButton] = new Button($strButton, $strScope, $this);
+			$this->arrOperations[$strScope][$strOperation] = new Operation($strOperation, $strScope, $this);
 		}
 
 	}
 
 
 	/**
-	 * Get an button
+	 * Get an operation
 	 *
 	 * @param $strName
 	 * @param string $strScope
@@ -706,24 +715,24 @@ class DataContainer extends FieldContainer implements FieldAccess
 	 *
 	 * @throws \RuntimeException
 	 */
-	public function getButton($strName, $strScope='local')
+	public function getOperation($strName, $strScope='local')
 	{
-		if($this->hasButton($strName, $strScope))
+		if($this->hasOperation($strName, $strScope))
 		{
-			if(!isset($this->arrButtons[$strScope][$strName]))
+			if(!isset($this->arrOperations[$strScope][$strName]))
 			{
-				$this->arrButtons[$strScope][$strName] = new Button($strName, $strScope, $this);
+				$this->arrOperations[$strScope][$strName] = new Operation($strName, $strScope, $this);
 			}
 
-			return $this->arrButtons[$strScope][$strName];
+			return $this->arrOperations[$strScope][$strName];
 		}
 
-		throw new \RuntimeException("Button '$strName' does not exist.");
+		throw new \RuntimeException("Operation '$strName' does not exist.");
 	}
 
 
 	/**
-	 * Add a button to the data container
+	 * Add a operation to the data container
 	 *
 	 * @param $strName
 	 * @param string $strScope
@@ -732,54 +741,55 @@ class DataContainer extends FieldContainer implements FieldAccess
 	 *
 	 * @throws \RuntimeException
 	 */
-	public function addButton($strName, $strScope='local')
+	public function addOperation($strName, $strScope='local')
 	{
-		if(isset($this->arrButtons[$strScope][(string)$strName]))
+		if(isset($this->arrOperations[$strScope][(string)$strName]))
 		{
-			throw new \RuntimeException("Button '$strName' already exists");
+			throw new \RuntimeException("Operation '$strName' already exists");
 		}
 
 		if(is_string($strName))
 		{
-			$objButton = new Button($strName, $strScope, $this);
+			$objOperation = new Operation($strName, $strScope, $this);
 		}
 		else {
-			$objButton = $strName;
-			$objButton->setScope($strScope);
+			/** @var Operation $objOperation */
+			$objOperation = $strName;
+			$objOperation->setScope($strScope);
 		}
 
-		$this->arrButtons[$strScope][$strName] = $objButton;
-		$this->arrButtons[$strScope][$strName]->dispatch('move');
+		$this->arrOperations[$strScope][$strName] = $objOperation;
+		$this->arrOperations[$strScope][$strName]->dispatch('move');
 
 		return $this;
 	}
 
 
 	/**
-	 * Create a new button
+	 * Create a new operation
 	 *
 	 * @param $strName
 	 * @param string $strScope
 	 *
-	 * @return Button
+	 * @return Operation
 	 */
-	public function createButton($strName, $strScope='local')
+	public function createOperation($strName, $strScope='local')
 	{
-		$this->addButton($strName, $strScope);
+		$this->addOperation($strName, $strScope);
 
-		return $this->getButton($strName, $strScope);
+		return $this->getOperation($strName, $strScope);
 	}
 
 
 	/**
-	 * Test if button exists
+	 * Test if operation exists
 	 *
 	 * @param $strName
 	 * @param string $strScope
 	 *
 	 * @return bool
 	 */
-	public function hasButton($strName, $strScope='local')
+	public function hasOperation($strName, $strScope='local')
 	{
 		$strConfig = $strScope == 'global' ? 'global_operations' : 'operations';
 
@@ -793,50 +803,50 @@ class DataContainer extends FieldContainer implements FieldAccess
 
 
 	/**
-	 * @param Button $objButton
+	 * @param Operation $objOperation
 	 * @param null $reference
 	 * @param $intPosition
 	 *
 	 * @return $this
 	 */
-	public function moveButton(Button $objButton, $reference=null, $intPosition=Palette::POS_LAST)
+	public function moveOperation(Operation $objOperation, $reference=null, $intPosition=Palette::POS_LAST)
 	{
-		$strScope = $objButton->getScope();
+		$strScope = $objOperation->getScope();
 
-		if($this->hasButton($objButton, $strScope))
+		if($this->hasOperation($objOperation, $strScope))
 		{
-			unset($this->arrButtons[$strScope][$objButton->getName()]);
+			unset($this->arrOperations[$strScope][$objOperation->getName()]);
 		}
 
-		$this->addAtPosition($this->arrButtons[$strScope], $objButton, $reference, $intPosition);
-		$objButton->dispatch('move');
+		$this->addAtPosition($this->arrOperations[$strScope], $objOperation, $reference, $intPosition);
+		$objOperation->dispatch('move');
 
 		return $this;
 	}
 
 
 	/**
-	 * Remove button from DataContainer
+	 * Remove operation from DataContainer
 	 *
-	 * @param string|Button $button
+	 * @param string|Operation $operation
 	 * @param string $strScope
 	 *
 	 * @return $this
 	 */
-	public function removeButton($button, $strScope='local')
+	public function removeOperation($operation, $strScope='local')
 	{
-		if(is_object($button))
+		if(is_object($operation))
 		{
-			$strScope = $button->getScope();
-			$button = $button->getName();
+			$strScope = $operation->getScope();
+			$operation = $operation->getName();
 		}
 
-		if(isset($this->arrButtons[$strScope][$button]))
+		if(isset($this->arrOperations[$strScope][$operation]))
 		{
-			/** @var Button $objButton */
-			$objButton = $this->arrButtons[$strScope][$button];
-			unset($this->arrButtons[$strScope][$button]);
-			$objButton->dispatch('remove');
+			/** @var Operation $objOperation */
+			$objOperation = $this->arrOperations[$strScope][$operation];
+			unset($this->arrOperations[$strScope][$operation]);
+			$objOperation->dispatch('remove');
 		}
 
 		return $this;

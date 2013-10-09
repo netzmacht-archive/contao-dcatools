@@ -11,7 +11,7 @@ namespace Netzmacht\DcaTools;
 
 
 use DcGeneral\Callbacks\ContaoStyleCallbacks;
-use Netzmacht\DcaTools\Event\ButtonCallback;
+use Netzmacht\DcaTools\Event\OperationCallback;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 
 class DcaTools
@@ -93,53 +93,53 @@ class DcaTools
 			}
 		}
 
-		// handle button events
-		foreach($GLOBALS['TL_DCA'][$dc->table]['list']['operations'] as $strButton => $arrButton)
+		// handle operation events
+		foreach($GLOBALS['TL_DCA'][$dc->table]['list']['operations'] as $strOperation => $arrOperation)
 		{
 
-			if(!(isset($arrConfig['buttonEvents']) && $arrConfig['buttonEvents']) && !isset($arrButton['events']))
+			if(!(isset($arrConfig['operationEvents']) && $arrConfig['operationEvents']) && !isset($arrOperation['events']))
 			{
 				continue;
 			}
 
-			if(isset($arrButton['button_callback']))
+			if(isset($arrOperation['button_callback']))
 			{
-				$GLOBALS['TL_DCA'][$dc->table]['list']['operations'][$strButton]['events']['native'][] = array(
-					function($objEvent) use($arrButton) {
-						$objCallback = new ContaoCallback($objEvent, $arrButton['button_callback']);
-						$objCallback->execute();
+				$GLOBALS['TL_DCA'][$dc->table]['list']['operations'][$strOperation]['events']['native'][] = array(
+					function($objEvent) use($arrOperation) {
+						$objCallback = new OperationCallback($arrOperation['button_callback']);
+						$objCallback->execute($objEvent);
 					}, -1
 				);
 			}
 
-			$GLOBALS['TL_DCA'][$dc->table]['list']['operations'][$strButton]['button_callback'] = array
+			$GLOBALS['TL_DCA'][$dc->table]['list']['operations'][$strOperation]['button_callback'] = array
 			(
-				'Netzmacht\DcaTools\DcaTools', 'buttonCallback' . $strButton
+				'Netzmacht\DcaTools\DcaTools', 'operationCallback' . $strOperation
 			);
 		}
 
-		// handle button events
-		foreach($GLOBALS['TL_DCA'][$dc->table]['list']['global_operations'] as $strButton => $arrButton)
+		// handle operation events
+		foreach($GLOBALS['TL_DCA'][$dc->table]['list']['global_operations'] as $strOperation => $arrOperation)
 		{
-			if(!(isset($arrConfig['buttonEvents']) && $arrConfig['buttonEvents']) && !isset($arrButton['events']))
+			if(!(isset($arrConfig['operationEvents']) && $arrConfig['operationEvents']) && !isset($arrOperation['events']))
 			{
 				continue;
 			}
 
-			if(isset($arrButton['button_callback']))
+			if(isset($arrOperation['button_callback']))
 			{
-				$GLOBALS['TL_DCA'][$dc->table]['list']['global_operations'][$strButton]['events']['native'][] = array
+				$GLOBALS['TL_DCA'][$dc->table]['list']['global_operations'][$strOperation]['events']['native'][] = array
 				(
-					'Netzmacht\DcaTools\Event\ButtonCallback', 'execute', array
+					'Netzmacht\DcaTools\Event\OperationCallback', 'execute', array
 					(
-						'callback' =>  $arrButton['button_callback']
+						'callback' =>  $arrOperation['button_callback']
 					)
 				);
 			}
 
-			$GLOBALS['TL_DCA'][$dc->table]['list']['global_operations'][$strButton]['button_callback'] = array
+			$GLOBALS['TL_DCA'][$dc->table]['list']['global_operations'][$strOperation]['button_callback'] = array
 			(
-				'Netzmacht\DcaTools\DcaTools', 'globalButtonCallback' . $strButton
+				'Netzmacht\DcaTools\DcaTools', 'globalOperationCallback' . $strOperation
 			);
 		}
 	}
@@ -152,7 +152,7 @@ class DcaTools
 	 * @param $strName
 	 * @param $arrConfig
 	 */
-	protected function registerEvent(EventDispatcher $objTarget, $strName, $arrConfig)
+	public static function registerListener(EventDispatcher $objTarget, $strName, $arrConfig)
 	{
 		// @see https://github.com/bit3/contao-event-dispatcher/blob/master/contao/config/services.php
 		if (is_array($arrConfig) && count($arrConfig) === 2 && is_int($arrConfig[1]))
@@ -170,7 +170,7 @@ class DcaTools
 
 
 	/**
-	 * Use magic stuff for generating buttons
+	 * Use magic stuff for generating operations
 	 *
 	 * @param $strMethod
 	 * @param $arrArguments
@@ -181,19 +181,34 @@ class DcaTools
 	{
 		$objDataContainer = DcaTools::getDataContainer($arrArguments[6]);
 
-		if (strncmp($strMethod, 'buttonCallback', 14) === 0)
+		if (strncmp($strMethod, 'operationCallback', 14) === 0)
 		{
-			$strButton = substr($strMethod, 14);
-			$objButton = $objDataContainer->getButton($strButton, 'local');
-
-			return call_user_func_array(array($objButton, 'generate'), $arrArguments);
+			$strOperation = substr($strMethod, 14);
+			$objOperation = $objDataContainer->getOperation($strOperation, 'local');
 		}
-		elseif (strncmp($strMethod, 'globalButtonCallback', 20) === 0)
+		elseif (strncmp($strMethod, 'globalOperationCallback', 20) === 0)
 		{
-			$strButton = substr($strMethod, 20);
-			$objButton = $objDataContainer->getButton($strButton, 'global');
+			$strOperation = substr($strMethod, 20);
+			$objOperation = $objDataContainer->getOperation($strOperation, 'global');
 
-			return call_user_func_array(array($objButton, 'generate'), $arrArguments);
+			$strClass = \Controller::getModelClassFromTable($arrArguments[7]);
+
+			/** @var \Model $objModel */
+			$objModel = new $strClass;
+			$objModel->setRow(array_shift($arrArguments));
+
+			$objDataContainer->setRecord($objModel);
+		}
+
+		if(isset($objOperation))
+		{
+			$objOperation->setHref($arrArguments[1]);
+			$objOperation->setLabel($arrArguments[1]);
+			$objOperation->setTitle($arrArguments[1]);
+			$objOperation->setIcon($arrArguments[1]);
+			$objOperation->setAttributes($arrArguments[1]);
+
+			return $objOperation->generate();
 		}
 	}
 }

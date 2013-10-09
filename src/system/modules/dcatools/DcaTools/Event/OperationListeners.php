@@ -12,6 +12,8 @@
  */
 namespace Netzmacht\DcaTools\Event;
 
+use Symfony\Component\EventDispatcher\GenericEvent;
+
 
 /**
  * Class OperationListeners stores listener which can be used for the operation generate event
@@ -24,13 +26,13 @@ class OperationListeners extends Permissions
 	/**
 	 * Test if User is an admin.
 	 *
-	 * @param OperationEvent $objEvent
+	 * @param GenericEvent $objEvent
 	 * @param array $arrConfig
 	 * @param bool $blnStop if true event will be stopped
 	 *
 	 * @return bool
 	 */
-	public static function isAdmin(OperationEvent $objEvent, array $arrConfig=array(), $blnStop=true)
+	public static function isAdmin(GenericEvent $objEvent, array $arrConfig=array(), $blnStop=true)
 	{
 		if(parent::isAdmin($objEvent, $arrConfig, $blnStop))
 		{
@@ -40,7 +42,7 @@ class OperationListeners extends Permissions
 		if($blnStop)
 		{
 			$objEvent->stopPropagation();
-			$objEvent->getOperation()->hide();
+			$objEvent->getSubject()->hide();
 		}
 
 		return false;
@@ -48,13 +50,13 @@ class OperationListeners extends Permissions
 
 
 	/**
-	 * @param OperationEvent $objEvent
+	 * @param GenericEvent $objEvent
 	 * @param array $arrConfig
 	 * @param bool $blnStop if true event will be stopped
 	 *
 	 * @return bool
 	 */
-	public static function hasAccess(OperationEvent $objEvent, array $arrConfig=array(), $blnStop=true)
+	public static function hasAccess(GenericEvent $objEvent, array $arrConfig=array(), $blnStop=true)
 	{
 		if(\BackendUser::getInstance()->isAdmin || parent::hasAccess($objEvent, $arrConfig))
 		{
@@ -63,7 +65,7 @@ class OperationListeners extends Permissions
 
 		if($blnStop)
 		{
-			$objEvent->getOperation()->hide();
+			$objEvent->getSubject()->hide();
 			$objEvent->stopPropagation();
 		}
 
@@ -74,7 +76,7 @@ class OperationListeners extends Permissions
 	/**
 	 * rule checks if user is allowed to run action
 	 *
-	 * @param OperationEvent $objEvent
+	 * @param GenericEvent $objEvent
 	 * @param array $arrConfig option data row of operation buttons
 	 * 		- table string 		optional if want to check for another table
 	 * 		- closed bool 		optional if want to check if table is closed
@@ -87,10 +89,10 @@ class OperationListeners extends Permissions
 	 *
 	 * @return bool true if rule is passed
 	 */
-	public static function isAllowed(OperationEvent $objEvent, array $arrConfig=array(), $blnStop=true)
+	public static function isAllowed(GenericEvent $objEvent, array $arrConfig=array(), $blnStop=true)
 	{
 		/** @var \Netzmacht\DcaTools\DataContainer $objDataContainer */
-		$objDataContainer = $objEvent->getOperation()->getDataContainer();
+		$objDataContainer = $objEvent->getSubject()->getDataContainer();
 		
 		$strTable = (isset($arrConfig['table'])) ? $arrConfig['table'] : $objDataContainer->getName();
 
@@ -104,7 +106,7 @@ class OperationListeners extends Permissions
 
 		if($blnStop)
 		{
-			$objEvent->getOperation()->hide();
+			$objEvent->getSubject()->hide();
 			$objEvent->stopPropagation();
 		}
 
@@ -115,13 +117,13 @@ class OperationListeners extends Permissions
 	/**
 	 * Disable icon depending on a callback or a diven value
 	 *
-	 * @param OperationEvent $objEvent
+	 * @param GenericEvent $objEvent
 	 * @param array $arrConfig
 	 * @param bool $blnStop
 	 *
 	 * @return bool
 	 */
-	public static function disableIcon(OperationEvent $objEvent, array $arrConfig=array(), $blnStop=true)
+	public static function disableIcon(GenericEvent $objEvent, array $arrConfig=array(), $blnStop=true)
 	{
 		if(isset($arrConfig['callback']))
 		{
@@ -134,7 +136,7 @@ class OperationListeners extends Permissions
 
 		if($blnDisable)
 		{
-			$objButton = $objEvent->getOperation();
+			$objButton = $objEvent->getSubject();
 
 			$strIcon = isset($arrConfig['icon']) ? $arrConfig['icon'] : str_replace('.', '_.', $objButton->getIcon());
 			$objButton->setIcon($strIcon);
@@ -147,29 +149,29 @@ class OperationListeners extends Permissions
 	/**
 	 * Create a referer link
 	 *
-	 * @param OperationEvent $objEvent
+	 * @param GenericEvent $objEvent
 	 * @param array $arrConfig
 	 * @param bool $blnStop
 	 *
 	 * @return bool
 	 */
-	public static function referer(OperationEvent $objEvent, array $arrConfig=array(), $blnStop=true)
+	public static function referer(GenericEvent $objEvent, array $arrConfig=array(), $blnStop=true)
 	{
-		$objEvent->getOperation()->setHref(\Controller::getReferer(true));
-		$objEvent->getConfig()->set('plain', true);
+		$objEvent->getSubject()->setHref(\Controller::getReferer(true));
+		$objEvent->setArgument('plain', true);
 
 		return true;
 	}
 
 
 	/**
-	 * @param OperationEvent $objEvent
+	 * @param GenericEvent $objEvent
 	 * @param array $arrConfig
 	 * @param bool $blnStop
 	 *
 	 * @return bool
 	 */
-	public static function toggleIcon(OperationEvent $objEvent, array $arrConfig=array(), $blnStop=true)
+	public static function toggleIcon(GenericEvent $objEvent, array $arrConfig=array(), $blnStop=true)
 	{
 		if (strlen(\Input::get('tid')))
 		{
@@ -179,7 +181,9 @@ class OperationListeners extends Permissions
 
 		/** @var \BackendUser $objUser */
 		$objUser = \BackendUser::getInstance();
-		$objOperation = $objEvent->getOperation();
+		$objOperation = $objEvent->getSubject();
+
+		/** @var \Netzmacht\DcaTools\DataContainer $objDataContainer */
 		$objDataContainer = $objOperation->getDataContainer();
 
 		$arrRow = $objDataContainer->getRecord()->row();
@@ -199,11 +203,11 @@ class OperationListeners extends Permissions
 			return false;
 		}
 
-		$strHref = $objEvent->getOperation()->getHref();
+		$strHref = $objEvent->getSubject()->getHref();
 		$strHref .= '&amp;id='.$arrRow['pid'].'&amp;tid='.$arrRow['id'].'&amp;state='.($blnVisible ? 1 : '');
 
 		$objOperation->setHref($strHref);
-		$objEvent->getConfig()->set('noId', true);
+		$objEvent->setArgument('noId', true);
 
 		if ($blnVisible)
 		{
@@ -217,20 +221,21 @@ class OperationListeners extends Permissions
 	/**
 	 * Toggle state of a value
 	 *
-	 * @param OperationEvent $objEvent
+	 * @param GenericEvent $objEvent
 	 * @param array $arrConfig
 	 * @param $intId
 	 *
 	 * @param $blnVisible
 	 */
-	protected static function toggleState(OperationEvent $objEvent, array $arrConfig, $intId, $blnVisible)
+	protected static function toggleState(GenericEvent $objEvent, array $arrConfig, $intId, $blnVisible)
 	{
 		// Check permissions to edit
 		\Input::setGet('id', $intId);
 		\Input::setGet('act', 'toggle');
 
 		// trigger permission checking
-		$objDataContainer = $objEvent->getOperation()->getDataContainer();
+		/** @var \Netzmacht\DcaTools\DataContainer $objDataContainer */
+		$objDataContainer = $objEvent->getSubject()->getDataContainer();
 		$objDataContainer->dispatch('permissions');
 
 		/** @var \BackendUser $objUser */

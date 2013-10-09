@@ -1,4 +1,4 @@
 <?php
 
 
-$GLOBALS['TL_HOOKS']['loadDataContainer'][] = array('Netzmacht\DcaTools\DcaTools', 'hookLoadDataContainer');
+$GLOBALS['TL_HOOKS']['loadDataContainer'][] = array('Netzmacht\DcaTools\Helper', 'hookLoadDataContainer');

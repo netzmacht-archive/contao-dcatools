@@ -16,6 +16,7 @@ namespace Netzmacht\DcaTools\Node;
 use Netzmacht\DcaTools\DcaTools;
 use Netzmacht\DcaTools\Event\Event;
 use Symfony\Component\EventDispatcher\EventDispatcher;
+use Symfony\Component\EventDispatcher\GenericEvent;
 
 /**
  * Class Node
@@ -178,7 +179,7 @@ abstract class Node extends EventDispatcher implements Exportable
 	{
 		if($objEvent === null)
 		{
-			$objEvent = new Event();
+			$objEvent = new GenericEvent($this);
 		}
 
 		parent::dispatch($strEvent, $objEvent);

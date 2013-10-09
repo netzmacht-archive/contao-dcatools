@@ -13,7 +13,7 @@
 
 namespace Netzmacht\DcaTools\Event;
 
-use Netzmacht\DcaTools\Event\Event;
+use Symfony\Component\EventDispatcher\GenericEvent;
 
 
 /**
@@ -39,15 +39,17 @@ class OperationCallback
 
 
 	/**
-	 * @param OperationEvent $objEvent
+	 * @param GenericEvent $objEvent
 	 *
 	 * @return mixed|void
 	 */
-	public function execute(OperationEvent $objEvent)
+	public function execute(GenericEvent $objEvent)
 	{
 		$objCallback = new $this->arrCallback[0]();
 
-		$objOperation = $objEvent->getOperation();
+		$objOperation = $objEvent->getSubject();
+
+		/** @var \Netzmacht\DcaTools\DataContainer $objDataContainer */
 		$objDataContainer = $objOperation->getDataContainer();
 
 		$objOperation->setBuffer

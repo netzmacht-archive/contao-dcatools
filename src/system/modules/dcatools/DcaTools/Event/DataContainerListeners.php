@@ -9,6 +9,8 @@
 
 namespace Netzmacht\DcaTools\Event;
 
+use Symfony\Component\EventDispatcher\GenericEvent;
+
 /**
  * Class DataContainerListeners
  * @package Netzmacht\DcaTools\Event
@@ -17,13 +19,13 @@ class DataContainerListeners extends Permissions
 {
 
 	/**
-	 * @param DataContainerEvent $objEvent
+	 * @param GenericEvent $objEvent
 	 * @param array $arrConfig
 	 * @param bool $blnStop
 	 *
 	 * @return bool|void
 	 */
-	public static function hasAccess(DataContainerEvent $objEvent, array $arrConfig=array(), $blnStop=true)
+	public static function hasAccess(GenericEvent $objEvent, array $arrConfig=array(), $blnStop=true)
 	{
 		if(!static::hasGenericPermission($objEvent, $arrConfig) || parent::hasAccess($objEvent, $arrConfig))
 		{
@@ -40,13 +42,13 @@ class DataContainerListeners extends Permissions
 
 
 	/**
-	 * @param DataContainerEvent $objEvent
+	 * @param GenericEvent $objEvent
 	 * @param array $arrConfig
 	 * @param bool $blnStop
 	 *
 	 * @return bool|void
 	 */
-	public static function isAllowed(DataContainerEvent $objEvent, array $arrConfig=array(), $blnStop=true)
+	public static function isAllowed(GenericEvent $objEvent, array $arrConfig=array(), $blnStop=true)
 	{
 		if(static::hasGenericPermission($objEvent, $arrConfig))
 		{
@@ -71,13 +73,13 @@ class DataContainerListeners extends Permissions
 
 
 	/**
-	 * @param DataContainerEvent $objEvent
+	 * @param GenericEvent $objEvent
 	 * @param array $arrConfig
 	 * @param bool $blnStop
 	 *
 	 * @return bool|void
 	 */
-	public static function isAdmin(DataContainerEvent $objEvent, array $arrConfig=array(), $blnStop=true)
+	public static function isAdmin(GenericEvent $objEvent, array $arrConfig=array(), $blnStop=true)
 	{
 		if(!static::hasGenericPermission($objEvent, $arrConfig) || parent::isAdmin($objEvent, $arrConfig))
 		{
@@ -94,13 +96,13 @@ class DataContainerListeners extends Permissions
 
 
 	/**
-	 * @param DataContainerEvent $objEvent
+	 * @param GenericEvent $objEvent
 	 * @param array $arrConfig
 	 * @param bool $blnStop
 	 *
 	 * @return bool|void
 	 */
-	public static function forbidden(DataContainerEvent $objEvent, array $arrConfig=array(), $blnStop=true)
+	public static function forbidden(GenericEvent $objEvent, array $arrConfig=array(), $blnStop=true)
 	{
 		if(!static::hasGenericPermission($objEvent, $arrConfig))
 		{
@@ -118,14 +120,14 @@ class DataContainerListeners extends Permissions
 
 
 	/**
-	 * @param DataContainerEvent $objEvent
+	 * @param GenericEvent $objEvent
 	 * @param array $arrConfig
 	 *
 	 * @return bool
 	 */
-	protected static function hasGenericPermission(DataContainerEvent $objEvent, array $arrConfig=array())
+	protected static function hasGenericPermission(GenericEvent $objEvent, array $arrConfig=array())
 	{
-		$objEvent->getConfig()->set('error', static::prepareErrorMessage($arrConfig, $objEvent->getConfig()->get('error')));
+		$objEvent->setArgument('error', static::prepareErrorMessage($arrConfig, $objEvent->getArgument('error')));
 		$blnAccess = true;
 
 		if(isset($arrConfig['act']))

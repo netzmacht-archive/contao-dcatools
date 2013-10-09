@@ -14,6 +14,8 @@
 namespace Netzmacht\DcaTools;
 
 use Netzmacht\DcaTools\DataContainer;
+use Netzmacht\DcaTools\Event\Event;
+use Netzmacht\DcaTools\Event\OperationEvent;
 use Netzmacht\DcaTools\Node\Child;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 
@@ -115,14 +117,7 @@ class Operation extends Child
 			{
 				foreach($arrListeners as $listener)
 				{
-					if (is_array($listener) && count($listener) === 2 && is_int($listener[1])) {
-						list($listener, $priority) = $listener;
-					}
-					else {
-						$priority = 0;
-					}
-
-					$this->addListener($strEvent, $listener, $priority);
+					DcaTools::registerListener($this, $strEvent, $listener);
 				}
 			}
 		}
@@ -203,11 +198,13 @@ class Operation extends Child
 
 
 	/**
+	 * @param bool $blnRaw
+	 *
 	 * @return string
 	 */
-	public function getLabel()
+	public function getLabel($blnRaw=true)
 	{
-		if($this->getDataContainer()->hasRecord())
+		if(!$blnRaw && $this->getDataContainer()->hasRecord())
 		{
 			return sprintf($this->strLabel, $this->getDataContainer()->getRecord()->id);
 		}
@@ -226,11 +223,13 @@ class Operation extends Child
 
 
 	/**
+	 * @param bool $blnRaw
+	 *
 	 * @return string
 	 */
-	public function getTitle()
+	public function getTitle($blnRaw=true)
 	{
-		if($this->getDataContainer()->hasRecord())
+		if(!$blnRaw && $this->getDataContainer()->hasRecord())
 		{
 			return sprintf($this->strTitle, $this->getDataContainer()->getRecord()->id);
 		}
@@ -314,7 +313,6 @@ class Operation extends Child
 	}
 
 
-
 	/**
 	 * @return bool
 	 */
@@ -332,8 +330,9 @@ class Operation extends Child
 	 */
 	public function generate(array $arrConfig = array('table' => true, 'id' => true))
 	{
-		// default generate event
-		$this->dispatch('generate');
+		// Trigger generate event
+		/** @var \Symfony\Component\EventDispatcher\GenericEvent $objEvent */
+		$objEvent = $this->dispatch('generate');
 
 		if($this->isHidden())
 		{
@@ -347,6 +346,7 @@ class Operation extends Child
 		}
 
 		$objTemplate = new \BackendTemplate($this->strTemplate);
+		$objTemplate->config = $objEvent->getArguments();
 		$objTemplate->button = $this;
 
 		return $objTemplate->parse();
@@ -355,6 +355,7 @@ class Operation extends Child
 
 	/**
 	 * Remove child from parent
+	 *
 	 * @return $this
 	 */
 	public function remove()
@@ -366,11 +367,14 @@ class Operation extends Child
 
 
 	/**
+	 *
+	 * @param array $arrConfig
+	 *
 	 * @return mixed
 	 */
-	public function toString()
+	public function toString(array $arrConfig = array('table' => true, 'id' => true))
 	{
-		return $this->generate();
+		return $this->generate($arrConfig);
 	}
 
 

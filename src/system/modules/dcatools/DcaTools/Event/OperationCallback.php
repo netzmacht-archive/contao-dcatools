@@ -54,7 +54,7 @@ class OperationCallback
 		(
 			$objCallback->{$this->arrCallback[1]}
 			(
-				$objDataContainer->hasRecord() ? $objDataContainer->getRecord()->getRow() : array(),
+				$objDataContainer->hasRecord() ? $objDataContainer->getRecord()->row() : array(),
 				$objOperation->getHref(),
 				$objOperation->getLabel(),
 				$objOperation->getTitle(),

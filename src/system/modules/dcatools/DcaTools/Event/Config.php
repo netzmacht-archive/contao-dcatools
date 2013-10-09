@@ -70,4 +70,13 @@ class Config
 		return isset($this->arrConfiguration[$strKey]);
 	}
 
+
+	/**
+	 * @return array
+	 */
+	public function toArray()
+	{
+		return $this->arrConfiguration;
+	}
+
 }

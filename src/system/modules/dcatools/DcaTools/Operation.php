@@ -198,11 +198,6 @@ class Operation extends Child
 	 */
 	public function setLabel($strLabel)
 	{
-		if($this->getDataContainer()->hasRecord())
-		{
-			$strLabel = sprintf($strLabel, $this->getDataContainer()->getRecord()->id);
-		}
-
 		$this->strLabel = $strLabel;
 	}
 
@@ -212,6 +207,11 @@ class Operation extends Child
 	 */
 	public function getLabel()
 	{
+		if($this->getDataContainer()->hasRecord())
+		{
+			return sprintf($this->strLabel, $this->getDataContainer()->getRecord()->id);
+		}
+
 		return $this->strLabel;
 	}
 
@@ -221,11 +221,6 @@ class Operation extends Child
 	 */
 	public function setTitle($strTitle)
 	{
-		if($this->getDataContainer()->hasRecord())
-		{
-			$strTitle = sprintf($strTitle, $this->getDataContainer()->getRecord()->id);
-		}
-
 		$this->strTitle = $strTitle;
 	}
 
@@ -235,6 +230,11 @@ class Operation extends Child
 	 */
 	public function getTitle()
 	{
+		if($this->getDataContainer()->hasRecord())
+		{
+			return sprintf($this->strTitle, $this->getDataContainer()->getRecord()->id);
+		}
+
 		return $this->strTitle;
 	}
 	
@@ -325,9 +325,12 @@ class Operation extends Child
 
 
 	/**
+	 *
+	 * @param array $arrConfig
+	 *
 	 * @return string
 	 */
-	public function generate()
+	public function generate(array $arrConfig = array('table' => true, 'id' => true))
 	{
 		// default generate event
 		$this->dispatch('generate');

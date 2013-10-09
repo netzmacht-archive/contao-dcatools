@@ -13,6 +13,8 @@
 
 namespace Netzmacht\DcaTools\Model;
 
+use DcGeneral\Data\ModelInterface;
+
 /**
  * Class DcGeneralModel is a wrapper for DC_General ModelInterfaces which provides an Contao style access to properties
  *
@@ -30,7 +32,7 @@ class DcGeneralModel
 	/**
 	 * @param $objModel
 	 */
-	public function __construct($objModel)
+	public function __construct(ModelInterface $objModel)
 	{
 		$this->objModel = $objModel;
 	}
@@ -70,7 +72,7 @@ class DcGeneralModel
 	/**
 	 * @return array
 	 */
-	public function getRow()
+	public function row()
 	{
 		return $this->objModel->getPropertiesAsArray();
 	}

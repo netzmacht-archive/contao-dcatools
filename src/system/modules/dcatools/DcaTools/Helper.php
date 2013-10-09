@@ -150,6 +150,9 @@ class Helper
 					'Netzmacht\DcaTools\Helper', 'globalOperationCallback' . $strOperation
 				);
 			}
+
+			// initialize and check permissions
+			$objDataContainer->initialize();
 		}
 	}
 }

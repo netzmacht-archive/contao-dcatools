@@ -34,6 +34,7 @@ class DataContainerListeners extends Permissions
 
 		if($blnStop)
 		{
+			$objEvent->setArgument('granted', false);
 			$objEvent->stopPropagation();
 		}
 
@@ -64,6 +65,7 @@ class DataContainerListeners extends Permissions
 
 			if($blnStop)
 			{
+				$objEvent->setArgument('granted', false);
 				$objEvent->stopPropagation();
 			}
 		}
@@ -88,6 +90,7 @@ class DataContainerListeners extends Permissions
 
 		if($blnStop)
 		{
+			$objEvent->setArgument('granted', false);
 			$objEvent->stopPropagation();
 		}
 
@@ -111,6 +114,7 @@ class DataContainerListeners extends Permissions
 
 		if($blnStop)
 		{
+			$objEvent->setArgument('granted', false);
 			$objEvent->stopPropagation();
 		}
 

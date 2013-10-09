@@ -21,6 +21,7 @@ use Netzmacht\DcaTools\Node\Node;
 use Netzmacht\DcaTools\Palette\Palette;
 use Netzmacht\DcaTools\Palette\SubPalette;
 use Symfony\Component\EventDispatcher\Event;
+use Symfony\Component\EventDispatcher\GenericEvent;
 
 
 /**
@@ -110,6 +111,49 @@ class DataContainer extends FieldContainer implements FieldAccess
 				$this->arrOperations[$strScope][$strName] = clone $objOperation;
 				$this->arrOperations[$strScope][$strName]->setDataContainer($this);
 			}
+		}
+	}
+
+
+	/**
+	 * Initialize the DataContainer and check permissioin
+	 *
+	 */
+	public function initialize()
+	{
+		$this->dispatch('initialize');
+
+		if(\Input::get('act') != '')
+		{
+			$strErrorDefault = sprintf(
+				'User "%s" has not enough permission to run action "%s" for DataContainer "%s"',
+				\BackendUser::getInstance()->username,
+				\Input::get('act'),
+				$this->getName()
+			);
+
+			if(\Input::get('id') != '')
+			{
+				$strErrorDefault .= ' on item with ID "' .\Input::get('id') . '"';
+			}
+		}
+		else
+		{
+			$strErrorDefault = sprintf(
+				'User "%s" has not enough permission to access module "%s"',
+				\BackendUser::getInstance()->username,
+				\Input::get('act')
+			);
+		}
+
+		$objEvent = new GenericEvent($this, array('error' => $strErrorDefault, 'granted' => true));
+		$objEvent = $this->dispatch('permissions', $objEvent);
+
+		if(!$objEvent->getArgument('granted'))
+		{
+			$this->log($objEvent->getArgument('error'), 'DataContainer initialize', TL_ERROR);
+			$this->redirect('contao/main.php?act=error');
+			return;
 		}
 	}
 

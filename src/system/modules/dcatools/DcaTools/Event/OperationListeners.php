@@ -140,6 +140,7 @@ class OperationListeners extends Permissions
 
 			$strIcon = isset($arrConfig['icon']) ? $arrConfig['icon'] : str_replace('.', '_.', $objButton->getIcon());
 			$objButton->setIcon($strIcon);
+			$objButton->disable();
 		}
 
 		return true;

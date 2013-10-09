@@ -174,6 +174,8 @@ abstract class Node extends EventDispatcher implements Exportable
 
 	/**
 	 * Dispatch the event, will create an DcaTools event if none given
+	 *
+	 * @return GenericEvent
 	 */
 	public function dispatch($strEvent, \Symfony\Component\EventDispatcher\Event $objEvent=null)
 	{
@@ -182,6 +184,6 @@ abstract class Node extends EventDispatcher implements Exportable
 			$objEvent = new GenericEvent($this);
 		}
 
-		parent::dispatch($strEvent, $objEvent);
+		return parent::dispatch($strEvent, $objEvent);
 	}
 }

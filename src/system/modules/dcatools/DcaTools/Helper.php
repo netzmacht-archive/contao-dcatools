@@ -9,9 +9,13 @@
 
 namespace Netzmacht\DcaTools;
 
-
 use Netzmacht\DcaTools\Event\OperationCallback;
 
+/**
+ * Class Helper provides hooks and callbacks for getting connected with Contao
+ *
+ * @package Netzmacht\DcaTools
+ */
 class Helper
 {
 
@@ -27,17 +31,12 @@ class Helper
 	{
 		$objDataContainer = DcaTools::getDataContainer($arrArguments[6]);
 
-		if (strncmp($strMethod, 'operationCallback', 14) === 0)
+		if (strncmp($strMethod, 'operationCallback', 17) === 0)
 		{
-			$strOperation = substr($strMethod, 14);
+			$strOperation = substr($strMethod, 17);
 			$objOperation = $objDataContainer->getOperation($strOperation, 'local');
-		}
-		elseif (strncmp($strMethod, 'globalOperationCallback', 20) === 0)
-		{
-			$strOperation = substr($strMethod, 20);
-			$objOperation = $objDataContainer->getOperation($strOperation, 'global');
 
-			$strClass = \Controller::getModelClassFromTable($arrArguments[7]);
+			$strClass = \Model::getClassFromTable($arrArguments[6]);
 
 			/** @var \Model $objModel */
 			$objModel = new $strClass;
@@ -45,14 +44,19 @@ class Helper
 
 			$objDataContainer->setRecord($objModel);
 		}
+		elseif (strncmp($strMethod, 'globalOperationCallback', 23) === 0)
+		{
+			$strOperation = substr($strMethod, 23);
+			$objOperation = $objDataContainer->getOperation($strOperation, 'global');
+		}
 
 		if(isset($objOperation))
 		{
-			$objOperation->setHref($arrArguments[1]);
+			$objOperation->setHref($arrArguments[0]);
 			$objOperation->setLabel($arrArguments[1]);
-			$objOperation->setTitle($arrArguments[1]);
-			$objOperation->setIcon($arrArguments[1]);
-			$objOperation->setAttributes($arrArguments[1]);
+			$objOperation->setTitle($arrArguments[2]);
+			$objOperation->setIcon($arrArguments[3]);
+			$objOperation->setAttributes($arrArguments[4]);
 
 			return $objOperation->generate();
 		}
@@ -150,9 +154,9 @@ class Helper
 					'Netzmacht\DcaTools\Helper', 'globalOperationCallback' . $strOperation
 				);
 			}
-
-			// initialize and check permissions
-			$objDataContainer->initialize();
 		}
+
+		// initialize and check permissions
+		$objDataContainer->initialize();
 	}
 }

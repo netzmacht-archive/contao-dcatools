@@ -10,7 +10,11 @@
  * @license   MPL/2.0
  * @copyright 2013 netzmacht creative David Molineus
  */
+
+
 namespace Netzmacht\DcaTools\Event;
+
+use Symfony\Component\EventDispatcher\GenericEvent;
 
 /**
  * Class Permissions provides listeners for operations and permission events
@@ -23,12 +27,12 @@ class Permissions
 	/**
 	 * Test if User is an admin.
 	 *
-	 * @param OperationEvent $objEvent
+	 * @param GenericEvent $objEvent
 	 * @param array $arrConfig
 	 *
 	 * @return bool
 	 */
-	public static function isAdmin(OperationEvent $objEvent, array $arrConfig=array())
+	public static function isAdmin(GenericEvent $objEvent, array $arrConfig=array())
 	{
 		if(!\BackendUser::getInstance()->isAdmin)
 		{
@@ -39,7 +43,7 @@ class Permissions
 	}
 
 
-	public static function hasAccess(Event $objEvent, array $arrConfig)
+	public static function hasAccess(GenericEvent $objEvent, array $arrConfig)
 	{
 		$objUser = \BackendUser::getInstance();
 
@@ -52,12 +56,12 @@ class Permissions
 		// Get table
 		if($arrConfig['ptable'])
 		{
-			$arrDefinition = $objEvent->getDispatcher()->getDataContainer()->getDefinition();
+			$arrDefinition = $objEvent->getSubject()->getDataContainer()->getDefinition();
 			$strTable = $arrDefinition['config']['ptable'];
 		}
 		else
 		{
-			$strTable = isset($arrConfig['table']) ? $arrConfig['table'] : $objEvent->getDispatcher()->getDataContainer()->getName();
+			$strTable = isset($arrConfig['table']) ? $arrConfig['table'] : $objEvent->getSubject()->getDataContainer()->getName();
 		}
 
 		// Check access for an action
@@ -86,7 +90,7 @@ class Permissions
 	/**
 	 * generic is allowed rule
 	 *
-	 * @param Event $objEvent
+	 * @param GenericEvent $objEvent
 	 * @param array $arrConfig supports
 	 * 		- ptable string 	optional if want to check isAllowed for another table than data from $arrRow
 	 * 		- field string  	optional column of current row for WHERE id=? statement, default pid
@@ -96,10 +100,10 @@ class Permissions
 	 *
 	 * @return bool
 	 */
-	public static function isAllowed(Event $objEvent, array $arrConfig)
+	public static function isAllowed(GenericEvent $objEvent, array $arrConfig)
 	{
 		/** @var \Netzmacht\DcaTools\DataContainer $objDataContainer */
-		$objDataContainer = $objEvent->getDispatcher()->getDataContainer();
+		$objDataContainer = $objEvent->getSubject()->getDataContainer();
 
 		/** @var \BackendUser $objUser */
 		$objUser = \BackendUser::getInstance();

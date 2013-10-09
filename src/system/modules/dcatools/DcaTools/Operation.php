@@ -347,7 +347,7 @@ class Operation extends Child
 
 		$objTemplate = new \BackendTemplate($this->strTemplate);
 		$objTemplate->config = $objEvent->getArguments();
-		$objTemplate->button = $this;
+		$objTemplate->operation = $this;
 
 		return $objTemplate->parse();
 	}

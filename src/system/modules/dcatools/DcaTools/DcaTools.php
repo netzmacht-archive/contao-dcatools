@@ -82,7 +82,7 @@ class DcaTools
 		}
 
 		// wrap callback in a closure if configuration is passed
-		if(isset($arrConfig[2]))
+		if(is_array($arrConfig) && isset($arrConfig[2]))
 		{
 			$arrConfig = function($objEvent) use($arrConfig)
 			{

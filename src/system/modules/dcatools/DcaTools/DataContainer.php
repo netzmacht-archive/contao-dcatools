@@ -142,7 +142,7 @@ class DataContainer extends FieldContainer implements FieldAccess
 			$strErrorDefault = sprintf(
 				'User "%s" has not enough permission to access module "%s"',
 				\BackendUser::getInstance()->username,
-				\Input::get('act')
+				\Input::get('do')
 			);
 		}
 
@@ -151,8 +151,8 @@ class DataContainer extends FieldContainer implements FieldAccess
 
 		if(!$objEvent->getArgument('granted'))
 		{
-			$this->log($objEvent->getArgument('error'), 'DataContainer initialize', TL_ERROR);
-			$this->redirect('contao/main.php?act=error');
+			\Controller::log($objEvent->getArgument('error'), 'DataContainer initialize', TL_ERROR);
+			\Controller::redirect('contao/main.php?act=error');
 			return;
 		}
 	}

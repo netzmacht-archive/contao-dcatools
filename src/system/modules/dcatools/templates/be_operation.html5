@@ -1,9 +1,13 @@
-<?php /** @var Netzmacht\DcaTools\Operation $operation */ if($operation->getScope() == 'local'): ?>
-<a href="<?php echo $operation->getHref(); ?>" title="<?php echo $operation->getTitle(); ?>" <?php echo $operation->getAttributes(); ?>>
-	<img src="<?php echo $operation->getIcon(); ?>" alt="<img src="<?php echo $operation->getLabel(); ?>">
-</a>
+<?php /** @var Netzmacht\DcaTools\Operation $this->operation */ if($this->operation->getScope() == 'local'): ?>
+	<?php if($this->operation->isDisabled()): ?>
+		<?php echo \Image::getHtml($this->operation->getIcon(), $this->operation->getLabel()); ?>
+	<?php else: ?>
+		<a href="<?php echo $this->operation->getHref(); ?>" title="<?php echo $this->operation->getTitle(); ?>" <?php echo $this->operation->getAttributes(); ?>>
+			<?php echo \Image::getHtml($this->operation->getIcon(), $this->operation->getLabel()); ?>
+		</a>
+	<?php endif; ?>
 <?php else: ?>
-<a href="<?php echo $operation->getHref(); ?>" title="<?php echo $operation->getTitle(); ?>" class="<?php echo $operation->getIcon(); ?> <?php echo $operation->getAttributes(); ?>>
-	<?php echo $operation->getLabel(); ?>
+<a href="<?php echo $this->operation->getHref(); ?>" title="<?php echo $this->operation->getTitle(); ?>" class="<?php echo $this->operation->getIcon(); ?> <?php echo $this->operation->getAttributes(); ?>>
+	<?php echo $this->operation->getLabel(); ?>
 </a>
 <?php endif; ?>

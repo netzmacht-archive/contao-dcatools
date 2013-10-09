@@ -31,7 +31,7 @@ You can install DcaTools using composer by installing netzmacht/contao-dcatools
 Documentation
 ----
 
-* [Basics](https://github.com/netzmacht/contao-dcatools/wiki/Palette-manipulation)
+* [Basics](https://github.com/netzmacht/contao-dcatools/wiki/Basics)
 * [Palette manipulation](https://github.com/netzmacht/contao-dcatools/wiki/Palette-manipulation)
 * [Operations](https://github.com/netzmacht/contao-dcatools/wiki/Operations)
 * [Permissions](https://github.com/netzmacht/contao-dcatools/wiki/Permissions)

@@ -14,6 +14,7 @@
 namespace Netzmacht\DcaTools;
 
 use Netzmacht\DcaTools\Node\Child;
+use Netzmacht\DcaTools\Node\FieldAccess;
 use Netzmacht\DcaTools\Node\FieldContainer;
 use Netzmacht\DcaTools\Node\Node;
 use Netzmacht\DcaTools\Palette\SubPalette;
@@ -51,6 +52,15 @@ class Field extends Child
 	public function getParent()
 	{
 		return $this->objParent;
+	}
+
+
+	/**
+	 * @param FieldContainer $objParent
+	 */
+	public function setParent(FieldContainer $objParent)
+	{
+		$this->objParent = $objParent;
 	}
 
 

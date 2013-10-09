@@ -79,6 +79,42 @@ class DataContainer extends FieldContainer implements FieldAccess
 
 
 	/**
+	 *
+	 */
+	public function __clone()
+	{
+		parent::__clone();
+
+		// clone subpalettes
+		foreach($this->arrSubPalettes as $strName => $objSubPalette)
+		{
+			$this->arrSubPalettes[$strName] = clone $objSubPalette;
+			$this->arrSubPalettes[$strName]->setDataContainer($this);
+		}
+
+		// clone palettes
+		foreach($this->arrPalettes as $strName => $objSubPalette)
+		{
+			$this->arrSubPalettes[$strName] = clone $objSubPalette;
+			$this->arrSubPalettes[$strName]->setDataContainer($this);
+		}
+
+		// selectors will be automatically created
+		unset($this->arrSelectors);
+
+		// clone palettes
+		foreach($this->arrOperations as $strScope => $arrOperations)
+		{
+			foreach($arrOperations as $strName => $objOperation)
+			{
+				$this->arrOperations[$strScope][$strName] = clone $objOperation;
+				$this->arrOperations[$strScope][$strName]->setDataContainer($this);
+			}
+		}
+	}
+
+
+	/**
 	 * Get DataContainer
 	 *
 	 * @return $this|DataContainer

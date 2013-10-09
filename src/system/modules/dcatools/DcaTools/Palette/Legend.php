@@ -66,6 +66,15 @@ class Legend extends FieldContainer
 
 
 	/**
+	 * @param Palette $objPalette
+	 */
+	public function setPalette(Palette $objPalette)
+	{
+		$this->objPalette = $objPalette;
+	}
+
+
+	/**
 	 * Add an modifer
 	 * @param string $strName
 	 *

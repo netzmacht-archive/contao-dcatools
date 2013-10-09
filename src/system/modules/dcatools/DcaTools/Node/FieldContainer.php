@@ -32,6 +32,21 @@ abstract class FieldContainer extends Child implements FieldAccess, Exportable
 
 
 	/**
+	 * Clone all fields as well
+	 */
+	public function __clone()
+	{
+		parent::__clone();
+
+		foreach($this->arrFields as $strName => $objField)
+		{
+			$this->arrFields[$strName] = clone $objField;
+			$this->arrFields[$strName]->setParent($this);
+		}
+	}
+
+
+	/**
 	 * Add a field
 	 *
 	 * @param Field|string $field
@@ -189,7 +204,6 @@ abstract class FieldContainer extends Child implements FieldAccess, Exportable
 		{
 			$objField = $field;
 			$strName = $objField->getName();
-
 		}
 
 		if($this->hasField($strName))

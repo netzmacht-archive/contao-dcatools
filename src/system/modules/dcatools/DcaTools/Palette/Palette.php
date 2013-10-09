@@ -59,6 +59,18 @@ class Palette extends Child implements FieldAccess
 	}
 
 
+	public function __clone()
+	{
+		parent::__clone();
+
+		foreach($this->arrLegends as $strName => $objLegend)
+		{
+			$this->arrLegends[$strName] = clone $objLegend;
+			$this->arrLegends[$strName]->setPalette($this);
+		}
+	}
+
+
 	/**
 	 * Get Iterator for all legend
 	 *

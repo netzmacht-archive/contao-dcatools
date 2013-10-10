@@ -103,11 +103,12 @@ abstract class Node extends EventDispatcher implements Exportable
 	 */
 	public function setName($strName)
 	{
-		$arrConfig = array('origin' => $this->strName);
-		$strEvent = ($this->strName != '') ? 'move' : 'change';
+		$objEvent = new GenericEvent();
+		$objEvent->setArgument('origin', $this->strName);
 
-		$this->strName = $strName;
-		$this->dispatch($strEvent, new Event($arrConfig));
+		$strEvent = ($this->strName != '') ? 'rename' : 'change';
+
+		$this->dispatch($strEvent, $objEvent);
 	}
 
 

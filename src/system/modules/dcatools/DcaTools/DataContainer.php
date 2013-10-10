@@ -15,9 +15,9 @@ namespace Netzmacht\DcaTools;
 
 use DcGeneral\Contao\Dca\Conditions\ParentChildCondition;
 use DcGeneral\Contao\Dca\Conditions\RootCondition;
+use DcGeneral\DataDefinition\ContainerInterface;
 use Netzmacht\DcaTools\Operation;
 use Netzmacht\DcaTools\Model\DcGeneralModel;
-use Netzmacht\DcaTools\Node\PropertyAccess;
 use Netzmacht\DcaTools\Node\PropertyContainer;
 use Netzmacht\DcaTools\Node\Node;
 use Netzmacht\DcaTools\Palette\Palette;
@@ -30,7 +30,7 @@ use Symfony\Component\EventDispatcher\GenericEvent;
  * Class DataContainer
  * @package Netzmacht\DcaTools
  */
-class DataContainer extends PropertyContainer implements PropertyAccess
+class DataContainer extends PropertyContainer implements ContainerInterface
 {
 
 	/**
@@ -82,7 +82,7 @@ class DataContainer extends PropertyContainer implements PropertyAccess
 
 
 	/**
-	 *
+	 * Clone DataContainer
 	 */
 	public function __clone()
 	{
@@ -110,8 +110,11 @@ class DataContainer extends PropertyContainer implements PropertyAccess
 		{
 			foreach($arrOperations as $strName => $objOperation)
 			{
-				$this->arrOperations[$strScope][$strName] = clone $objOperation;
-				$this->arrOperations[$strScope][$strName]->setDataContainer($this);
+				/** @var Operation $objClone */
+				$objClone = clone $objOperation;
+				$objClone->setDataContainer($this);
+
+				$this->arrOperations[$strScope][$strName] = $objClone;
 			}
 		}
 	}
@@ -1001,6 +1004,17 @@ class DataContainer extends PropertyContainer implements PropertyAccess
 
 
 	/**
+	 * Retrieve the names of all defined properties.
+	 *
+	 * @return string[]
+	 */
+	public function getOperationNames()
+	{
+		return array_keys($this->getFromDefinition('list/operations'));
+	}
+
+
+	/**
 	 * Add a operation to the data container
 	 *
 	 * @param $strName
@@ -1028,7 +1042,7 @@ class DataContainer extends PropertyContainer implements PropertyAccess
 		}
 
 		$this->arrOperations[$strScope][$strName] = $objOperation;
-		$this->arrOperations[$strScope][$strName]->dispatch('move');
+		$objOperation->dispatch('move');
 
 		return $this;
 	}
@@ -1176,13 +1190,11 @@ class DataContainer extends PropertyContainer implements PropertyAccess
 		switch($objEvent->getName())
 		{
 			case 'rename':
-				/** @var $objEvent \Netzmacht\DcaTools\Event\Event */
-				$objConfig = $objEvent->getConfig();
-				$objDispatcher = $objEvent->getDispatcher();
+				/** @var GenericEvent $objEvent */
+				$objPalette = $objEvent->getSubject();
 
-				/** @var $objDispatcher Palette */
-				$this->arrPalettes[$objDispatcher->getName()] = $this->arrPalettes[$objConfig->get('origin')];
-				unset($this->arrPalettes[$objConfig->get('origin')]);
+				$this->arrPalettes[$objPalette->getName()] = $this->arrPalettes[$objEvent->getArgument('origin')];
+				unset($this->arrPalettes[$objEvent->getArgument('origin')]);
 
 				// no break
 
@@ -1208,15 +1220,14 @@ class DataContainer extends PropertyContainer implements PropertyAccess
 		switch($objEvent->getName())
 		{
 			case 'rename':
-				/** @var $objEvent \Netzmacht\DcaTools\Event\Event */
-				$objConfig = $objEvent->getConfig();
-				$objDispatcher = $objEvent->getDispatcher();
+				/** @var GenericEvent $objEvent */
+				$objDispatcher = $objEvent->getSubject();
 
 				/** @var $objDispatcher SubPalette */
-				$this->arrSubPalettes[$objDispatcher->getName()] = $this->arrSubPalettes[$objConfig->get('origin')];
-				unset($this->arrSubPalettes[$objConfig->get('origin')]);
+				$this->arrSubPalettes[$objDispatcher->getName()] = $this->arrSubPalettes[$objEvent->getArgument('origin')];
+				unset($this->arrSubPalettes[$objEvent->getArgument('origin')]);
 
-				// no break
+				//no break
 
 			case 'create':
 			case 'change':

@@ -31,7 +31,6 @@ ClassLoader::addClasses(array
 	'Netzmacht\DcaTools\Helper'                       => 'system/modules/dcatools/DcaTools/Helper.php',
 	'Netzmacht\DcaTools\Event\OperationListeners'     => 'system/modules/dcatools/DcaTools/Event/OperationListeners.php',
 	'Netzmacht\DcaTools\Event\OperationCallback'      => 'system/modules/dcatools/DcaTools/Event/OperationCallback.php',
-	'Netzmacht\DcaTools\Event\Config'                 => 'system/modules/dcatools/DcaTools/Event/Config.php',
 	'Netzmacht\DcaTools\Event\DataContainerListeners' => 'system/modules/dcatools/DcaTools/Event/DataContainerListeners.php',
 	'Netzmacht\DcaTools\Event\Permissions'            => 'system/modules/dcatools/DcaTools/Event/Permissions.php',
 	'Netzmacht\DcaTools\Property'                        => 'system/modules/dcatools/DcaTools/Property.php',

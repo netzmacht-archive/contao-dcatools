@@ -93,7 +93,7 @@ class Permissions
 	 * @param GenericEvent $objEvent
 	 * @param array $arrConfig supports
 	 * 		- ptable string 	optional if want to check isAllowed for another table than data from $arrRow
-	 * 		- field string  	optional column of current row for WHERE id=? statement, default pid
+	 * 		- property string  	optional column of current row for WHERE id=? statement, default pid
 	 * 		- value string		optional value if not want to check against a value of arrRow, default $arrRow[$pid]
 	 * 		- operation int 	operation integer for BackendUser::isAllowed
 	 *      - pid string        optional parent id column

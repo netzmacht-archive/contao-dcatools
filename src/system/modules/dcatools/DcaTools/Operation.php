@@ -13,9 +13,8 @@
 
 namespace Netzmacht\DcaTools;
 
+use DcGeneral\DataDefinition\OperationInterface;
 use Netzmacht\DcaTools\DataContainer;
-use Netzmacht\DcaTools\Event\Event;
-use Netzmacht\DcaTools\Event\OperationEvent;
 use Netzmacht\DcaTools\Node\Child;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 
@@ -31,7 +30,7 @@ use Symfony\Component\EventDispatcher\EventDispatcher;
  *
  * @package Netzmacht\DcaTools\Operation
  */
-class Operation extends Child
+class Operation extends Child implements OperationInterface
 {
 
 	/**
@@ -122,13 +121,6 @@ class Operation extends Child
 			}
 		}
 
-		// initiate button from definition
-		$this->setLabel(isset($definition['label'][0]) ? $definition['label'][0] : $strName);
-		$this->setTitle(isset($definition['label'][1]) ? $definition['label'][1] : $strName);
-		$this->setIcon($definition['icon']);
-		$this->setHref($definition['href']);
-		$this->setAttributes($definition['attributes']);
-
 		$this->strScope = $strScope;
 		$this->dispatch('initialize');
 	}
@@ -139,7 +131,7 @@ class Operation extends Child
 	 */
 	public function setAttributes($strAttributes)
 	{
-		$this->strAttributes = $strAttributes;
+		$this->set('attributes', $strAttributes);
 	}
 
 
@@ -148,7 +140,7 @@ class Operation extends Child
 	 */
 	public function getAttributes()
 	{
-		return $this->strAttributes;
+		return $this->get('attributes');
 	}
 
 
@@ -157,7 +149,7 @@ class Operation extends Child
 	 */
 	public function setHref($strHref)
 	{
-		$this->strHref = \Controller::addToUrl($strHref);
+		$this->set('href', $strHref);
 	}
 
 
@@ -166,7 +158,7 @@ class Operation extends Child
 	 */
 	public function getHref()
 	{
-		return $this->strHref;
+		return $this->get('href');
 	}
 
 
@@ -175,7 +167,7 @@ class Operation extends Child
 	 */
 	public function setIcon($strIcon)
 	{
-		$this->strIcon = $strIcon;
+		$this->set('icon', $strIcon);
 	}
 
 
@@ -184,32 +176,27 @@ class Operation extends Child
 	 */
 	public function getIcon()
 	{
-		return $this->strIcon;
+		return $this->get('icon');
 	}
 
 
 	/**
-	 * @param string $strLabel
+	 * @param array $arrLabel
 	 */
-	public function setLabel($strLabel)
+	public function setLabel(array $arrLabel)
 	{
-		$this->strLabel = $strLabel;
+		$this->set('label', $arrLabel);
 	}
 
 
 	/**
 	 * @param bool $blnRaw
 	 *
-	 * @return string
+	 * @return array
 	 */
 	public function getLabel($blnRaw=true)
 	{
-		if(!$blnRaw && $this->getDataContainer()->hasRecord())
-		{
-			return sprintf($this->strLabel, $this->getDataContainer()->getRecord()->id);
-		}
-
-		return $this->strLabel;
+		return $this->get('label');
 	}
 
 
@@ -218,7 +205,10 @@ class Operation extends Child
 	 */
 	public function setTitle($strTitle)
 	{
-		$this->strTitle = $strTitle;
+		$arrLabel = $this->get('label');
+		$arrLabel[0] = $strTitle;
+
+		$this->set('label', $arrLabel);
 	}
 
 
@@ -236,7 +226,48 @@ class Operation extends Child
 
 		return $this->strTitle;
 	}
-	
+
+
+	/**
+	 * Return the callback to use.
+	 *
+	 * @return array
+	 */
+	public function getCallback()
+	{
+		return $this->get('button_callback');
+	}
+
+
+	/**
+	 * Fetch some arbitrary information.
+	 *
+	 * @param $strKey
+	 *
+	 * @return mixed
+	 */
+	public function get($strKey)
+	{
+		if(isset($this->definition[$strKey]))
+		{
+			return $this->definition[$strKey];
+		}
+
+		return null;
+	}
+
+
+	/**
+	 * Set information
+	 *
+	 * @param $strKey
+	 * @param $value
+	 */
+	public function set($strKey, $value)
+	{
+		$this->definition[$strKey] = $value;
+	}
+
 
 	/**
 	 * @return string
@@ -372,7 +403,7 @@ class Operation extends Child
 	 *
 	 * @return mixed
 	 */
-	public function toString(array $arrConfig = array('table' => true, 'id' => true))
+	public function asString(array $arrConfig = array('table' => true, 'id' => true))
 	{
 		return $this->generate($arrConfig);
 	}
@@ -381,7 +412,7 @@ class Operation extends Child
 	/**
 	 * @return mixed
 	 */
-	public function toArray()
+	public function asArray()
 	{
 		return $this->definition;
 	}

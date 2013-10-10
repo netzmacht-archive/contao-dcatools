@@ -81,7 +81,7 @@ class OperationListeners extends Permissions
 	 * 		- table string 		optional if want to check for another table
 	 * 		- closed bool 		optional if want to check if table is closed
 	 * 		- ptable string 	optioinal if want to check isAllowed for another table than data from $arrRow
-	 * 		- field string  	optional column of current row for WHERE id=? statement, default pid
+	 * 		- property string  	optional column of current row for WHERE id=? statement, default pid
 	 * 		- where string		optional customized where, default id=?
 	 * 		- value string		optional value if not want to check against a value of arrRow, default $arrRow[$pid]
 	 * 		- operation int 	operation integer for BackendUser::isAllowed
@@ -190,11 +190,11 @@ class OperationListeners extends Permissions
 		$arrRow = $objDataContainer->getRecord()->row();
 
 		$strTable = (isset($arrConfig['table'])) ? $arrConfig['table'] : $objDataContainer->getName();
-		$strField = (isset($arrConfig['field'])) ? $arrConfig['field'] : 'published';
-		$blnVisible = (isset($arrConfig['inverted']) ? $arrRow[$strField] : !$arrRow[$strField]);
+		$strProperty = (isset($arrConfig['property'])) ? $arrConfig['property'] : 'published';
+		$blnVisible = (isset($arrConfig['inverted']) ? $arrRow[$strProperty] : !$arrRow[$strProperty]);
 
 		// Check permissions AFTER checking the tid, so hacking attempts are logged
-		if ($objUser->isAdmin && !$objUser->hasAccess($strTable . '::' . $strField , 'alexf'))
+		if ($objUser->isAdmin && !$objUser->hasAccess($strTable . '::' . $strProperty , 'alexf'))
 		{
 			if($blnStop)
 			{
@@ -249,10 +249,10 @@ class OperationListeners extends Permissions
 		}
 
 		$strTable = (isset($arrConfig['table'])) ? $arrConfig['table'] : $objDataContainer->getName();
-		$strField = (isset($arrConfig['field'])) ? $arrConfig['field'] : 'published';
+		$strProperty = (isset($arrConfig['property'])) ? $arrConfig['property'] : 'published';
 
 		// Check permissions to publish
-		if (!$objUser->isAdmin && !$objUser->hasAccess($strTable . '::' . $strField, 'alexf'))
+		if (!$objUser->isAdmin && !$objUser->hasAccess($strTable . '::' . $strProperty, 'alexf'))
 		{
 			$strError = 'Not enough permissions to toggle state of item ID "'.$intId.'"';
 			$strError = static::prepareErrorMessage($arrConfig, $strError);
@@ -265,9 +265,9 @@ class OperationListeners extends Permissions
 		$objVersions->initialize();
 
 		// Trigger the save_callback
-		if (is_array($GLOBALS['TL_DCA'][$strTable]['fields'][$strField]['save_callback']))
+		if (is_array($GLOBALS['TL_DCA'][$strTable]['propertys'][$strProperty]['save_callback']))
 		{
-			foreach ($GLOBALS['TL_DCA'][$strTable]['fields'][$strField]['save_callback'] as $callback)
+			foreach ($GLOBALS['TL_DCA'][$strTable]['propertys'][$strProperty]['save_callback'] as $callback)
 			{
 				$objCallback = new $callback[0];
 				$blnVisible = $objCallback->$callback[1]($blnVisible, $objDataContainer);
@@ -276,7 +276,7 @@ class OperationListeners extends Permissions
 
 		// Update the database
 		\Database::getInstance()
-			->prepare("UPDATE $strTable SET tstamp=". time() .", $strField ='" . ($blnVisible ? 1 : '') . "' WHERE id=?")
+			->prepare("UPDATE $strTable SET tstamp=". time() .", $strProperty ='" . ($blnVisible ? 1 : '') . "' WHERE id=?")
 			->execute($intId);
 
 

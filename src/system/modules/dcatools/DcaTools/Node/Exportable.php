@@ -23,12 +23,12 @@ interface Exportable
 	/**
 	 * @return mixed
 	 */
-	public function toString();
+	public function asString();
 
 
 	/**
 	 * @return mixed
 	 */
-	public function toArray();
+	public function asArray();
 
 }

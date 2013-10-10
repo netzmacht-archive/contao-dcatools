@@ -15,10 +15,10 @@ namespace Netzmacht\DcaTools\Palette;
 
 use Netzmacht\DcaTools\DataContainer;
 use Netzmacht\DcaTools\DcaTools;
-use Netzmacht\DcaTools\Field;
+use Netzmacht\DcaTools\Property;
 use Netzmacht\DcaTools\Node\Child;
-use Netzmacht\DcaTools\Node\FieldAccess;
-use Netzmacht\DcaTools\Node\FieldContainer;
+use Netzmacht\DcaTools\Node\PropertyAccess;
+use Netzmacht\DcaTools\Node\PropertyContainer;
 use Netzmacht\DcaTools\Node\Node;
 use Symfony\Component\EventDispatcher\Event;
 
@@ -27,7 +27,7 @@ use Symfony\Component\EventDispatcher\Event;
  * Class Palette provides methods for manipulating palette
  * @package Netzmacht\Prototype\Palette
  */
-class Palette extends Child implements FieldAccess
+class Palette extends Child implements PropertyAccess
 {
 
 	/**
@@ -83,74 +83,74 @@ class Palette extends Child implements FieldAccess
 
 
 	/**
-	 * Add Field
+	 * Add Property
 	 *
-	 * @param Field|string $field
+	 * @param Property|string $property
 	 * @param string $strLegend
-	 * @param Field|string|null $reference
+	 * @param Property|string|null $reference
 	 * @param $intPosition
 	 *
 	 * @return $this
 	 */
-	public function addField($field, $strLegend='default', $reference=null, $intPosition=Palette::POS_LAST)
+	public function addProperty($property, $strLegend='default', $reference=null, $intPosition=Palette::POS_LAST)
 	{
-		$this->getLegend($strLegend)->addField($field, $reference, $intPosition);
+		$this->getLegend($strLegend)->addProperty($property, $reference, $intPosition);
 
 		return $this;
 	}
 
 
 	/**
-	 * Get an Field
+	 * Get an Property
 	 *
 	 * @param string $strName
 	 *
-	 * @return Field
+	 * @return Property
 	 *
-	 * @throws \RuntimeException if Field does not exists
+	 * @throws \RuntimeException if Property does not exists
 	 */
-	public function getField($strName)
+	public function getProperty($strName)
 	{
 		foreach($this->arrLegends as $objLegend)
 		{
-			if($objLegend->hasField($strName))
+			if($objLegend->hasProperty($strName))
 			{
-				return $objLegend->getField($strName);
+				return $objLegend->getProperty($strName);
 			}
 		}
 
-		throw new \RuntimeException("Field '$strName' does not exists.");
+		throw new \RuntimeException("Property '$strName' does not exists.");
 	}
 
 
 	/**
-	 * @return array|Field[]
+	 * @return array|Property[]
 	 */
-	public function getFields()
+	public function getPropertys()
 	{
-		$arrFields = array();
+		$arrPropertys = array();
 
 		foreach($this->arrLegends as $objLegend)
 		{
-			$arrFields = array_merge($arrFields, $objLegend->getFields());
+			$arrPropertys = array_merge($arrPropertys, $objLegend->getPropertys());
 		}
 
-		return $arrFields;
+		return $arrPropertys;
 	}
 
 
 	/**
-	 * Check if field exists in container
+	 * Check if property exists in container
 	 *
 	 * @param string $strName
 	 *
 	 * @return bool
 	 */
-	public function hasField($strName)
+	public function hasProperty($strName)
 	{
 		foreach($this->arrLegends as $objLegend)
 		{
-			if($objLegend->hasField($strName))
+			if($objLegend->hasProperty($strName))
 			{
 				return true;
 			}
@@ -161,22 +161,22 @@ class Palette extends Child implements FieldAccess
 
 
 	/**
-	 * Remove a field from the container
+	 * Remove a property from the container
 	 *
 	 * @param string $strName
 	 * @param bool $blnFromDataContainer
 	 *
 	 * @return $this
 	 */
-	public function removeField($strName, $blnFromDataContainer=false)
+	public function removeProperty($strName, $blnFromDataContainer=false)
 	{
 		$strName = is_object($strName) ? $strName->getName() : $strName;
 
 		foreach($this->getLegends() as $objLegend)
 		{
-			if($objLegend->hasField($strName))
+			if($objLegend->hasProperty($strName))
 			{
-				$objLegend->removeField($strName, $blnFromDataContainer);
+				$objLegend->removeProperty($strName, $blnFromDataContainer);
 			}
 		}
 
@@ -185,62 +185,62 @@ class Palette extends Child implements FieldAccess
 
 
 	/**
-	 * Get all fields and also include activated fields in supalettes
+	 * Get all propertys and also include activated propertys in supalettes
 	 *
 	 * @return array
 	 */
-	public function getActiveFields()
+	public function getActivePropertys()
 	{
-		$arrFields = array();
+		$arrPropertys = array();
 
-		foreach($this->getFields() as $objField)
+		foreach($this->getPropertys() as $objProperty)
 		{
-			$arrFields[$objField->getName()] = $objField;
+			$arrPropertys[$objProperty->getName()] = $objProperty;
 
-			if($objField->isSelector() && $objField->hasActiveSubPalette())
+			if($objProperty->isSelector() && $objProperty->hasActiveSubPalette())
 			{
-				$arrFields = array_merge($arrFields, $objField->getActiveSubPalette()->getFields());
+				$arrPropertys = array_merge($arrPropertys, $objProperty->getActiveSubPalette()->getPropertys());
 			}
 		}
 
-		return $arrFields;
+		return $arrPropertys;
 	}
 
 
 	/**
-	 * Move field to new position
+	 * Move property to new position
 	 *
-	 * @param Field|string $field
+	 * @param Property|string $property
 	 * @param string $strLegend
 	 * @param null $reference
 	 * @param int $intPosition
 	 *
 	 * @return $this
 	 */
-	public function moveField($field, $strLegend='default', $reference=null, $intPosition=FieldContainer::POS_LAST)
+	public function moveProperty($property, $strLegend='default', $reference=null, $intPosition=PropertyContainer::POS_LAST)
 	{
-		$this->getLegend($strLegend)->moveField($field, $reference, $intPosition);
+		$this->getLegend($strLegend)->moveProperty($property, $reference, $intPosition);
 
 		return $this;
 	}
 
 
 	/**
-	 * Create a new field
+	 * Create a new property
 	 *
 	 * @param string $strName
 	 * @param string $strLegend legend name
 	 *
-	 * @return Field
+	 * @return Property
 	 */
-	public function createField($strName, $strLegend='default')
+	public function createProperty($strName, $strLegend='default')
 	{
-		return $this->getLegend($strLegend)->createField($strName);
+		return $this->getLegend($strLegend)->createProperty($strName);
 	}
 
 
 	/**
-	 * Check if container has selector fields
+	 * Check if container has selector propertys
 	 *
 	 * @return bool
 	 */
@@ -261,7 +261,7 @@ class Palette extends Child implements FieldAccess
 	/**
 	 * Get all selectors containing to the
 	 *
-	 * @return Field[]
+	 * @return Property[]
 	 */
 	public function getSelectors()
 	{
@@ -299,11 +299,11 @@ class Palette extends Child implements FieldAccess
 	{
 		$arrSubPalettes = array();
 
-		foreach($this->getDataContainer()->getSelectors() as $objField)
+		foreach($this->getDataContainer()->getSelectors() as $objProperty)
 		{
-			if($objField->hasActiveSubPalette())
+			if($objProperty->hasActiveSubPalette())
 			{
-				$objSubPalette = $objField->getActiveSubPalette();
+				$objSubPalette = $objProperty->getActiveSubPalette();
 				$arrSubPalettes[$objSubPalette->getName()] = $objSubPalette;
 			}
 		}
@@ -476,11 +476,11 @@ class Palette extends Child implements FieldAccess
 				continue;
 			}
 
-			$arrFields = explode(',', $strLegend);
+			$arrPropertys = explode(',', $strLegend);
 
 			// extract legend title and modifier
-			preg_match('/\{(.*)_legend(:hide)?\}/', $arrFields[0], $matches);
-			array_shift($arrFields);
+			preg_match('/\{(.*)_legend(:hide)?\}/', $arrPropertys[0], $matches);
+			array_shift($arrPropertys);
 
 			$objLegend = new Legend($matches[1], $this->getDataContainer(), $this);
 
@@ -489,19 +489,19 @@ class Palette extends Child implements FieldAccess
 				$objLegend->addModifier('hide');
 			}
 
-			// create each field
-			foreach($arrFields as $strField)
+			// create each property
+			foreach($arrPropertys as $strProperty)
 			{
-				if($strField == '')
+				if($strProperty == '')
 				{
 					continue;
 				}
 
-				$objField = clone $this->getDataContainer()->getField($strField);
+				$objProperty = clone $this->getDataContainer()->getProperty($strProperty);
 
 				// prevent faulty dca breaks loading
 				try {
-					$objLegend->addField($objField);
+					$objLegend->addProperty($objProperty);
 				}
 				catch(\RuntimeException $e){}
 			}
@@ -525,17 +525,17 @@ class Palette extends Child implements FieldAccess
 	 *
 	 * @return mixed|string
 	 */
-	public function toString($blnActive=false)
+	public function asString($blnActive=false)
 	{
 		$strExport = '';
 
 		foreach($this->getLegends() as $objLegend)
 		{
-			$strFields = $objLegend->toString($blnActive);
+			$strPropertys = $objLegend->asString($blnActive);
 
-			if($strFields)
+			if($strPropertys)
 			{
-				$strExport .= $strFields . ';';
+				$strExport .= $strPropertys . ';';
 			}
 
 		}
@@ -550,13 +550,13 @@ class Palette extends Child implements FieldAccess
 	 * @param bool $blnActive
 	 * @return array|mixed
 	 */
-	public function toArray($blnActive=false)
+	public function asArray($blnActive=false)
 	{
 		$arrExport = array();
 
 		foreach($this->getLegends() as $objLegend)
 		{
-			$arrExport = array_merge($arrExport, $objLegend->toArray($blnActive));
+			$arrExport = array_merge($arrExport, $objLegend->asArray($blnActive));
 		}
 
 		return $arrExport;
@@ -597,13 +597,13 @@ class Palette extends Child implements FieldAccess
 
 
 	/**
-	 * Listen to field changes
+	 * Listen to property changes
 	 *
 	 * @param Event $objEvent
 	 *
 	 * @return void
 	 */
-	public function fieldListener(Event $objEvent)
+	public function propertyListener(Event $objEvent)
 	{
 		switch($objEvent->getName())
 		{

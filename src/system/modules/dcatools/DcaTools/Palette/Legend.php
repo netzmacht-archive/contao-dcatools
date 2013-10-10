@@ -14,7 +14,7 @@
 namespace Netzmacht\DcaTools\Palette;
 
 use Netzmacht\DcaTools\DataContainer;
-use Netzmacht\DcaTools\Node\FieldContainer;
+use Netzmacht\DcaTools\Node\PropertyContainer;
 use Netzmacht\DcaTools\Palette\Palette;
 use Symfony\Component\EventDispatcher\Event;
 
@@ -22,7 +22,7 @@ use Symfony\Component\EventDispatcher\Event;
  * Class Legend represents legends of a palette
  * @package Netzmacht\DcaTools\Palette
  */
-class Legend extends FieldContainer
+class Legend extends PropertyContainer
 {
 
 	/**
@@ -47,7 +47,7 @@ class Legend extends FieldContainer
 	 */
 	public function __construct($strName, DataContainer $objDataContainer, Palette $objPalette)
 	{
-		// no fields stored so far
+		// no propertys stored so far
 		$definition = '';
 
 		parent::__construct($strName, $objDataContainer, $definition);
@@ -182,9 +182,9 @@ class Legend extends FieldContainer
 	 *
 	 * @return mixed|string
 	 */
-	public function toString($blnActive=false)
+	public function asString($blnActive=false)
 	{
-		if(empty($this->arrFields))
+		if(empty($this->arrPropertys))
 		{
 			return '';
 		}
@@ -192,9 +192,9 @@ class Legend extends FieldContainer
 		$strModifier = implode(':', $this->arrModifiers);
 		$strModifier = $strModifier == '' ? '' : (':'. $strModifier);
 
-		$arrFields = array_keys($blnActive ? $this->getActiveFields() : $this->getFields());
+		$arrPropertys = array_keys($blnActive ? $this->getActivePropertys() : $this->getPropertys());
 
-		return sprintf('{%s_legend%s},%s', $this->getName(), $strModifier, implode(',', $arrFields));
+		return sprintf('{%s_legend%s},%s', $this->getName(), $strModifier, implode(',', $arrPropertys));
 	}
 
 
@@ -205,7 +205,7 @@ class Legend extends FieldContainer
 	 *
 	 * @return array
 	 */
-	public function toArray($blnActive=false)
+	public function asArray($blnActive=false)
 	{
 		$arrModifiers = array_map(
 			function($item) {
@@ -214,9 +214,9 @@ class Legend extends FieldContainer
 			$this->arrModifiers
 		);
 
-		$arrFields = array_keys($blnActive ? $this->getActiveFields() : $this->getFields());
+		$arrPropertys = array_keys($blnActive ? $this->getActivePropertys() : $this->getPropertys());
 
-		return array_merge($arrModifiers, $arrFields);
+		return array_merge($arrModifiers, $arrPropertys);
 	}
 
 
@@ -240,7 +240,7 @@ class Legend extends FieldContainer
 			throw new \RuntimeException("Node '{$node->getName()}' is not the same Node type");
 		}
 
-		$this->arrFields = array_merge($this->arrFields, $node->getFields());
+		$this->arrPropertys = array_merge($this->arrPropertys, $node->getPropertys());
 		$this->dispatch('change');
 
 		return $this;

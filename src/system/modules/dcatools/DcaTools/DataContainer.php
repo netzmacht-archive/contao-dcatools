@@ -13,10 +13,12 @@
 
 namespace Netzmacht\DcaTools;
 
+use DcGeneral\Contao\Dca\Conditions\ParentChildCondition;
+use DcGeneral\Contao\Dca\Conditions\RootCondition;
 use Netzmacht\DcaTools\Operation;
 use Netzmacht\DcaTools\Model\DcGeneralModel;
-use Netzmacht\DcaTools\Node\FieldAccess;
-use Netzmacht\DcaTools\Node\FieldContainer;
+use Netzmacht\DcaTools\Node\PropertyAccess;
+use Netzmacht\DcaTools\Node\PropertyContainer;
 use Netzmacht\DcaTools\Node\Node;
 use Netzmacht\DcaTools\Palette\Palette;
 use Netzmacht\DcaTools\Palette\SubPalette;
@@ -28,7 +30,7 @@ use Symfony\Component\EventDispatcher\GenericEvent;
  * Class DataContainer
  * @package Netzmacht\DcaTools
  */
-class DataContainer extends FieldContainer implements FieldAccess
+class DataContainer extends PropertyContainer implements PropertyAccess
 {
 
 	/**
@@ -47,7 +49,7 @@ class DataContainer extends FieldContainer implements FieldAccess
 	protected $arrSubPalettes = array();
 
 	/**
-	 * @var Field[]
+	 * @var Property[]
 	 */
 	protected $arrSelectors = array();
 
@@ -75,7 +77,7 @@ class DataContainer extends FieldContainer implements FieldAccess
 		}
 
 		$this->addListener('updateSelectors', array($this, 'updateSelectors'));
-		$this->addListener('removeFromDataContainer', array($this, 'fieldListener'));
+		$this->addListener('removeFromDataContainer', array($this, 'propertyListener'));
 	}
 
 
@@ -103,7 +105,7 @@ class DataContainer extends FieldContainer implements FieldAccess
 		// selectors will be automatically created
 		unset($this->arrSelectors);
 
-		// clone palettes
+		// clone operations
 		foreach($this->arrOperations as $strScope => $arrOperations)
 		{
 			foreach($arrOperations as $strName => $objOperation)
@@ -217,6 +219,185 @@ class DataContainer extends FieldContainer implements FieldAccess
 
 
 	/**
+	 * Return the name of the callback provider class to use.
+	 *
+	 * @return string
+	 *
+	 * @throws \RuntimeException
+	 */
+	public function getCallbackProviderClass()
+	{
+		$strCallbackClass = $this->getFromDefinition('dca_config/callback');
+
+		if (!$strCallbackClass)
+		{
+			$strCallbackClass = '\DcGeneral\Callbacks\ContaoStyleCallbacks';
+		}
+
+		if (!class_exists($strCallbackClass))
+		{
+			throw new \RuntimeException(sprintf('Invalid callback provider defined %s', var_export($strCallbackClass, true)));
+		}
+
+		return $strCallbackClass;
+	}
+
+
+	/**
+	 * Retrieve the names of all defined properties.
+	 *
+	 * @return string[]
+	 */
+	public function getPropertyNames()
+	{
+		return array_keys($this->getFromDefinition('fields'));
+	}
+
+
+	/**
+	 * Retrieve the panel layout.
+	 *
+	 * Returns an array of arrays of which each level 1 array is a separate group.
+	 *
+	 * @return array
+	 */
+	public function getPanelLayout()
+	{
+		$arrPanels = explode(';', $this->getFromDefinition('list/sorting/panelLayout'));
+
+		foreach ($arrPanels as $key => $strValue)
+		{
+			$arrPanels[$key] = array_filter(explode(',', $strValue));
+		}
+
+		return array_filter($arrPanels);
+	}
+
+
+	/**
+	 * Retrieve the names of properties to use for secondary sorting.
+	 *
+	 * @return string[]
+	 */
+	public function getAdditionalSorting()
+	{
+		return $this->getFromDefinition('list/sorting/fields');
+	}
+
+
+	/**
+	 * Retrieve the sorting mode for the data container.
+	 *
+	 * Values are:
+	 * 0 Records are not sorted
+	 * 1 Records are sorted by a fixed property
+	 * 2 Records are sorted by a switchable property
+	 * 3 Records are sorted by the parent table
+	 * 4 Displays the child records of a parent record (see style sheets module)
+	 * 5 Records are displayed as tree (see site structure)
+	 * 6 Displays the child records within a tree structure (see articles module)
+	 *
+	 * @return int
+	 */
+	public function getSortingMode()
+	{
+		return $this->getFromDefinition('list/sorting/mode');
+	}
+
+
+	/**
+	 * Boolean flag determining if this data container is closed.
+	 *
+	 * True means, there may not be any records added or deleted, false means there may be any record appended or
+	 * deleted..
+	 *
+	 * @return bool
+	 */
+	public function isClosed()
+	{
+		return (bool) $this->getFromDefinition('list/config/closed');
+	}
+
+
+	/**
+	 * Boolean flag determining if this data container is editable.
+	 *
+	 * True means, the data records may be edited.
+	 *
+	 * @return bool
+	 */
+	public function isEditable()
+	{
+		return (bool) $this->getFromDefinition('list/config/notEditable');
+	}
+
+
+	/**
+	 * Retrieve the root condition for the current table.
+	 *
+	 * @return \DcGeneral\DataDefinition\RootConditionInterface
+	 */
+	public function getRootCondition()
+	{
+		return new RootCondition($this, $this->getName());
+	}
+
+
+	/**
+	 * Retrieve the parent child condition for the current table.
+	 *
+	 * @param string $strSrcTable The parenting table.
+	 *
+	 * @param string $strDstTable The child table.
+	 *
+	 * @return \DcGeneral\DataDefinition\ParentChildConditionInterface
+	 */
+	public function getChildCondition($strSrcTable, $strDstTable)
+	{
+		foreach ($this->getChildConditions($strSrcTable) as $objCondition)
+		{
+			if ($objCondition->getDestinationName() == $strDstTable)
+			{
+				return $objCondition;
+			}
+		}
+
+		return null;
+	}
+
+
+	/**
+	 * Retrieve the parent child conditions for the current table.
+	 *
+	 * @param string $strSrcTable The parenting table for which child conditions shall be assembled for (optional).
+	 *
+	 * @return \DcGeneral\DataDefinition\ParentChildConditionInterface[]
+	 */
+	public function getChildConditions($strSrcTable = '')
+	{
+		$arrConditions = $this->getFromDefinition('dca_config/childCondition');
+
+		if (!is_array($arrConditions))
+		{
+			return array();
+		}
+
+		$arrReturn = array();
+		foreach ($arrConditions as $intKey => $arrCondition)
+		{
+			if (!(empty($strSrcTable) || ($arrCondition['from'] == $strSrcTable)))
+			{
+				continue;
+			}
+
+			$arrReturn[] = new ParentChildCondition($this, $intKey);
+		}
+
+		return $arrReturn;
+	}
+
+
+	/**
 	 * Extend an existing DataContainer
 	 *
 	 * @param Node $objNode
@@ -238,26 +419,26 @@ class DataContainer extends FieldContainer implements FieldAccess
 
 		$arrSelectors = $objNode->getSelectors();
 
-		// extend Fields and make sure that and Fields are cloned
-		foreach($objNode->getFields() as $strField => $objField)
+		// extend Propertys and make sure that and Propertys are cloned
+		foreach($objNode->getPropertys() as $strProperty => $objProperty)
 		{
-			if(isset($this->arrFields[$strField]))
+			if(isset($this->arrPropertys[$strProperty]))
 			{
-				$this->arrFields[$strField]->extend($objField);
+				$this->arrPropertys[$strProperty]->extend($objProperty);
 			}
 			else
 			{
-				$this->arrFields[$strField] = clone $objField;
-				$this->arrFields[$strField]->setDataContainer($this);
+				$this->arrPropertys[$strProperty] = clone $objProperty;
+				$this->arrPropertys[$strProperty]->setDataContainer($this);
 			}
 
-			if(isset($arrSelectors[$strField]))
+			if(isset($arrSelectors[$strProperty]))
 			{
-				$this->arrSelectors[$strField] = $this->arrFields[$strField];
+				$this->arrSelectors[$strProperty] = $this->arrPropertys[$strProperty];
 			}
 		}
 
-		// extend Palettes and make sure that Legends and Fields are also combined
+		// extend Palettes and make sure that Legends and Propertys are also combined
 		foreach($objNode->getPalettes() as $strPalette => $objPalette)
 		{
 			if(isset($this->arrPalettes[$strPalette]))
@@ -269,7 +450,7 @@ class DataContainer extends FieldContainer implements FieldAccess
 			}
 		}
 
-		// extend SubPalettes and make sure that Legends and Fields are also combined
+		// extend SubPalettes and make sure that Legends and Propertys are also combined
 		foreach($objNode->getSubPalettes() as $strPalette => $objPalette)
 		{
 			if(isset($this->arrSubPalettes[$strPalette]))
@@ -300,30 +481,30 @@ class DataContainer extends FieldContainer implements FieldAccess
 
 
 	/**
-	 * Get an Field
+	 * Get an Property
 	 *
 	 * @param string $strName
 	 *
-	 * @return Field
+	 * @return Property
 	 *
-	 * @throws \RuntimeException if Field does not exists
+	 * @throws \RuntimeException if Property does not exists
 	 */
-	public function getField($strName)
+	public function getProperty($strName)
 	{
-		if($this->hasField($strName))
+		if($this->hasProperty($strName))
 		{
-			if(!isset($this->arrFields[$strName]))
+			if(!isset($this->arrPropertys[$strName]))
 			{
-				$objField = new Field($strName, $this);
-				$objField->addListener('delete', array($this, 'fieldListener'));
+				$objProperty = new Property($strName, $this);
+				$objProperty->addListener('delete', array($this, 'propertyListener'));
 
-				$this->arrFields[$strName] = $objField;
+				$this->arrPropertys[$strName] = $objProperty;
 			}
 
-			return $this->arrFields[$strName];
+			return $this->arrPropertys[$strName];
 		}
 
-		throw new \RuntimeException("Field '$strName' does not exists.");
+		throw new \RuntimeException("Property '$strName' does not exists.");
 	}
 
 
@@ -332,11 +513,11 @@ class DataContainer extends FieldContainer implements FieldAccess
 	 *
 	 * @return bool
 	 */
-	public function hasField($strName)
+	public function hasProperty($strName)
 	{
 		$strName = is_object($strName) ? $strName->getName() : $strName;
 
-		return isset($this->definition['fields'][$strName]);
+		return isset($this->definition['propertys'][$strName]);
 	}
 
 
@@ -345,18 +526,18 @@ class DataContainer extends FieldContainer implements FieldAccess
 	 * @param bool $blnFromDataContainer
 	 * @return $this
 	 */
-	public function removeField($strName, $blnFromDataContainer=true)
+	public function removeProperty($strName, $blnFromDataContainer=true)
 	{
 		$strName = is_object($strName) ? $strName->getName() : $strName;
 
-		if($this->hasField($strName))
+		if($this->hasProperty($strName))
 		{
-			$objField = $this->getField($strName);
-			unset($this->arrFields[$strName]);
-			$objField->dispatch('delete');
+			$objProperty = $this->getProperty($strName);
+			unset($this->arrPropertys[$strName]);
+			$objProperty->dispatch('delete');
 
-			// unset field not matter if auto update is on because we check against definition if field exists
-			unset($this->definition['fields'][$strName]);
+			// unset property not matter if auto update is on because we check against definition if property exists
+			unset($this->definition['propertys'][$strName]);
 		}
 
 		return $this;
@@ -366,19 +547,19 @@ class DataContainer extends FieldContainer implements FieldAccess
 	/**
 	 * @param string $strName
 	 *
-	 * @return Field
+	 * @return Property
 	 */
-	public function createField($strName)
+	public function createProperty($strName)
 	{
-		$this->definition['fields'][$strName] = array();
+		$this->definition['propertys'][$strName] = array();
 
-		$objField = new Field($strName, $this);
-		$objField->addListener('delete', array($this, 'fieldListener'));
+		$objProperty = new Property($strName, $this);
+		$objProperty->addListener('delete', array($this, 'propertyListener'));
 
-		$this->arrFields[$strName] = $objField;
+		$this->arrPropertys[$strName] = $objProperty;
 		$this->dispatch('change');
 
-		return $this->arrFields[$strName];
+		return $this->arrPropertys[$strName];
 	}
 
 
@@ -645,7 +826,7 @@ class DataContainer extends FieldContainer implements FieldAccess
 
 
 	/**
-	 * @return Field[]
+	 * @return Property[]
 	 */
 	public function getSelectors()
 	{
@@ -653,7 +834,7 @@ class DataContainer extends FieldContainer implements FieldAccess
 		{
 			if(!isset($this->arrSelectors[$strName]))
 			{
-				$this->arrSelectors[$strName] = $this->getField($strName);
+				$this->arrSelectors[$strName] = $this->getProperty($strName);
 			}
 		}
 
@@ -666,7 +847,7 @@ class DataContainer extends FieldContainer implements FieldAccess
 	 *
 	 * @param $strName
 	 *
-	 * @return Field
+	 * @return Property
 	 *
 	 * @throws \RuntimeException if Selector does not exist
 	 */
@@ -679,7 +860,7 @@ class DataContainer extends FieldContainer implements FieldAccess
 				throw new \RuntimeException("Selector '$strName' does not exist");
 			}
 
-			$this->arrSelectors[$strName] = $this->getField($strName);
+			$this->arrSelectors[$strName] = $this->getProperty($strName);
 		}
 
 		return $this->arrSelectors[$strName];
@@ -689,7 +870,7 @@ class DataContainer extends FieldContainer implements FieldAccess
 	/**
 	 * Add a new Selector to the DataContainer
 	 *
-	 * @param string|Field $selector
+	 * @param string|Property $selector
 	 *
 	 * @return $this
 	 *
@@ -697,9 +878,9 @@ class DataContainer extends FieldContainer implements FieldAccess
 	 */
 	public function addSelector($selector)
 	{
-		if(!$selector instanceof Field)
+		if(!$selector instanceof Property)
 		{
-			$selector = $this->getField($selector);
+			$selector = $this->getProperty($selector);
 		}
 		else
 		{
@@ -737,7 +918,7 @@ class DataContainer extends FieldContainer implements FieldAccess
 	 */
 	public function removeSelector($strName)
 	{
-		// only unset, because field can still exists
+		// only unset, because property can still exists
 		unset($this->arrSelectors[$strName]);
 
 		return $this;
@@ -942,37 +1123,37 @@ class DataContainer extends FieldContainer implements FieldAccess
 
 
 	/**
-	 * Listen to field events
+	 * Listen to property events
 	 *
 	 * @param Event $objEvent
 	 *
 	 * @return mixed
 	 */
-	public function fieldListener(Event $objEvent)
+	public function propertyListener(Event $objEvent)
 	{
-		/** @var $objField Field */
-		$objField = $objEvent->getDispatcher();
-		$strName = $objField->getName();
+		/** @var $objProperty Property */
+		$objProperty = $objEvent->getDispatcher();
+		$strName = $objProperty->getName();
 
 		if($objEvent->getName() == 'delete')
 		{
 			foreach($this->getPalettes() as $objPalette)
 			{
-				if($objPalette->hasField($strName))
+				if($objPalette->hasProperty($strName))
 				{
-					$objPalette->removeField($strName);
+					$objPalette->removeProperty($strName);
 				}
 			}
 
 			foreach($this->getSubPalettes() as $objSubPalette)
 			{
-				if($objSubPalette->hasField($strName))
+				if($objSubPalette->hasProperty($strName))
 				{
-					$objSubPalette->removeField($strName);
+					$objSubPalette->removeProperty($strName);
 				}
 			}
 
-			if($objField->isSelector())
+			if($objProperty->isSelector())
 			{
 				$key = array_search($strName, $this->definition['palettes']['__selector__']);
 				unset($this->definition['palettes']['__selector__'][$key]);
@@ -984,7 +1165,7 @@ class DataContainer extends FieldContainer implements FieldAccess
 
 
 	/**
-	 * Listen to field events
+	 * Listen to property events
 	 *
 	 * @param Event $objEvent
 	 *
@@ -1016,7 +1197,7 @@ class DataContainer extends FieldContainer implements FieldAccess
 
 
 	/**
-	 * Listen to field events
+	 * Listen to property events
 	 *
 	 * @param Event $objEvent
 	 *
@@ -1064,9 +1245,9 @@ class DataContainer extends FieldContainer implements FieldAccess
 	 */
 	public function updateDefinition()
 	{
-		foreach($this->arrFields as $objField)
+		foreach($this->arrPropertys as $objProperty)
 		{
-			$objField->updateDefinition();
+			$objProperty->updateDefinition();
 		}
 
 		foreach($this->arrSubPalettes as $objPalette)

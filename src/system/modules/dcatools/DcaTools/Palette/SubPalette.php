@@ -15,7 +15,7 @@ namespace Netzmacht\DcaTools\Palette;
 
 use Netzmacht\DcaTools\DataContainer;
 use Netzmacht\DcaTools\DcaTools;
-use Netzmacht\DcaTools\Node\FieldContainer;
+use Netzmacht\DcaTools\Node\PropertyContainer;
 use Symfony\Component\EventDispatcher\Event;
 
 /**
@@ -23,7 +23,7 @@ use Symfony\Component\EventDispatcher\Event;
  *
  * @package Netzmacht\Prototype\Palette
  */
-class SubPalette extends FieldContainer
+class SubPalette extends PropertyContainer
 {
 
 	/**
@@ -69,9 +69,9 @@ class SubPalette extends FieldContainer
 			throw new \RuntimeException("Node '{$node->getName()}' is not the same Node type");
 		}
 
-		/** @var $objNode FieldContainer */
+		/** @var $objNode PropertyContainer */
 
-		$this->arrFields = array_merge($this->arrFields, $node->getFields());
+		$this->arrPropertys = array_merge($this->arrPropertys, $node->getPropertys());
 		$this->dispatch('change');
 
 		return $this;
@@ -79,15 +79,15 @@ class SubPalette extends FieldContainer
 
 
 	/**
-	 * Load fields from definition
+	 * Load propertys from definition
 	 */
 	protected function loadFromDefinition()
 	{
-		$arrFields = explode(',', $this->getDefinition());
+		$arrPropertys = explode(',', $this->getDefinition());
 
-		foreach($arrFields as $strField)
+		foreach($arrPropertys as $strProperty)
 		{
-			$this->addField($strField);
+			$this->addProperty($strProperty);
 		}
 	}
 }

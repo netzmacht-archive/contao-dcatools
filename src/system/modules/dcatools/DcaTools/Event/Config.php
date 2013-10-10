@@ -74,7 +74,7 @@ class Config
 	/**
 	 * @return array
 	 */
-	public function toArray()
+	public function asArray()
 	{
 		return $this->arrConfiguration;
 	}

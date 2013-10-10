@@ -123,6 +123,34 @@ abstract class Node extends EventDispatcher implements Exportable
 
 
 	/**
+	 * @param $strKey
+	 * @return null
+	 */
+	protected  function getFromDefinition($strKey)
+	{
+		if(!is_array($this->definition))
+		{
+			return $this->definition;
+		}
+
+		$chunks = explode('/', $strKey);
+		$arrDca = $this->definition;
+
+		while (($chunk = array_shift($chunks)) !== null)
+		{
+			if (!array_key_exists($chunk, $arrDca))
+			{
+				return null;
+			}
+
+			$arrDca = $arrDca[$chunk];
+		}
+
+		return $arrDca;
+	}
+
+
+	/**
 	 * Extend an existing node of the same type
 	 *
 	 * @param Node|string node or name of the node
@@ -168,7 +196,7 @@ abstract class Node extends EventDispatcher implements Exportable
 	 */
 	public function updateDefinition()
 	{
-		$this->definition = $this->toString();
+		$this->definition = $this->asString();
 	}
 
 

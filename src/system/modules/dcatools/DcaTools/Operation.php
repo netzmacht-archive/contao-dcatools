@@ -98,8 +98,8 @@ class Operation extends Child implements OperationInterface
 
 	/**
 	 * Constructor
-	 * @param $strName
-	 * @param DataContainer $strScope
+	 * @param string $strName
+	 * @param string $strScope
 	 * @param DataContainer $objDataContainer
 	 */
 	public function __construct($strName, $strScope, DataContainer $objDataContainer)

@@ -21,13 +21,13 @@ interface PropertyAccess extends \IteratorAggregate
 	/**
 	 * Add a property
 	 *
-	 * @param Property|string $property
+	 * @param Property $objProperty
 	 *
 	 * @return $this
 	 *
 	 * @throws \RuntimeException
 	 */
-	public function addProperty($property);
+	public function addProperty(Property $objProperty);
 
 
 	/**

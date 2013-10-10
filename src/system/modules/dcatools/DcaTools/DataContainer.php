@@ -614,44 +614,6 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 
 
 	/**
-	 * Add a new Palette to the DataContainer
-	 *
-	 * @param string|Palette $palette
-	 *
-	 * @return $this
-	 *
-	 * @throws \RuntimeException
-	 */
-	public function addPalette($palette)
-	{
-		if(!$palette instanceof Palette)
-		{
-			$palette = new Palette($palette, $this);
-			$strEvent = 'create';
-		}
-		else
-		{
-			$palette->setDataContainer($this);
-			$strEvent = 'move';
-		}
-
-		if(isset($this->arrPalettes[$palette->getName()]))
-		{
-			throw new \RuntimeException("Palette '{$palette->getName()}' already exists.");
-		}
-
-		$palette->addListener('create', array($this, 'paletteListener'));
-		$palette->addListener('change', array($this, 'paletteListener'));
-		$palette->addListener('move',   array($this, 'paletteListener'));
-		$palette->addListener('remove', array($this, 'paletteListener'));
-
-		$this->arrPalettes[$palette->getName()] = $palette;
-		$this->arrPalettes[$palette->getName()]->dispatch($strEvent);
-
-		return $this;
-	}
-
-	/**
 	 * Create a new Palette
 	 *
 	 * @param $strName
@@ -662,7 +624,21 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 	 */
 	public function createPalette($strName)
 	{
-		$this->createPalette($strName);
+		if(isset($this->definition['palettes'][$strName]))
+		{
+			throw new \RuntimeException("Palette {$strName} already exists in DataContainer {$this->getName()}");
+		}
+
+		$this->definition['palettes'][$strName] = array();
+
+		$objPalette = new Palette($strName, $this);
+		$objPalette->addListener('create', array($this, 'paletteListener'));
+		$objPalette->addListener('rename', array($this, 'paletteListener'));
+		$objPalette->addListener('remove', array($this, 'paletteListener'));
+		$objPalette->addListener('change', array($this, 'paletteListener'));
+
+		$this->arrPalettes[$strName] = $objPalette;
+		$objPalette->dispatch('create');
 
 		return $this->getPalette($strName);
 	}
@@ -708,7 +684,21 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 	 */
 	public function createSubPalette($strName)
 	{
-		$this->addSubPalette($strName);
+		if(isset($this->definition['subpalettes'][$strName]))
+		{
+			throw new \RuntimeException("SubPalette {$strName} already exists in DataContainer {$this->getName()}");
+		}
+
+		$this->definition['palettes'][$strName] = array();
+
+		$objSubPalette = new SubPalette($strName, $this);
+		$objSubPalette->addListener('create', array($this, 'subPaletteListener'));
+		$objSubPalette->addListener('rename', array($this, 'paletteListener'));
+		$objSubPalette->addListener('remove', array($this, 'paletteListener'));
+		$objSubPalette->addListener('change', array($this, 'paletteListener'));
+
+		$this->arrSubPalettes[$strName] = $objSubPalette;
+		$objSubPalette->dispatch('create');
 
 		return $this->getSubPalette($strName);
 	}
@@ -759,45 +749,6 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 
 
 	/**
-	 * Add a new SubPalette to the DataContainer
-	 *
-	 * @param string|SubPalette $subPalette
-	 *
-	 * @return $this
-	 *
-	 * @throws \RuntimeException
-	 */
-	public function addSubPalette($subPalette)
-	{
-		if(!$subPalette instanceof SubPalette)
-		{
-			$subPalette = new SubPalette($subPalette, $this);
-			$strEvent = 'create';
-		}
-		else
-		{
-			$subPalette->setDataContainer($this);
-			$strEvent = 'move';
-		}
-
-		if(isset($this->arrSubPalettes[$subPalette->getName()]))
-		{
-			throw new \RuntimeException("SubPalette '{$subPalette->getName()}' already exists.");
-		}
-
-		$subPalette->addListener('create', array($this, 'subPaletteListener'));
-		$subPalette->addListener('change', array($this, 'subPaletteListener'));
-		$subPalette->addListener('move',   array($this, 'subPaletteListener'));
-		$subPalette->addListener('remove', array($this, 'subPaletteListener'));
-
-		$this->arrSubPalettes[$subPalette->getName()] = $subPalette;
-		$this->arrSubPalettes[$subPalette->getName()]->dispatch($strEvent);
-
-		return $this;
-	}
-
-
-	/**
 	 * @param $strName
 	 *
 	 * @return bool
@@ -833,15 +784,14 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 	 */
 	public function getSelectors()
 	{
+		$arrSelectors = array();
+
 		foreach($this->definition['palettes']['__selector__'] as $strName)
 		{
-			if(!isset($this->arrSelectors[$strName]))
-			{
-				$this->arrSelectors[$strName] = $this->getProperty($strName);
-			}
+			$arrSelectors[$strName] = $this->getProperty($strName);
 		}
 
-		return $this->arrSelectors;
+		return $arrSelectors;
 	}
 
 
@@ -856,17 +806,12 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 	 */
 	public function getSelector($strName)
 	{
-		if(!isset($this->arrSelectors[$strName]))
+		if(!$this->hasSelector($strName))
 		{
-			if(!$this->hasSelector($strName))
-			{
-				throw new \RuntimeException("Selector '$strName' does not exist");
-			}
-
-			$this->arrSelectors[$strName] = $this->getProperty($strName);
+			throw new \RuntimeException("Selector '$strName' does not exist");
 		}
 
-		return $this->arrSelectors[$strName];
+		return $this->getProperty($strName);
 	}
 
 
@@ -885,44 +830,44 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 		{
 			$selector = $this->getProperty($selector);
 		}
-		else
+		elseif($selector->getDataContainer() !== $this)
 		{
-			$selector->setDataContainer($this);
+			throw new \RuntimeException("Property {$selector->getName()} does not belong to DataContainer {$this->getName()}");
 		}
 
-		if(isset($this->arrSelectors[$selector->getName()]))
-		{
-			throw new \RuntimeException("Selector '{$selector->getName()}' already exists.");
-		}
-
-		$this->arrSelectors[$selector->getName()] = $selector;
+		/** @var Property $selector */
+		$selector->isSelector(true);
 
 		return $this;
 	}
 
 
 	/**
-	 * @param $strName
+	 * @param Property|string $property
 	 *
 	 * @return bool
 	 */
-	public function hasSelector($strName)
+	public function hasSelector($property)
 	{
-		$strName = is_object($strName) ? $strName->getName() : $strName;
+		$strName = is_object($property) ? $property->getName() : $property;
 
 		return in_array($strName, (array) $this->definition['palettes']['__selector__']);
 	}
 
 
 	/**
-	 * @param $strName
+	 * @param Property|string $property
 	 *
 	 * @return $this
 	 */
-	public function removeSelector($strName)
+	public function removeSelector($property)
 	{
-		// only unset, because property can still exists
-		unset($this->arrSelectors[$strName]);
+		if(!$property instanceof Property)
+		{
+			$property = $this->getProperty($property);
+		}
+
+		$property->isSelector(false);
 
 		return $this;
 	}
@@ -932,48 +877,20 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 	 * Get all operations
 	 *
 	 * @param string $strScope global for global operations else local one will be loaded
+	 *
+	 * @return Operation[]
 	 */
 	public function getOperations($strScope='local')
 	{
-		if($strScope == 'global')
-		{
-			$strConfig = 'global_operations';
-			$strCallback = 'globalOperationCallback';
-		}
-		else {
-			$strConfig = 'operations';
-			$strCallback = 'operationCallback';
-		}
+		$strConfig = ($strScope == 'global') ? 'global_operations' : 'operations';
 
 		// add operation callback for every operation
 		foreach($this->definition['list'][$strConfig] as $strOperation => $arrDefinition)
 		{
-			// operation already exists
-			if(!$this->hasOperation($strOperation) || isset($this->arrOperations[$strScope][$strOperation]))
-			{
-				continue;
-			}
-
-			// make sure that existing callbacks will be called
-			if(isset($arrDefinition['button_callback']))
-			{
-				$GLOBALS['TL_DCA'][$this->getName()]['list'][$strConfig][$strOperation]['events']['generate'][] = array
-				(
-					array('ContaoStyleCallbacks', 'execute', array(
-						$arrDefinition['button_callback'],
-						9
-					))
-				);
-			}
-
-			$GLOBALS['TL_DCA'][$this->getName()][$strConfig][$strOperation]['button_callback'] = array
-			(
-				'Netzmacht\DcaTools\DcaTools', $strCallback . $strOperation
-			);
-
-			$this->arrOperations[$strScope][$strOperation] = new Operation($strOperation, $strScope, $this);
+			$this->getOperation($strOperation, $strScope);
 		}
 
+		return $this->arrOperations[$strScope];
 	}
 
 
@@ -993,7 +910,13 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 		{
 			if(!isset($this->arrOperations[$strScope][$strName]))
 			{
-				$this->arrOperations[$strScope][$strName] = new Operation($strName, $strScope, $this);
+				$objOperation = new Operation($strName, $strScope, $this);
+				$objOperation->addListener('move',   array($this, 'operationListener'));
+				$objOperation->addListener('rename', array($this, 'operationListener'));
+				$objOperation->addListener('change', array($this, 'operationListener'));
+				$objOperation->addListener('remove', array($this, 'operationListener'));
+
+				$this->arrOperations[$strScope][$strName] = $objOperation;
 			}
 
 			return $this->arrOperations[$strScope][$strName];
@@ -1006,45 +929,14 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 	/**
 	 * Retrieve the names of all defined properties.
 	 *
-	 * @return string[]
-	 */
-	public function getOperationNames()
-	{
-		return array_keys($this->getFromDefinition('list/operations'));
-	}
-
-
-	/**
-	 * Add a operation to the data container
-	 *
-	 * @param $strName
 	 * @param string $strScope
 	 *
-	 * @return $this
-	 *
-	 * @throws \RuntimeException
+	 * @return string[]
 	 */
-	public function addOperation($strName, $strScope='local')
+	public function getOperationNames($strScope='local')
 	{
-		if(isset($this->arrOperations[$strScope][(string)$strName]))
-		{
-			throw new \RuntimeException("Operation '$strName' already exists");
-		}
-
-		if(is_string($strName))
-		{
-			$objOperation = new Operation($strName, $strScope, $this);
-		}
-		else {
-			/** @var Operation $objOperation */
-			$objOperation = $strName;
-			$objOperation->setScope($strScope);
-		}
-
-		$this->arrOperations[$strScope][$strName] = $objOperation;
-		$objOperation->dispatch('move');
-
-		return $this;
+		$strFrom = ($strScope == 'global' ?  'list/global_operations' : 'list/operations');
+		return array_keys($this->getFromDefinition($strFrom));
 	}
 
 
@@ -1055,12 +947,29 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 	 * @param string $strScope
 	 *
 	 * @return Operation
+	 *
+	 * @throws \RuntimeException
 	 */
 	public function createOperation($strName, $strScope='local')
 	{
-		$this->addOperation($strName, $strScope);
+		if(isset($this->arrOperations[$strScope][$strName]))
+		{
+			throw new \RuntimeException("Operation '$strName' already exists");
+		}
 
-		return $this->getOperation($strName, $strScope);
+		$strFrom = ($strScope == 'global' ?  'global_operations' : 'operations');
+		$this->definition['list'][$strFrom][$strName] = array();
+
+		$objOperation = new Operation($strName, $strScope, $this);
+		$objOperation->addListener('move',   array($this, 'operationListener'));
+		$objOperation->addListener('rename', array($this, 'operationListener'));
+		$objOperation->addListener('change', array($this, 'operationListener'));
+		$objOperation->addListener('remove', array($this, 'operationListener'));
+
+		$this->arrOperations[$strScope][$strName] = $objOperation;
+		$objOperation->dispatch('change');
+
+		return $objOperation;
 	}
 
 

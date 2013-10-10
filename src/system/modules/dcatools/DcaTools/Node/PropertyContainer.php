@@ -50,7 +50,7 @@ abstract class PropertyContainer extends Child implements PropertyAccess, Export
 	/**
 	 * Add a property
 	 *
-	 * @param Property|string $property
+	 * @param Property $objProperty
 	 * @param string|Property|null $reference property reference
 	 * @param int $intPosition Position where to insert
 	 *
@@ -58,35 +58,23 @@ abstract class PropertyContainer extends Child implements PropertyAccess, Export
 	 *
 	 * @throws \RuntimeException
 	 */
-	public function addProperty($property, $reference=null, $intPosition=Node::POS_LAST)
+	public function addProperty(Property $objProperty, $reference=null, $intPosition=Node::POS_LAST)
 	{
-		if(is_string($property))
+		if($this->hasProperty($objProperty))
 		{
-			// get base property of DataContainer
-			if($this->getDataContainer()->hasProperty($property))
-			{
-				$property = clone $this->getDataContainer()->getProperty($property);
-			}
-			else
-			{
-				$property = clone $this->getDataContainer()->createProperty($property);
-			}
-		}
-		elseif($this->hasProperty($property))
-		{
-			throw new \RuntimeException("Property '{$property->getName()}' already exists.");
+			throw new \RuntimeException("Property '{$objProperty->getName()}' already exists in {$this->getName()}.");
 		}
 
 		// register PropertyContainer to Property events
-		$property->addListener('move',   array($this, 'propertyListener'));
-		$property->addListener('change', array($this, 'propertyListener'));
-		$property->addListener('remove', array($this, 'propertyListener'));
+		$objProperty->addListener('move',   array($this, 'propertyListener'));
+		$objProperty->addListener('change', array($this, 'propertyListener'));
+		$objProperty->addListener('remove', array($this, 'propertyListener'));
 
 		// register DataContainer to delete event
-		$property->addListener('delete', array($this->getDataContainer()), 'propertyListener');
+		$objProperty->addListener('delete', array($this->getDataContainer()), 'propertyListener');
 
-		$this->addAtPosition($this->arrProperties, $property, $reference, $intPosition);
-		$property->dispatch('move');
+		$this->addAtPosition($this->arrProperties, $objProperty, $reference, $intPosition);
+		$objProperty->dispatch('move');
 
 		return $this;
 	}

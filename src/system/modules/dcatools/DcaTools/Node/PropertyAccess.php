@@ -19,18 +19,6 @@ interface PropertyAccess extends \IteratorAggregate
 {
 
 	/**
-	 * Add a property
-	 *
-	 * @param Property $objProperty
-	 *
-	 * @return $this
-	 *
-	 * @throws \RuntimeException
-	 */
-	public function addProperty(Property $objProperty);
-
-
-	/**
 	 * Get an Property
 	 *
 	 * @param string $strName

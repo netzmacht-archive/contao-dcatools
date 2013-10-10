@@ -28,14 +28,6 @@ class DcaTools
 	 * @param null $objRecord
 	 * @return DataContainer
 	 */
-	protected static $blnAutoUpdate = false;
-
-
-	/**
-	 * @param $strName
-	 * @param null $objRecord
-	 * @return DataContainer
-	 */
 	public static function getDataContainer($strName, $objRecord=null)
 	{
 		if(!isset(static::$arrDataContainers[$strName]))
@@ -44,21 +36,6 @@ class DcaTools
 		}
 
 		return static::$arrDataContainers[$strName];
-	}
-
-
-	/**
-	 * @param null $blnValue
-	 * @return bool
-	 */
-	public static function doAutoUpdate($blnValue=null)
-	{
-		if($blnValue !== null)
-		{
-			static::$blnAutoUpdate = (bool) $blnValue;
-		}
-
-		return static::$blnAutoUpdate;
 	}
 
 

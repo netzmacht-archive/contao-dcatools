@@ -85,16 +85,16 @@ class Palette extends Child implements PropertyAccess
 	/**
 	 * Add Property
 	 *
-	 * @param Property|string $property
+	 * @param Property $objProperty
 	 * @param string $strLegend
 	 * @param Property|string|null $reference
 	 * @param $intPosition
 	 *
 	 * @return $this
 	 */
-	public function addProperty($property, $strLegend='default', $reference=null, $intPosition=Palette::POS_LAST)
+	public function addProperty(Property $objProperty, $strLegend='default', $reference=null, $intPosition=Palette::POS_LAST)
 	{
-		$this->getLegend($strLegend)->addProperty($property, $reference, $intPosition);
+		$this->getLegend($strLegend)->addProperty($objProperty, $reference, $intPosition);
 
 		return $this;
 	}
@@ -635,10 +635,7 @@ class Palette extends Child implements PropertyAccess
 			case 'move':
 			case 'remove':
 			case 'change':
-				if(DcaTools::doAutoUpdate())
-				{
-					$this->updateDefinition();
-				}
+				$this->updateDefinition();
 
 				$this->dispatch('change');
 				break;

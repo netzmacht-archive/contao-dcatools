@@ -51,20 +51,6 @@ class DcaToolsTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals($this->objDataContainer, DcaTools::getDataContainer('tl_test'));
 	}
 
-	public function testDoAutoUpdate()
-	{
-		$this->assertFalse(DcaTools::doAutoUpdate());
-
-		DcaTools::doAutoUpdate(true);
-		$this->assertTrue(DcaTools::doAutoUpdate());
-
-		DcaTools::doAutoUpdate(false);
-		$this->assertFalse(DcaTools::doAutoUpdate());
-
-		$this->assertTrue(DcaTools::doAutoUpdate(true));
-		$this->assertFalse(DcaTools::doAutoUpdate(false));
-	}
-
 	public function testRegisterListener()
 	{
 		$objDispatcher = new \Symfony\Component\EventDispatcher\EventDispatcher();

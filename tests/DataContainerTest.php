@@ -26,7 +26,6 @@ class DataContainerTest extends PHPUnit_Framework_TestCase
 	public function setUp()
 	{
 		$this->initializeTlTest();
-		DcaTools::doAutoUpdate(false);
 		$this->objDataContainer = DcaTools::getDataContainer('tl_test');
 	}
 

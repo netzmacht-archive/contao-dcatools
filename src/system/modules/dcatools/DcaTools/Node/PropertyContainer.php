@@ -329,10 +329,7 @@ abstract class PropertyContainer extends Child implements PropertyAccess, Export
 			case 'move':
 			case 'change':
 			case 'remove':
-				if(DcaTools::doAutoUpdate())
-				{
-					$this->updateDefinition();
-				}
+				$this->updateDefinition();
 
 				// propagate changes
 				$this->dispatch('change');

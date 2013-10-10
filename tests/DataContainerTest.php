@@ -11,7 +11,7 @@ require_once dirname(__FILE__) . '/bootstrap.php';
 
 use \Netzmacht\DcaTools\DataContainer;
 use \Netzmacht\DcaTools\DcaTools;
-use \Netzmacht\DcaTools\Field;
+use \Netzmacht\DcaTools\Property;
 
 $GLOBALS['TL_DCA']['tl_test'] = array();
 
@@ -38,7 +38,7 @@ class DataContainerTest extends PHPUnit_Framework_TestCase
 			(
 			),
 
-			'fields' => array
+			'propertys' => array
 			(
 				'test' => array
 				(
@@ -106,43 +106,43 @@ class DataContainerTest extends PHPUnit_Framework_TestCase
 	}
 
 
-	public function testGetField()
+	public function testGetProperty()
 	{
-		$objField = new Field('test', $this->objDataContainer);
-		$objField->addListener('delete', array($this->objDataContainer, 'fieldListener'));
+		$objProperty = new Property('test', $this->objDataContainer);
+		$objProperty->addListener('delete', array($this->objDataContainer, 'propertyListener'));
 
-		$this->assertEquals($objField, $this->objDataContainer->getField('test'));
+		$this->assertEquals($objProperty, $this->objDataContainer->getProperty('test'));
 	}
 
 	/**
 	 * @expectedException \RuntimeException
 	 */
-	public function testGetFieldException()
+	public function testGetPropertyException()
 	{
-		$this->objDataContainer->getField('notexisting');
+		$this->objDataContainer->getProperty('notexisting');
 	}
 
-	public function testHasField()
+	public function testHasProperty()
 	{
-		$this->assertFalse($this->objDataContainer->hasField('notexisting'));
-		$this->assertTrue($this->objDataContainer->hasField('test'));
+		$this->assertFalse($this->objDataContainer->hasProperty('notexisting'));
+		$this->assertTrue($this->objDataContainer->hasProperty('test'));
 	}
 
-	public function testRemoveField()
+	public function testRemoveProperty()
 	{
-		$this->assertTrue($this->objDataContainer->hasField('test'));
+		$this->assertTrue($this->objDataContainer->hasProperty('test'));
 
-		$this->objDataContainer->removeField('test');
-		$this->assertFalse($this->objDataContainer->hasField('test'));
+		$this->objDataContainer->removeProperty('test');
+		$this->assertFalse($this->objDataContainer->hasProperty('test'));
 	}
 
-	public function testCreateField()
+	public function testCreateProperty()
 	{
-		$this->assertFalse($this->objDataContainer->hasField('new'));
+		$this->assertFalse($this->objDataContainer->hasProperty('new'));
 
-		$objField = $this->objDataContainer->createField('new');
+		$objProperty = $this->objDataContainer->createProperty('new');
 
-		$this->assertTrue($this->objDataContainer->hasField('new'));
-		$this->assertEquals($objField, $this->objDataContainer->getField('new'));
+		$this->assertTrue($this->objDataContainer->hasProperty('new'));
+		$this->assertEquals($objProperty, $this->objDataContainer->getProperty('new'));
 	}
 }

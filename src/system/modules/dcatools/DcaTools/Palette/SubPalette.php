@@ -71,7 +71,7 @@ class SubPalette extends PropertyContainer
 
 		/** @var $objNode PropertyContainer */
 
-		$this->arrPropertys = array_merge($this->arrPropertys, $node->getPropertys());
+		$this->arrProperties = array_merge($this->arrProperties, $node->getProperties());
 		$this->dispatch('change');
 
 		return $this;
@@ -83,9 +83,9 @@ class SubPalette extends PropertyContainer
 	 */
 	protected function loadFromDefinition()
 	{
-		$arrPropertys = explode(',', $this->getDefinition());
+		$arrProperties = explode(',', $this->getDefinition());
 
-		foreach($arrPropertys as $strProperty)
+		foreach($arrProperties as $strProperty)
 		{
 			$this->addProperty($strProperty);
 		}

@@ -45,7 +45,7 @@ interface PropertyAccess extends \IteratorAggregate
 	/**
 	 * @return Property[]
 	 */
-	public function getPropertys();
+	public function getProperties();
 
 
 	/**
@@ -96,7 +96,7 @@ interface PropertyAccess extends \IteratorAggregate
 	 *
 	 * @return array
 	 */
-	public function getActivePropertys();
+	public function getActiveProperties();
 
 
 	/**

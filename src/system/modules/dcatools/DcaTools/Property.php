@@ -113,17 +113,6 @@ class Property extends Child implements \ArrayAccess, PropertyInterface
 
 
 	/**
-	 * Return the name of the property.
-	 *
-	 * @return string
-	 */
-	public function getName()
-	{
-		return $this->definition->getName();
-	}
-
-
-	/**
 	 * Return the label of the property.
 	 *
 	 * @return array
@@ -523,15 +512,5 @@ class Property extends Child implements \ArrayAccess, PropertyInterface
 	{
 		return $this->getName();
 	}
-
-
-	/**
-	 * Update definition
-	 */
-	public function updateDefinition()
-	{
-		// TODO not supported so far, will update the global property settings in a future version
-	}
-
 
 }

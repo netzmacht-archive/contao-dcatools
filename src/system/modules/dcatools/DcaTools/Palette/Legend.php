@@ -184,7 +184,7 @@ class Legend extends PropertyContainer
 	 */
 	public function asString($blnActive=false)
 	{
-		if(empty($this->arrPropertys))
+		if(empty($this->arrProperties))
 		{
 			return '';
 		}
@@ -192,9 +192,9 @@ class Legend extends PropertyContainer
 		$strModifier = implode(':', $this->arrModifiers);
 		$strModifier = $strModifier == '' ? '' : (':'. $strModifier);
 
-		$arrPropertys = array_keys($blnActive ? $this->getActivePropertys() : $this->getPropertys());
+		$arrProperties = array_keys($blnActive ? $this->getActiveProperties() : $this->getProperties());
 
-		return sprintf('{%s_legend%s},%s', $this->getName(), $strModifier, implode(',', $arrPropertys));
+		return sprintf('{%s_legend%s},%s', $this->getName(), $strModifier, implode(',', $arrProperties));
 	}
 
 
@@ -214,9 +214,9 @@ class Legend extends PropertyContainer
 			$this->arrModifiers
 		);
 
-		$arrPropertys = array_keys($blnActive ? $this->getActivePropertys() : $this->getPropertys());
+		$arrProperties = array_keys($blnActive ? $this->getActiveProperties() : $this->getProperties());
 
-		return array_merge($arrModifiers, $arrPropertys);
+		return array_merge($arrModifiers, $arrProperties);
 	}
 
 
@@ -240,7 +240,7 @@ class Legend extends PropertyContainer
 			throw new \RuntimeException("Node '{$node->getName()}' is not the same Node type");
 		}
 
-		$this->arrPropertys = array_merge($this->arrPropertys, $node->getPropertys());
+		$this->arrProperties = array_merge($this->arrProperties, $node->getProperties());
 		$this->dispatch('change');
 
 		return $this;

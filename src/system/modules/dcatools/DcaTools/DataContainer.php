@@ -419,26 +419,26 @@ class DataContainer extends PropertyContainer implements PropertyAccess
 
 		$arrSelectors = $objNode->getSelectors();
 
-		// extend Propertys and make sure that and Propertys are cloned
-		foreach($objNode->getPropertys() as $strProperty => $objProperty)
+		// extend Properties and make sure that and Properties are cloned
+		foreach($objNode->getProperties() as $strProperty => $objProperty)
 		{
-			if(isset($this->arrPropertys[$strProperty]))
+			if(isset($this->arrProperties[$strProperty]))
 			{
-				$this->arrPropertys[$strProperty]->extend($objProperty);
+				$this->arrProperties[$strProperty]->extend($objProperty);
 			}
 			else
 			{
-				$this->arrPropertys[$strProperty] = clone $objProperty;
-				$this->arrPropertys[$strProperty]->setDataContainer($this);
+				$this->arrProperties[$strProperty] = clone $objProperty;
+				$this->arrProperties[$strProperty]->setDataContainer($this);
 			}
 
 			if(isset($arrSelectors[$strProperty]))
 			{
-				$this->arrSelectors[$strProperty] = $this->arrPropertys[$strProperty];
+				$this->arrSelectors[$strProperty] = $this->arrProperties[$strProperty];
 			}
 		}
 
-		// extend Palettes and make sure that Legends and Propertys are also combined
+		// extend Palettes and make sure that Legends and Properties are also combined
 		foreach($objNode->getPalettes() as $strPalette => $objPalette)
 		{
 			if(isset($this->arrPalettes[$strPalette]))
@@ -450,7 +450,7 @@ class DataContainer extends PropertyContainer implements PropertyAccess
 			}
 		}
 
-		// extend SubPalettes and make sure that Legends and Propertys are also combined
+		// extend SubPalettes and make sure that Legends and Properties are also combined
 		foreach($objNode->getSubPalettes() as $strPalette => $objPalette)
 		{
 			if(isset($this->arrSubPalettes[$strPalette]))
@@ -493,15 +493,15 @@ class DataContainer extends PropertyContainer implements PropertyAccess
 	{
 		if($this->hasProperty($strName))
 		{
-			if(!isset($this->arrPropertys[$strName]))
+			if(!isset($this->arrProperties[$strName]))
 			{
 				$objProperty = new Property($strName, $this);
 				$objProperty->addListener('delete', array($this, 'propertyListener'));
 
-				$this->arrPropertys[$strName] = $objProperty;
+				$this->arrProperties[$strName] = $objProperty;
 			}
 
-			return $this->arrPropertys[$strName];
+			return $this->arrProperties[$strName];
 		}
 
 		throw new \RuntimeException("Property '$strName' does not exists.");
@@ -533,7 +533,7 @@ class DataContainer extends PropertyContainer implements PropertyAccess
 		if($this->hasProperty($strName))
 		{
 			$objProperty = $this->getProperty($strName);
-			unset($this->arrPropertys[$strName]);
+			unset($this->arrProperties[$strName]);
 			$objProperty->dispatch('delete');
 
 			// unset property not matter if auto update is on because we check against definition if property exists
@@ -556,10 +556,10 @@ class DataContainer extends PropertyContainer implements PropertyAccess
 		$objProperty = new Property($strName, $this);
 		$objProperty->addListener('delete', array($this, 'propertyListener'));
 
-		$this->arrPropertys[$strName] = $objProperty;
+		$this->arrProperties[$strName] = $objProperty;
 		$this->dispatch('change');
 
-		return $this->arrPropertys[$strName];
+		return $this->arrProperties[$strName];
 	}
 
 
@@ -1245,7 +1245,7 @@ class DataContainer extends PropertyContainer implements PropertyAccess
 	 */
 	public function updateDefinition()
 	{
-		foreach($this->arrPropertys as $objProperty)
+		foreach($this->arrProperties as $objProperty)
 		{
 			$objProperty->updateDefinition();
 		}

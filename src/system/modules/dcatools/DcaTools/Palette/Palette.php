@@ -126,16 +126,16 @@ class Palette extends Child implements PropertyAccess
 	/**
 	 * @return array|Property[]
 	 */
-	public function getPropertys()
+	public function getProperties()
 	{
-		$arrPropertys = array();
+		$arrProperties = array();
 
 		foreach($this->arrLegends as $objLegend)
 		{
-			$arrPropertys = array_merge($arrPropertys, $objLegend->getPropertys());
+			$arrProperties = array_merge($arrProperties, $objLegend->getProperties());
 		}
 
-		return $arrPropertys;
+		return $arrProperties;
 	}
 
 
@@ -189,21 +189,21 @@ class Palette extends Child implements PropertyAccess
 	 *
 	 * @return array
 	 */
-	public function getActivePropertys()
+	public function getActiveProperties()
 	{
-		$arrPropertys = array();
+		$arrProperties = array();
 
-		foreach($this->getPropertys() as $objProperty)
+		foreach($this->getProperties() as $objProperty)
 		{
-			$arrPropertys[$objProperty->getName()] = $objProperty;
+			$arrProperties[$objProperty->getName()] = $objProperty;
 
 			if($objProperty->isSelector() && $objProperty->hasActiveSubPalette())
 			{
-				$arrPropertys = array_merge($arrPropertys, $objProperty->getActiveSubPalette()->getPropertys());
+				$arrProperties = array_merge($arrProperties, $objProperty->getActiveSubPalette()->getProperties());
 			}
 		}
 
-		return $arrPropertys;
+		return $arrProperties;
 	}
 
 
@@ -476,11 +476,11 @@ class Palette extends Child implements PropertyAccess
 				continue;
 			}
 
-			$arrPropertys = explode(',', $strLegend);
+			$arrProperties = explode(',', $strLegend);
 
 			// extract legend title and modifier
-			preg_match('/\{(.*)_legend(:hide)?\}/', $arrPropertys[0], $matches);
-			array_shift($arrPropertys);
+			preg_match('/\{(.*)_legend(:hide)?\}/', $arrProperties[0], $matches);
+			array_shift($arrProperties);
 
 			$objLegend = new Legend($matches[1], $this->getDataContainer(), $this);
 
@@ -490,7 +490,7 @@ class Palette extends Child implements PropertyAccess
 			}
 
 			// create each property
-			foreach($arrPropertys as $strProperty)
+			foreach($arrProperties as $strProperty)
 			{
 				if($strProperty == '')
 				{
@@ -531,11 +531,11 @@ class Palette extends Child implements PropertyAccess
 
 		foreach($this->getLegends() as $objLegend)
 		{
-			$strPropertys = $objLegend->asString($blnActive);
+			$strProperties = $objLegend->asString($blnActive);
 
-			if($strPropertys)
+			if($strProperties)
 			{
-				$strExport .= $strPropertys . ';';
+				$strExport .= $strProperties . ';';
 			}
 
 		}

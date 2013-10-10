@@ -9,7 +9,7 @@ Features
 
 * Object oriented API for Contao DCA
 * Event based components
-* API for manipulating fields, palettes, legends, sub palettes and selectors
+* API for manipulating propertys, palettes, legends, sub palettes and selectors
 * API for operations and global operations
 * Template and event based operation generation
 * Event based permission handling

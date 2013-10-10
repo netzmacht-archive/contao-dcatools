@@ -29,7 +29,7 @@ abstract class PropertyContainer extends Child implements PropertyAccess, Export
 	/**
 	 * @var Property[]
 	 */
-	protected $arrPropertys = array();
+	protected $arrProperties = array();
 
 
 	/**
@@ -39,10 +39,10 @@ abstract class PropertyContainer extends Child implements PropertyAccess, Export
 	{
 		parent::__clone();
 
-		foreach($this->arrPropertys as $strName => $objProperty)
+		foreach($this->arrProperties as $strName => $objProperty)
 		{
-			$this->arrPropertys[$strName] = clone $objProperty;
-			$this->arrPropertys[$strName]->setParent($this);
+			$this->arrProperties[$strName] = clone $objProperty;
+			$this->arrProperties[$strName]->setParent($this);
 		}
 	}
 
@@ -85,7 +85,7 @@ abstract class PropertyContainer extends Child implements PropertyAccess, Export
 		// register DataContainer to delete event
 		$property->addListener('delete', array($this->getDataContainer()), 'propertyListener');
 
-		$this->addAtPosition($this->arrPropertys, $property, $reference, $intPosition);
+		$this->addAtPosition($this->arrProperties, $property, $reference, $intPosition);
 		$property->dispatch('move');
 
 		return $this;
@@ -105,7 +105,7 @@ abstract class PropertyContainer extends Child implements PropertyAccess, Export
 	{
 		if($this->hasProperty($strName))
 		{
-			return $this->arrPropertys[$strName];
+			return $this->arrProperties[$strName];
 		}
 
 		throw new \RuntimeException("Property '$strName' does not exists.");
@@ -115,9 +115,9 @@ abstract class PropertyContainer extends Child implements PropertyAccess, Export
 	/**
 	 * @return array|Property[]
 	 */
-	public function getPropertys()
+	public function getProperties()
 	{
-		return $this->arrPropertys;
+		return $this->arrProperties;
 	}
 
 
@@ -130,7 +130,7 @@ abstract class PropertyContainer extends Child implements PropertyAccess, Export
 	 */
 	public function hasProperty($property)
 	{
-		return isset($this->arrPropertys[(string) $property]);
+		return isset($this->arrProperties[(string) $property]);
 	}
 
 
@@ -176,9 +176,9 @@ abstract class PropertyContainer extends Child implements PropertyAccess, Export
 		if($this->hasProperty($strName))
 		{
 			$strEvent = $blnFromDataContainer ? 'delete' : 'remove';
-			$this->arrPropertys[$strName]->dispatch($strEvent);
+			$this->arrProperties[$strName]->dispatch($strEvent);
 
-			unset($this->arrPropertys[$strName]);
+			unset($this->arrProperties[$strName]);
 			$this->dispatch('change');
 		}
 
@@ -209,9 +209,9 @@ abstract class PropertyContainer extends Child implements PropertyAccess, Export
 
 		if($this->hasProperty($strName))
 		{
-			unset($this->arrPropertys[$strName]);
+			unset($this->arrProperties[$strName]);
 
-			$this->addAtPosition($this->arrPropertys, $objProperty, $reference, $intPosition);
+			$this->addAtPosition($this->arrProperties, $objProperty, $reference, $intPosition);
 			$objProperty->dispatch('move');
 		}
 		else
@@ -228,21 +228,21 @@ abstract class PropertyContainer extends Child implements PropertyAccess, Export
 	 *
 	 * @return array
 	 */
-	public function getActivePropertys()
+	public function getActiveProperties()
 	{
-		$arrPropertys = array();
+		$arrProperties = array();
 
-		foreach($this->getPropertys() as $objProperty)
+		foreach($this->getProperties() as $objProperty)
 		{
-			$arrPropertys[$objProperty->getName()] = $objProperty;
+			$arrProperties[$objProperty->getName()] = $objProperty;
 
 			if($objProperty->isSelector() && $objProperty->hasActiveSubPalette())
 			{
-				$arrPropertys = array_merge($arrPropertys, $objProperty->getActiveSubPalette()->getActivePropertys());
+				$arrProperties = array_merge($arrProperties, $objProperty->getActiveSubPalette()->getActiveProperties());
 			}
 		}
 
-		return $arrPropertys;
+		return $arrProperties;
 	}
 
 
@@ -253,7 +253,7 @@ abstract class PropertyContainer extends Child implements PropertyAccess, Export
 	 */
 	public function getIterator()
 	{
-		return new \ArrayIterator($this->arrPropertys);
+		return new \ArrayIterator($this->arrProperties);
 	}
 
 
@@ -264,7 +264,7 @@ abstract class PropertyContainer extends Child implements PropertyAccess, Export
 	 */
 	public function hasSelectors()
 	{
-		foreach($this->getPropertys() as $objProperty)
+		foreach($this->getProperties() as $objProperty)
 		{
 			if($objProperty->isSelector())
 			{
@@ -285,7 +285,7 @@ abstract class PropertyContainer extends Child implements PropertyAccess, Export
 	{
 		$arrSelectors = array();
 
-		foreach($this->getPropertys() as $strName => $objProperty)
+		foreach($this->getProperties() as $strName => $objProperty)
 		{
 			if($objProperty->isSelector())
 			{
@@ -304,7 +304,7 @@ abstract class PropertyContainer extends Child implements PropertyAccess, Export
 	 */
 	public function asString()
 	{
-		return implode(',', array_keys($this->arrPropertys));
+		return implode(',', array_keys($this->arrProperties));
 	}
 
 
@@ -315,7 +315,7 @@ abstract class PropertyContainer extends Child implements PropertyAccess, Export
 	 */
 	public function asArray()
 	{
-		return array_keys($this->arrPropertys);
+		return array_keys($this->arrProperties);
 	}
 
 
@@ -333,8 +333,8 @@ abstract class PropertyContainer extends Child implements PropertyAccess, Export
 				/** @var Property $objProperty */
 				$objProperty = $objEvent->getSubject();
 
-				$this->arrPropertys[$objProperty->getName()] = $this->arrPropertys[$objEvent->getArgument('origin')];
-				unset($this->arrPropertys[$objEvent->getArgument('origin')]);
+				$this->arrProperties[$objProperty->getName()] = $this->arrProperties[$objEvent->getArgument('origin')];
+				unset($this->arrProperties[$objEvent->getArgument('origin')]);
 
 				// no break
 

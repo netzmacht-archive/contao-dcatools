@@ -7,74 +7,83 @@
  * To change this template use File | Settings | File Templates.
  */
 
-require_once dirname(dirname(__FILE__)) . 'src/system/modules/dcatools';
+require_once dirname(__FILE__) . '/bootstrap.php';
+
+use \Netzmacht\DcaTools\DataContainer;
+use \Netzmacht\DcaTools\DcaTools;
 
 $GLOBALS['TL_DCA']['tl_test'] = array();
 
-
 class DcaToolsTest extends PHPUnit_Framework_TestCase
 {
-	/**
-	 * @dataProvider provideDoAutoUpdate
-	 */
-	public function testDoAutoUpdate($value, $expected)
+	protected $objDataContainer;
+
+	public function setUp()
 	{
-		$actual = \Netzmacht\DcaTools\DcaTools::doAutoUpdate($value);
-		$this->assertEquals($expected, $actual);
+		$this->initializeTlTest();
+		$this->objDataContainer = new DataContainer('tl_test');
 	}
 
-	public function provideDoAutoUpdate()
+	protected function initializeTlTest()
 	{
-		return array
+		$GLOBALS['TL_DCA']['tl_test'] = array
 		(
-			array(null, false),
-			array(false, false),
-			array(true, true),
+			'config' => array(),
+			'fields' => array()
 		);
 	}
 
-
-	/**
-	 * @dataProvider provideGetDataContainer
-	 * @param $value
-	 * @param $expected
-	 */
-	public function testGetDataContainer($value, $expected)
+	public function tearDown()
 	{
-		$objDc = \Netzmacht\DcaTools\DcaTools::getDataContainer('tl_test');
-		$this->assertEquals($objDc, $expected);
-	}
+		$this->objDataContainer = null;
+		unset($GLOBALS['TL_DCA']['tl_test']);
 
-	public function provideGetDataContainer()
-	{
-		return array
-		(
-			array('tl_test', new \Netzmacht\DcaTools\DataContainer('tl_test'))
-		);
+		$obj         = new DcaTools();
+		$refObject   = new ReflectionObject( $obj );
+		$refProperty = $refObject->getProperty( 'arrDataContainers' );
+		$refProperty->setAccessible( true );
+		$refProperty->setValue(null, array());
 	}
 
 
-	public function testHookLoadDataContainer()
+	public function testGetDataContainer()
 	{
-		$objTools = new \Netzmacht\DcaTools\DcaTools();
-		$objTools->hookLoadDataContainer('tl_test');
+		$this->assertEquals($this->objDataContainer, DcaTools::getDataContainer('tl_test'));
+	}
 
-		$this->assertEquals(
-			$GLOBALS['TL_DCA']['tl_test'],
-			array()
-		);
+	public function testDoAutoUpdate()
+	{
+		$this->assertFalse(DcaTools::doAutoUpdate());
 
-		$GLOBALS['TL_DCA']['tl_test']['dcatools'] = array();
+		DcaTools::doAutoUpdate(true);
+		$this->assertTrue(DcaTools::doAutoUpdate());
 
-		$this->assertEquals(
-			$GLOBALS['TL_DCA']['tl_test'],
-			array(
-				'dcatools' => array(),
-				'config' => array(
-					'onload_callback' => array('Netzmacht\DcaTools\DcaTools', 'initializeDataContainer')
-				),
-			)
-		);
+		DcaTools::doAutoUpdate(false);
+		$this->assertFalse(DcaTools::doAutoUpdate());
+
+		$this->assertTrue(DcaTools::doAutoUpdate(true));
+		$this->assertFalse(DcaTools::doAutoUpdate(false));
+	}
+
+	public function testRegisterListener()
+	{
+		$objDispatcher = new \Symfony\Component\EventDispatcher\EventDispatcher();
+
+		DcaTools::registerListener($objDispatcher, 'test', array('Foo', 'bar'));
+		$this->assertEquals($objDispatcher->getListeners('test'), array(array('Foo', 'bar')));
+
+		$objDispatcher = new \Symfony\Component\EventDispatcher\EventDispatcher();
+
+		DcaTools::registerListener($objDispatcher, 'test', array('Test', 'Case'));
+		DcaTools::registerListener($objDispatcher, 'test', array(array('Foo', 'bar'), 1));
+
+		$this->assertEquals($objDispatcher->getListeners('test'), array(array('Foo', 'bar'), array('Test', 'Case')));
+
+		$objDispatcher = new \Symfony\Component\EventDispatcher\EventDispatcher();
+
+		DcaTools::registerListener($objDispatcher, 'test', array('Foo', 'bar', array('test' => 'case')));
+		$listener = $objDispatcher->getListeners('test');
+		$this->assertTrue($listener[0] instanceof Closure);
 	}
 
 }

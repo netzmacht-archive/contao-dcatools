@@ -314,7 +314,10 @@ class DataContainer extends FieldContainer implements FieldAccess
 		{
 			if(!isset($this->arrFields[$strName]))
 			{
-				$this->createField($strName);
+				$objField = new Field($strName, $this);
+				$objField->addListener('delete', array($this, 'fieldListener'));
+
+				$this->arrFields[$strName] = $objField;
 			}
 
 			return $this->arrFields[$strName];
@@ -351,6 +354,9 @@ class DataContainer extends FieldContainer implements FieldAccess
 			$objField = $this->getField($strName);
 			unset($this->arrFields[$strName]);
 			$objField->dispatch('delete');
+
+			// unset field not matter if auto update is on because we check against definition if field exists
+			unset($this->definition['fields'][$strName]);
 		}
 
 		return $this;
@@ -364,6 +370,8 @@ class DataContainer extends FieldContainer implements FieldAccess
 	 */
 	public function createField($strName)
 	{
+		$this->definition['fields'][$strName] = array();
+
 		$objField = new Field($strName, $this);
 		$objField->addListener('delete', array($this, 'fieldListener'));
 
@@ -379,7 +387,7 @@ class DataContainer extends FieldContainer implements FieldAccess
 	 */
 	public function getPalettes()
 	{
-		foreach(array_keys($this->definition['palettes']) as $strName)
+		foreach(array_keys((array)$this->definition['palettes']) as $strName)
 		{
 			if($strName == '__selector__')
 			{
@@ -527,7 +535,7 @@ class DataContainer extends FieldContainer implements FieldAccess
 	 */
 	public function getSubPalettes()
 	{
-		foreach(array_keys($this->definition['subpalettes']) as $strName)
+		foreach(array_keys((array)$this->definition['subpalettes']) as $strName)
 		{
 			if(!isset($this->arrSubPalettes[$strName]))
 			{
@@ -718,7 +726,7 @@ class DataContainer extends FieldContainer implements FieldAccess
 	{
 		$strName = is_object($strName) ? $strName->getName() : $strName;
 
-		return in_array($strName, $this->definition['palettes']['__selector__']);
+		return in_array($strName, (array) $this->definition['palettes']['__selector__']);
 	}
 
 

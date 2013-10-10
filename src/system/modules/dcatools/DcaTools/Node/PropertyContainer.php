@@ -20,7 +20,7 @@ use Symfony\Component\EventDispatcher\GenericEvent;
 
 
 /**
- * Class Container is an abstract class as base for SubPalettes and Legends which contains propertys
+ * Class Container is an abstract class as base for SubPalettes and Legends which contains properties
  * @package Netzmacht\DcaTools\Palette
  */
 abstract class PropertyContainer extends Child implements PropertyAccess, Exportable
@@ -33,7 +33,7 @@ abstract class PropertyContainer extends Child implements PropertyAccess, Export
 
 
 	/**
-	 * Clone all propertys as well
+	 * Clone all properties as well
 	 */
 	public function __clone()
 	{
@@ -50,7 +50,7 @@ abstract class PropertyContainer extends Child implements PropertyAccess, Export
 	/**
 	 * Add a property
 	 *
-	 * @param Property $objProperty
+	 * @param Property|string $property
 	 * @param string|Property|null $reference property reference
 	 * @param int $intPosition Position where to insert
 	 *
@@ -58,14 +58,25 @@ abstract class PropertyContainer extends Child implements PropertyAccess, Export
 	 *
 	 * @throws \RuntimeException
 	 */
-	public function addProperty(Property $objProperty, $reference=null, $intPosition=Node::POS_LAST)
+	public function addProperty($property, $reference=null, $intPosition=Node::POS_LAST)
 	{
-		if($this->hasProperty($objProperty))
+		if($property instanceof Property)
 		{
-			throw new \RuntimeException("Property '{$objProperty->getName()}' already exists in {$this->getName()}.");
+			$strName = $property->getName();
+		}
+		else {
+			$strName = $property;
+			$property = clone $this->getDataContainer()->getProperty($strName);
 		}
 
-		// register PropertyContainer to Property events
+		if($this->hasProperty($strName))
+		{
+			throw new \RuntimeException("Property '{$strName}' already exists in {$this->getName()}.");
+		}
+
+		$objProperty = clone $this->getDataContainer()->getProperty($strName);
+
+			// register PropertyContainer to Property events
 		$objProperty->addListener('move',   array($this, 'propertyListener'));
 		$objProperty->addListener('change', array($this, 'propertyListener'));
 		$objProperty->addListener('remove', array($this, 'propertyListener'));
@@ -143,9 +154,19 @@ abstract class PropertyContainer extends Child implements PropertyAccess, Export
 			$this->getDataContainer()->createProperty($strName);
 		}
 
-		$this->addProperty($strName);
+		$objProperty = clone $this->getDataContainer()->getProperty($strName);
 
-		return $this->getProperty($strName);
+		// register PropertyContainer to Property events
+		$objProperty->addListener('move',   array($this, 'propertyListener'));
+		$objProperty->addListener('change', array($this, 'propertyListener'));
+		$objProperty->addListener('remove', array($this, 'propertyListener'));
+
+		// register DataContainer to delete event
+		$objProperty->addListener('delete', array($this->getDataContainer()), 'propertyListener');
+		$this->arrProperties[$strName] = $objProperty;
+		$objProperty->dispatch('move');
+
+		return $objProperty;
 	}
 
 
@@ -212,7 +233,7 @@ abstract class PropertyContainer extends Child implements PropertyAccess, Export
 
 
 	/**
-	 * Get all propertys and also include activated propertys in SubPalettes
+	 * Get all properties and also include activated properties in SubPalettes
 	 *
 	 * @return array
 	 */
@@ -235,7 +256,7 @@ abstract class PropertyContainer extends Child implements PropertyAccess, Export
 
 
 	/**
-	 * Get iterator for accessing propertys
+	 * Get iterator for accessing properties
 	 *
 	 * @return \ArrayIterator
 	 */
@@ -246,7 +267,7 @@ abstract class PropertyContainer extends Child implements PropertyAccess, Export
 
 
 	/**
-	 * Check if container has selector propertys
+	 * Check if container has selector properties
 	 *
 	 * @return bool
 	 */

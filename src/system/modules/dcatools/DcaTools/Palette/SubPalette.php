@@ -87,7 +87,10 @@ class SubPalette extends PropertyContainer
 
 		foreach($arrProperties as $strProperty)
 		{
-			$this->addProperty($strProperty);
+			if($strProperty != '')
+			{
+				$this->addProperty($strProperty);
+			}
 		}
 	}
 }

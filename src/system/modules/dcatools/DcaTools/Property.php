@@ -252,7 +252,7 @@ class Property extends Child implements PropertyInterface
 			$this->getDataContainer()->addSelector($this);
 		}
 
-		return $this->getDataContainer()->hasSelector($this);
+		return $this->getDataContainer()->hasSelector($this->getName());
 	}
 
 

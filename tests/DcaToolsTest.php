@@ -29,7 +29,7 @@ class DcaToolsTest extends PHPUnit_Framework_TestCase
 		$GLOBALS['TL_DCA']['tl_test'] = array
 		(
 			'config' => array(),
-			'propertys' => array()
+			'fields' => array()
 		);
 	}
 

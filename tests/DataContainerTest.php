@@ -37,12 +37,29 @@ class DataContainerTest extends PHPUnit_Framework_TestCase
 			(
 			),
 
-			'propertys' => array
+			'palettes' => array
+			(
+				'__selector__' => array('done'),
+				'default' => '{title_legend},test',
+			),
+
+			'subpalettes' => array
+			(
+				'sub' => 'test',
+			),
+
+			'fields' => array
 			(
 				'test' => array
 				(
 					'label' => array('Test', 'Label'),
 					'inputType' => 'text',
+				),
+
+				'done' => array
+				(
+					'label' => array('Get', 'it done'),
+					'inputType' => 'checkbox',
 				)
 			)
 		);
@@ -51,7 +68,7 @@ class DataContainerTest extends PHPUnit_Framework_TestCase
 	public function tearDown()
 	{
 		$this->objDataContainer = null;
-		unset($GLOBALS['TL_DCA']['tl_test']);
+		$GLOBALS['TL_DCA']['tl_test'] = null;
 
 		$obj         = new DcaTools();
 		$refObject   = new ReflectionObject( $obj );
@@ -133,6 +150,7 @@ class DataContainerTest extends PHPUnit_Framework_TestCase
 
 		$this->objDataContainer->removeProperty('test');
 		$this->assertFalse($this->objDataContainer->hasProperty('test'));
+		$this->assertFalse(isset($GLOBALS['TL_DCA']['tl_test']['fields']['test']));
 	}
 
 	public function testCreateProperty()
@@ -143,5 +161,119 @@ class DataContainerTest extends PHPUnit_Framework_TestCase
 
 		$this->assertTrue($this->objDataContainer->hasProperty('new'));
 		$this->assertEquals($objProperty, $this->objDataContainer->getProperty('new'));
+	}
+
+	public function testGetPropertyNames()
+	{
+		$this->assertEquals(array('test', 'done'), $this->objDataContainer->getPropertyNames());
+	}
+
+	public function testCreatePalette()
+	{
+		$objPalette = $this->objDataContainer->createPalette('test');
+		$objPalette->createLegend('default');
+		$objPalette->addProperty($this->objDataContainer->getProperty('test'), 'default');
+
+		$this->assertEquals($GLOBALS['TL_DCA']['tl_test']['palettes']['test'], $objPalette->getDefinition());
+	}
+
+	public function testHasPalette()
+	{
+		$this->assertFalse($this->objDataContainer->hasPalette('test'));
+		$this->assertTrue($this->objDataContainer->hasPalette('default'));
+	}
+
+	public function testGetPalette()
+	{
+		$this->assertInstanceOf('Netzmacht\DcaTools\Palette\Palette', $this->objDataContainer->getPalette('default'));
+	}
+
+	/**
+	 * @expectedException \RuntimeException
+	 */
+	public function testGetPaletteException()
+	{
+		$this->objDataContainer->getPalette('notexisting');
+	}
+
+	public function testGetPalettes()
+	{
+		$this->assertEquals(array('default' => $this->objDataContainer->getPalette('default')), $this->objDataContainer->getPalettes());
+	}
+
+	public function testRemovePalette()
+	{
+		$this->assertTrue($this->objDataContainer->hasPalette('default'));
+		$this->assertEquals($this->objDataContainer, $this->objDataContainer->removePalette('default'));
+		$this->assertFalse($this->objDataContainer->hasPalette('default'));
+		$this->assertFalse(isset($GLOBALS['TL_DCA']['tl_test']['palettes']['default']));
+	}
+
+	public function testCreateSubPalette()
+	{
+		$objSubPalette = $this->objDataContainer->createSubPalette('subpalette');
+		$objSubPalette->addProperty($this->objDataContainer->getProperty('test'));
+
+		$this->assertEquals($GLOBALS['TL_DCA']['tl_test']['subpalettes']['subpalette'], $objSubPalette->getDefinition());
+	}
+
+	public function testHasSubPalette()
+	{
+		$this->assertFalse($this->objDataContainer->hasSubPalette('test'));
+		$this->assertTrue($this->objDataContainer->hasSubPalette('sub'));
+	}
+
+	public function testGetSubPalette()
+	{
+		$this->assertInstanceOf('Netzmacht\DcaTools\Palette\SubPalette', $this->objDataContainer->getSubPalette('sub'));
+	}
+
+	/**
+	 * @expectedException \RuntimeException
+	 */
+	public function testGetSubPaletteException()
+	{
+		$this->objDataContainer->getSubPalette('notexisting');
+	}
+
+	public function testGetSubPalettes()
+	{
+		$this->assertEquals(array('sub' => $this->objDataContainer->getSubPalette('sub')), $this->objDataContainer->getSubPalettes());
+	}
+
+	public function testRemoveSubPalette()
+	{
+		$this->assertTrue($this->objDataContainer->hasSubPalette('sub'));
+		$this->assertEquals($this->objDataContainer, $this->objDataContainer->removeSubPalette('sub'));
+		$this->assertFalse($this->objDataContainer->hasSubPalette('sub'));
+		$this->assertFalse(isset($GLOBALS['TL_DCA']['tl_test']['subpalettes']['sub']));
+	}
+
+	public function testGetSelectors()
+	{
+		$this->assertEquals(array('done' => $this->objDataContainer->getProperty('done')), $this->objDataContainer->getSelectors());
+
+		$this->objDataContainer->getProperty('test')->isSelector(true);
+		$this->assertEquals(
+			array(
+				'done' => $this->objDataContainer->getProperty('done'),
+				'test' => $this->objDataContainer->getProperty('test')
+			),
+			$this->objDataContainer->getSelectors());
+	}
+
+	/**
+	 * @expectedException \RuntimeException
+	 */
+	public function testGetSelectorException()
+	{
+		$this->objDataContainer->getSelector('notexisting');
+	}
+
+	public function testHasSelector()
+	{
+		$this->assertTrue($this->objDataContainer->hasSelectors());
+		$this->assertTrue($this->objDataContainer->hasSelector('done'));
+		$this->assertFalse($this->objDataContainer->hasSelector('test'));
 	}
 }

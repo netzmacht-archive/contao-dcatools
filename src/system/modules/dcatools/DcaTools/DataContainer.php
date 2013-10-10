@@ -247,17 +247,6 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 
 
 	/**
-	 * Retrieve the names of all defined properties.
-	 *
-	 * @return string[]
-	 */
-	public function getPropertyNames()
-	{
-		return array_keys($this->getFromDefinition('fields'));
-	}
-
-
-	/**
 	 * Retrieve the panel layout.
 	 *
 	 * Returns an array of arrays of which each level 1 array is a separate group.
@@ -512,6 +501,34 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 
 
 	/**
+	 * Retrieve the names of all defined properties.
+	 *
+	 * @return string[]
+	 */
+	public function getPropertyNames()
+	{
+		return array_keys($this->getFromDefinition('fields'));
+	}
+
+
+	/**
+	 * @return Property[]
+	 */
+	public function getProperties()
+	{
+		foreach($this->definition['fields'] as $strName => $arrDefinition)
+		{
+			if(!isset($this->arrProperties[$strName]))
+			{
+				$this->getProperty($strName);
+			}
+		}
+
+		return $this->arrProperties;
+	}
+
+
+	/**
 	 * @param string $strName
 	 *
 	 * @return bool
@@ -520,7 +537,7 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 	{
 		$strName = is_object($strName) ? $strName->getName() : $strName;
 
-		return isset($this->definition['propertys'][$strName]);
+		return isset($this->definition['fields'][$strName]);
 	}
 
 
@@ -540,7 +557,7 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 			$objProperty->dispatch('delete');
 
 			// unset property not matter if auto update is on because we check against definition if property exists
-			unset($this->definition['propertys'][$strName]);
+			unset($this->definition['fields'][$strName]);
 		}
 
 		return $this;
@@ -554,7 +571,7 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 	 */
 	public function createProperty($strName)
 	{
-		$this->definition['propertys'][$strName] = array();
+		$this->definition['fields'][$strName] = array();
 
 		$objProperty = new Property($strName, $this);
 		$objProperty->addListener('delete', array($this, 'propertyListener'));
@@ -629,7 +646,7 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 			throw new \RuntimeException("Palette {$strName} already exists in DataContainer {$this->getName()}");
 		}
 
-		$this->definition['palettes'][$strName] = array();
+		$this->definition['palettes'][$strName] = '';
 
 		$objPalette = new Palette($strName, $this);
 		$objPalette->addListener('create', array($this, 'paletteListener'));
@@ -651,7 +668,7 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 	 */
 	public function hasPalette($strName)
 	{
-		return isset($this->definition['Palettes'][$strName]);
+		return isset($this->definition['palettes'][$strName]);
 	}
 
 
@@ -664,8 +681,11 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 	{
 		if($this->hasPalette($strName))
 		{
-			$objPalette = $this->arrPalettes[$strName];
+			$objPalette = $this->getPalette($strName);
+
 			unset($this->arrPalettes[$strName]);
+			unset($this->definition['palettes'][$strName]);
+
 			$objPalette->dispatch('remove');
 		}
 
@@ -770,8 +790,11 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 	{
 		if($this->hasSubPalette($strName))
 		{
-			$objSubPalette = $this->arrSubPalettes[$strName];
+			$objSubPalette = $this->getSubPalette($strName);
+
 			unset($this->arrSubPalettes[$strName]);
+			unset($this->definition['subpalettes'][$strName]);
+
 			$objSubPalette->dispatch('remove');
 		}
 
@@ -786,7 +809,7 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 	{
 		$arrSelectors = array();
 
-		foreach($this->definition['palettes']['__selector__'] as $strName)
+		foreach((array) $this->definition['palettes']['__selector__'] as $strName)
 		{
 			$arrSelectors[$strName] = $this->getProperty($strName);
 		}
@@ -835,8 +858,10 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 			throw new \RuntimeException("Property {$selector->getName()} does not belong to DataContainer {$this->getName()}");
 		}
 
-		/** @var Property $selector */
-		$selector->isSelector(true);
+		if(!in_array($selector->getName(), (array) $this->getFromDefinition('palettes/__selector__')))
+		{
+			$this->definition['palettes']['__selector__'][] = $selector->getName();
+		}
 
 		return $this;
 	}
@@ -851,7 +876,7 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 	{
 		$strName = is_object($property) ? $property->getName() : $property;
 
-		return in_array($strName, (array) $this->definition['palettes']['__selector__']);
+		return $this->hasProperty($strName) && in_array($strName, (array) $this->definition['palettes']['__selector__']);
 	}
 
 

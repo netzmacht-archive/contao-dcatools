@@ -67,10 +67,11 @@ abstract class Node extends EventDispatcher implements ExportInterface
 
 
 	/**
-	 * Constrcutor
+	 * Constructor
 	 *
-	 * @param $strName
-	 * @param $definition
+	 * @param string $strName
+	 * @param DataContainer $objDataContainer
+	 * @param mixed $definition
 	 */
 	public function __construct($strName, DataContainer $objDataContainer, &$definition)
 	{
@@ -164,11 +165,11 @@ abstract class Node extends EventDispatcher implements ExportInterface
 	/**
 	 * Test if element has same DataContainer as root
 	 *
-	 * @param Child $node
+	 * @param Node $node
 	 *
 	 * @return bool
 	 */
-	public function hasSameDataContainer(Child $node)
+	public function hasSameDataContainer(Node $node)
 	{
 		return ($this->getDataContainer() == $node->getDataContainer());
 	}
@@ -194,13 +195,13 @@ abstract class Node extends EventDispatcher implements ExportInterface
 	 * Add a node at a specified position
 	 *
 	 * @param array $arrTarget
-	 * @param Child $objElement
+	 * @param Node $objElement
 	 * @param null $strReference
 	 * @param $intPosition
 	 *
 	 * @throws \RuntimeException
 	 */
-	protected function addAtPosition(array &$arrTarget, Child $objElement, $strReference=null, $intPosition=Child::POS_LAST)
+	protected function addAtPosition(array &$arrTarget, Node $objElement, $strReference=null, $intPosition=Node::POS_LAST)
 	{
 		if($objElement->getDataContainer() != $this->getDataContainer())
 		{

@@ -7,9 +7,10 @@
  *
  * @package   netzmacht-dcatools
  * @author    netzmacht creative David Molineus
- * @license   MPL/2.0
+ * @license   LGPL/3.0
  * @copyright 2013 netzmacht creative David Molineus
  */
+
 namespace Netzmacht\DcaTools\Event;
 
 use Symfony\Component\EventDispatcher\GenericEvent;

@@ -1,10 +1,14 @@
 <?php
+
 /**
- * Created by JetBrains PhpStorm.
- * User: david
- * Date: 11.10.13
- * Time: 09:17
- * To change this template use File | Settings | File Templates.
+ * Contao Open Source CMS
+ *
+ * Copyright (C) 2005-2013 Leo Feyer
+ *
+ * @package   netzmacht-dcatools
+ * @author    netzmacht creative David Molineus
+ * @license   LGPL/3.0
+ * @copyright 2013 netzmacht creative David Molineus
  */
 
 namespace Netzmacht\DcaTools\Component;

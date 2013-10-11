@@ -37,10 +37,7 @@ class Helper
 			$strOperation = substr($strMethod, 17);
 			$objOperation = new Operation($arrArguments[6], $strOperation, 'local');
 
-			$objModel = new DefaultModel();
-			$objModel->setPropertiesAsArray(array_shift($arrArguments));
-
-			$objOperation->setModel($objModel);
+			$objOperation->setModel(array_shift($arrArguments));
 		}
 		elseif (strncmp($strMethod, 'globalOperationCallback', 23) === 0)
 		{
@@ -83,62 +80,55 @@ class Helper
 			return;
 		}
 
-		// initialize and check permissions
-		$objDataContainer = new DataContainer($dc->table);
-		$objDataContainer->initialize();
-
-		// add operation listeners
 		$arrConfig =& $GLOBALS['TL_DCA'][$dc->table]['dcatools'];
 
-		if(isset($arrConfig['operationListeners']) && $arrConfig['operationListeners'])
+		// initialize and check permissions
+		if(isset($arrConfig['events']))
 		{
-			// handle operation events
-			foreach($GLOBALS['TL_DCA'][$dc->table]['list']['operations'] as $strOperation => $arrOperation)
+			$objDataContainer = new DataContainer($dc->table);
+			$objDataContainer->initialize();
+		}
+
+		$this->scanOperationEvents($dc->table, $arrConfig, 'operations');
+		$this->scanOperationEvents($dc->table, $arrConfig, 'global_operations');
+	}
+
+
+	/**
+	 * @param string $strTable
+	 * @param array $arrConfig
+	 * @param string $strKey
+	 */
+	protected function scanOperationEvents($strTable, array $arrConfig, $strKey)
+	{
+		if(!isset($arrConfig['scan'][$strKey]) && $arrConfig['scan'][$strKey])
+		{
+			return;
+		}
+
+		$strCallback = ($strKey == 'operations' ? 'operationCallback' : 'globalOperationCallback');
+
+		foreach($GLOBALS['TL_DCA'][$strTable]['list'][$strKey] as $strOperation => $arrOperation)
+		{
+			if(!isset($arrOperation['events']))
 			{
-				if(!isset($arrOperation['events']))
-				{
-					continue;
-				}
+				continue;
+			}
 
-				if(isset($arrOperation['button_callback']))
-				{
-					$GLOBALS['TL_DCA'][$dc->table]['list']['operations'][$strOperation]['events']['generate'][] = array(
-						function($objEvent) use($arrOperation) {
-							$objCallback = new OperationCallback($arrOperation['button_callback']);
-							$objCallback->execute($objEvent);
-						}, 99
-					);
-				}
-
-				$GLOBALS['TL_DCA'][$dc->table]['list']['operations'][$strOperation]['button_callback'] = array
-				(
-					'Netzmacht\DcaTools\Helper', 'operationCallback' . $strOperation
+			if(isset($arrOperation['button_callback']))
+			{
+				$GLOBALS['TL_DCA'][$strTable]['list'][$strKey][$strOperation]['events']['generate'][] = array(
+					function($objEvent) use($arrOperation) {
+						$objCallback = new OperationCallback($arrOperation['button_callback']);
+						$objCallback->execute($objEvent);
+					}, 99
 				);
 			}
 
-			// handle global operation events
-			foreach($GLOBALS['TL_DCA'][$dc->table]['list']['global_operations'] as $strOperation => $arrOperation)
-			{
-				if(!isset($arrOperation['events']))
-				{
-					continue;
-				}
-
-				if(isset($arrOperation['button_callback']))
-				{
-					$GLOBALS['TL_DCA'][$dc->table]['list']['global_operations'][$strOperation]['events']['generate'][] = array(
-						function($objEvent) use($arrOperation) {
-							$objCallback = new OperationCallback($arrOperation['button_callback']);
-							$objCallback->execute($objEvent);
-						}, 99
-					);
-				}
-
-				$GLOBALS['TL_DCA'][$dc->table]['list']['global_operations'][$strOperation]['button_callback'] = array
-				(
-					'Netzmacht\DcaTools\Helper', 'globalOperationCallback' . $strOperation
-				);
-			}
+			$GLOBALS['TL_DCA'][$strTable]['list'][$strKey][$strOperation]['button_callback'] = array
+			(
+				'Netzmacht\DcaTools\Helper', $strCallback . $strOperation
+			);
 		}
 	}
 }

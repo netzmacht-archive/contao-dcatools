@@ -9,6 +9,7 @@
 
 namespace Netzmacht\DcaTools\Component;
 
+use DcGeneral\Data\DefaultModel;
 use DcGeneral\Data\ModelInterface;
 use Netzmacht\DcaTools\Definition;
 use Netzmacht\DcaTools\Event\EventDispatcher;
@@ -53,11 +54,30 @@ abstract class Component extends EventDispatcher
 	}
 
 	/**
-	 * @param ModelInterface $objModel
+	 * @param $objModel
 	 */
-	public function setModel(ModelInterface $objModel)
+	public function setModel($objModel)
 	{
-		$this->objModel = $objModel;
+		if($objModel instanceof \Model\Collection || $objModel instanceof \Model || $objModel instanceof \Database\Result)
+		{
+			/** @var \Model|\Model\Collection|\Database\Result $objModel */
+			$this->objModel = new DefaultModel();
+			$this->objModel->setPropertiesAsArray($objModel->row());
+		}
+		elseif(is_array($objModel))
+		{
+			$this->objModel = new DefaultModel();
+			$this->objModel->setPropertiesAsArray($objModel);
+		}
+		elseif($objModel instanceof ModelInterface)
+		{
+			$this->objModel = $objModel;
+		}
+		else {
+			throw new \RuntimeException("Type of Model is not supported");
+		}
+
+		return $this;
 	}
 
 

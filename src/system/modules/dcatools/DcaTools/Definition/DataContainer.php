@@ -153,6 +153,11 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 			$this->objModel = new DefaultModel();
 			$this->objModel->setPropertiesAsArray($objModel->row());
 		}
+		elseif(is_array($objModel))
+		{
+			$this->objModel = new DefaultModel();
+			$this->objModel->setPropertiesAsArray($objModel);
+		}
 		elseif($objModel instanceof \DcGeneral\Data\ModelInterface)
 		{
 			$this->objModel = $objModel;

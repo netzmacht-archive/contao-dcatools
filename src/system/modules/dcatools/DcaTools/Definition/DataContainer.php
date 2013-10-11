@@ -118,49 +118,6 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 
 
 	/**
-	 * Initialize the DataContainer and check permissioin
-	 *
-	 */
-	public function initialize()
-	{
-		$this->dispatch('initialize');
-
-		if(\Input::get('act') != '')
-		{
-			$strErrorDefault = sprintf(
-				'User "%s" has not enough permission to run action "%s" for DataContainer "%s"',
-				\BackendUser::getInstance()->username,
-				\Input::get('act'),
-				$this->getName()
-			);
-
-			if(\Input::get('id') != '')
-			{
-				$strErrorDefault .= ' on item with ID "' .\Input::get('id') . '"';
-			}
-		}
-		else
-		{
-			$strErrorDefault = sprintf(
-				'User "%s" has not enough permission to access module "%s"',
-				\BackendUser::getInstance()->username,
-				\Input::get('do')
-			);
-		}
-
-		$objEvent = new GenericEvent($this, array('error' => $strErrorDefault, 'granted' => true));
-		$objEvent = $this->dispatch('permissions', $objEvent);
-
-		if(!$objEvent->getArgument('granted'))
-		{
-			\Controller::log($objEvent->getArgument('error'), 'DataContainer initialize', TL_ERROR);
-			\Controller::redirect('contao/main.php?act=error');
-			return;
-		}
-	}
-
-
-	/**
 	 * Get DataContainer
 	 *
 	 * @return $this

@@ -10,6 +10,8 @@
 namespace Netzmacht\DcaTools;
 
 use DcGeneral\Data\DefaultModel;
+use Netzmacht\DcaTools\Component\DataContainer;
+use Netzmacht\DcaTools\Component\Operation;
 use Netzmacht\DcaTools\Event\OperationCallback;
 
 /**
@@ -32,28 +34,26 @@ class Helper
 	{
 		if (strncmp($strMethod, 'operationCallback', 17) === 0)
 		{
-			$objDataContainer = Definition::getDataContainer($arrArguments[6]);
-
 			$strOperation = substr($strMethod, 17);
-			$objOperation = $objDataContainer->getOperation($strOperation, 'local');
+			$objOperation = new Operation($arrArguments[6], $strOperation, 'local');
 
 			$objModel = new DefaultModel();
 			$objModel->setPropertiesAsArray(array_shift($arrArguments));
 
-			$objDataContainer->setModel($objModel);
+			$objOperation->setModel($objModel);
 		}
 		elseif (strncmp($strMethod, 'globalOperationCallback', 23) === 0)
 		{
-			$objDataContainer = Definition::getDataContainer($arrArguments[5]);
-
 			$strOperation = substr($strMethod, 23);
-			$objOperation = $objDataContainer->getOperation($strOperation, 'global');
+			$objOperation = new Operation($arrArguments[5], $strOperation, 'global');
 		}
 
 		if(isset($objOperation))
 		{
 			$objOperation->setHref($arrArguments[0]);
-			$objOperation->setLabel(array($arrArguments[1], $arrArguments[2]));
+			$objOperation->setLabel($arrArguments[1]);
+			$objOperation->setTitle($arrArguments[2]);
+			$objOperation->setIcon($arrArguments[3]);
 			$objOperation->setAttributes($arrArguments[4]);
 
 			return $objOperation->generate();
@@ -83,27 +83,12 @@ class Helper
 			return;
 		}
 
-		$objDataContainer = Definition::getDataContainer($dc->table);
+		// initialize and check permissions
+		$objDataContainer = new DataContainer($dc->table);
+		$objDataContainer->initialize();
 
+		// add operation listeners
 		$arrConfig =& $GLOBALS['TL_DCA'][$dc->table]['dcatools'];
-
-
-		if(isset($arrConfig['initialize']) && is_array($arrConfig['initialize']))
-		{
-			foreach($arrConfig['initialize'] as $listener)
-			{
-				Definition::registerListener($objDataContainer, 'initialize', $listener);
-			}
-		}
-
-		if(isset($arrConfig['permissions']) && is_array($arrConfig['permissions']))
-		{
-			foreach($arrConfig['permissions'] as $listener)
-			{
-				Definition::registerListener($objDataContainer, 'permissions', $listener);
-			}
-		}
-
 
 		if(isset($arrConfig['operationListeners']) && $arrConfig['operationListeners'])
 		{
@@ -121,7 +106,7 @@ class Helper
 						function($objEvent) use($arrOperation) {
 							$objCallback = new OperationCallback($arrOperation['button_callback']);
 							$objCallback->execute($objEvent);
-						}, -1
+						}, 99
 					);
 				}
 
@@ -145,7 +130,7 @@ class Helper
 						function($objEvent) use($arrOperation) {
 							$objCallback = new OperationCallback($arrOperation['button_callback']);
 							$objCallback->execute($objEvent);
-						}, -1
+						}, 99
 					);
 				}
 
@@ -155,8 +140,5 @@ class Helper
 				);
 			}
 		}
-
-		// initialize and check permissions
-		$objDataContainer->initialize();
 	}
 }

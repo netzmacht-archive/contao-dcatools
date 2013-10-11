@@ -104,23 +104,6 @@ abstract class Node  implements ExportInterface
 
 
 	/**
-	 * Set Name. This method is not supposed being called. Used for internal stuff
-	 *
-	 * @param string $strName
-	 */
-	public function setName($strName)
-	{
-		if($this->strName != $strName)
-		{
-			$this->strName = $strName;
-			$this->updateDefinition();
-		}
-
-		return $this;
-	}
-
-
-	/**
 	 * Get Definition as reference
 	 *
 	 * @return mixed
@@ -257,14 +240,14 @@ abstract class Node  implements ExportInterface
 	 *
 	 * @return mixed
 	 */
-	public function copy($strName=null)
+	public function copy($strName)
 	{
+		$strOld = $this->getName();
+
+		$this->strName = $strName;
 		$objCopy = clone $this;
 
-		if($strName)
-		{
-			$objCopy->setName($strName);
-		}
+		$this->strName = $strOld;
 
 		return $objCopy;
 	}

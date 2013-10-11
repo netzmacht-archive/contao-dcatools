@@ -25,7 +25,7 @@ class DefinitionTest extends PHPUnit_Framework_TestCase
 	public function setUp()
 	{
 		$GLOBALS['TL_DCA']['tl_test'] = $GLOBALS['TEST_DCA'];
-		$this->objDataContainer = new DataContainer('tl_test');
+		$this->objDataContainer = Definition::getDataContainer('tl_test');
 	}
 
 	public function tearDown()
@@ -33,25 +33,41 @@ class DefinitionTest extends PHPUnit_Framework_TestCase
 		$this->objDataContainer = null;
 		unset($GLOBALS['TL_DCA']['tl_test']);
 
-		$obj         = new Definition();
-		$refObject   = new ReflectionObject( $obj );
+		$refObject   = new ReflectionObject( new Definition() );
 		$refProperty = $refObject->getProperty( 'arrDataContainers' );
 		$refProperty->setAccessible( true );
 		$refProperty->setValue(null, array());
 	}
 
-
 	public function testGetDataContainer()
 	{
-		$this->assertEquals($this->objDataContainer, Definition::getDataContainer('tl_test'));
+		$this->assertInstanceOf('DcaTools\Definition\DataContainer', Definition::getDataContainer('tl_test'));
+	}
+
+	public function testGetPalette()
+	{
+		$this->assertInstanceOf('DcaTools\Definition\Palette', Definition::getPalette('tl_test', 'default'));
+		$this->assertEquals($this->objDataContainer->getPalette('default'), Definition::getPalette('tl_test', 'default'));
 	}
 
 	public function testGetOperation()
 	{
-		$this->assertInstanceOf('DcaTools\Definition\Operation', Definition::getDataContainer('edit'));
-		$this->assertEquals($this->objDataContainer->getOperation('edit'), Definition::getDataContainer('edit'));
+		$this->assertInstanceOf('DcaTools\Definition\Operation', Definition::getOperation('tl_test', 'edit'));
+		$this->assertEquals($this->objDataContainer->getOperation('edit'), Definition::getOperation('tl_test', 'edit'));
 
-		$this->assertInstanceOf('DcaTools\Definition\GlobalOperation', Definition::getDataContainer('sub', 'global'));
-		$this->assertEquals($this->objDataContainer->getOperation('sub', 'global'), Definition::getDataContainer('sub', 'global'));
+		$this->assertInstanceOf('DcaTools\Definition\Operation', Definition::getOperation('tl_test', 'sub', 'global'));
+		$this->assertEquals($this->objDataContainer->getOperation('sub', 'global'), Definition::getOperation('tl_test', 'sub', 'global'));
+	}
+
+	public function testGetSubPalette()
+	{
+		$this->assertInstanceOf('DcaTools\Definition\SubPalette', Definition::getSubPalette('tl_test', 'sub'));
+		$this->assertEquals($this->objDataContainer->getSubPalette('sub'), Definition::getSubPalette('tl_test', 'sub'));
+	}
+
+	public function testGetProperty()
+	{
+		$this->assertInstanceOf('DcaTools\Definition\Property', Definition::getProperty('tl_test', 'test'));
+		$this->assertEquals($this->objDataContainer->getProperty('test'), Definition::getProperty('tl_test', 'test'));
 	}
 }

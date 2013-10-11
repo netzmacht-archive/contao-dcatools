@@ -51,6 +51,10 @@ class Definition
 		{
 			static::$arrDataContainers[$strName] = new DataContainer($strName, $objModel);
 		}
+		elseif($objModel !== null)
+		{
+			static::$arrDataContainers[$strName]->setModel($objModel);
+		}
 
 		return static::$arrDataContainers[$strName];
 	}
@@ -65,7 +69,7 @@ class Definition
 	 *
 	 * @return Definition/Operation
 	 */
-	public function getOperation($strTable, $strName, $strScope='local')
+	public static function getOperation($strTable, $strName, $strScope='local')
 	{
 		return static::getDataContainer($strTable)->getOperation($strName, $strScope);
 	}
@@ -79,7 +83,7 @@ class Definition
 	 *
 	 * @return Definition/Operation
 	 */
-	public function getProperty($strTable, $strName)
+	public static function getProperty($strTable, $strName)
 	{
 		return static::getDataContainer($strTable)->getProperty($strName);
 	}
@@ -93,7 +97,7 @@ class Definition
 	 *
 	 * @return Definition/Operation
 	 */
-	public function getPalette($strTable, $strName)
+	public static function getPalette($strTable, $strName)
 	{
 		return static::getDataContainer($strTable)->getPalette($strName);
 	}
@@ -107,7 +111,7 @@ class Definition
 	 *
 	 * @return Definition/Operation
 	 */
-	public function getSubPalette($strTable, $strName)
+	public static function getSubPalette($strTable, $strName)
 	{
 		return static::getDataContainer($strTable)->getSubPalette($strName);
 	}

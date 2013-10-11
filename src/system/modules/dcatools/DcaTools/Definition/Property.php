@@ -43,26 +43,6 @@ class Property extends Node implements PropertyInterface
 
 
 	/**
-	 * @param string $strName
-	 * @return $this
-	 */
-	public function setName($strName)
-	{
-		if($strName != $this->strName)
-		{
-			parent::setName($strName);
-
-			$this->updateDefinition();
-		}
-		else {
-			parent::setName($strName);
-		}
-
-		return $this;
-	}
-
-
-	/**
 	 * Return the label of the property.
 	 *
 	 * @return array

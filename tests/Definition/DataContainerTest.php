@@ -7,7 +7,7 @@
  * To change this template use File | Settings | File Templates.
  */
 
-require_once dirname(__FILE__) . '/bootstrap.php';
+require_once dirname(dirname(__FILE__)) . '/bootstrap.php';
 
 use DcaTools\Definition\DataContainer;
 use DcaTools\Definition\Property;
@@ -53,28 +53,38 @@ class DataContainerTest extends PHPUnit_Framework_TestCase
 		$this->assertNull($this->objDataContainer->getModel());
 
 		$objModel = new ContentModel();
+		$objDcModel = new \DcGeneral\Data\DefaultModel();
+		$objDcModel->setPropertiesAsArray($objModel->row());
 		$this->objDataContainer->setModel($objModel);
-		$this->assertEquals($objModel, $this->objDataContainer->getModel());
+		$this->assertEquals($objDcModel, $this->objDataContainer->getModel());
 
 		$objDataContainer = new DataContainer('tl_test', $objModel);
-		$this->assertEquals($objModel, $objDataContainer->getModel());
+		$this->assertEquals($objDcModel, $objDataContainer->getModel());
 	}
 
 	public function testSetModel()
 	{
 		// Contao SUCKS, cannot test against the same model
 		$objModel = ArticleModel::findAll(array('limit' => 1, 'return' => 'Model'));
+		$objDcModel = new \DcGeneral\Data\DefaultModel();
+		$objDcModel->setPropertiesAsArray($objModel->row());
 		$this->assertEquals($this->objDataContainer->setModel($objModel), $this->objDataContainer);
-		$this->assertEquals($objModel, $this->objDataContainer->getModel($objModel));
+		$this->assertEquals($objDcModel, $this->objDataContainer->getModel($objModel));
 
 		$objCollection = PageModel::findAll(array('limit' => 2));
 
 		$this->objDataContainer->setModel($objCollection);
-		$this->assertEquals($objCollection->current(), $this->objDataContainer->getModel());
+		$objDcModel = new \DcGeneral\Data\DefaultModel();
+		$objDcModel->setPropertiesAsArray($objCollection->current()->row());
+		$this->assertEquals($objDcModel, $this->objDataContainer->getModel());
 
 		$objResult = \Database::getInstance()->query('SELECT * FROM tl_content limit 2');
+		$objDcModel = new \DcGeneral\Data\DefaultModel();
+		$objDcModel->setPropertiesAsArray($objResult->row());
 		$this->objDataContainer->setModel($objResult);
-		$this->assertEquals($objResult, $this->objDataContainer->getModel());
+		$this->assertEquals($objDcModel, $this->objDataContainer->getModel());
+
+		$this->assertEquals($GLOBALS['TL_DCA']['tl_test'], $this->objDataContainer->getDefinition());
 	}
 
 	public function testHasModel()
@@ -90,7 +100,6 @@ class DataContainerTest extends PHPUnit_Framework_TestCase
 	public function testGetProperty()
 	{
 		$objProperty = new Property('test', $this->objDataContainer);
-		$objProperty->addListener('delete', array($this->objDataContainer, 'propertyListener'));
 
 		$this->assertEquals($objProperty, $this->objDataContainer->getProperty('test'));
 	}
@@ -116,6 +125,8 @@ class DataContainerTest extends PHPUnit_Framework_TestCase
 		$this->objDataContainer->removeProperty('test');
 		$this->assertFalse($this->objDataContainer->hasProperty('test'));
 		$this->assertFalse(isset($GLOBALS['TL_DCA']['tl_test']['fields']['test']));
+
+		$this->assertEquals($GLOBALS['TL_DCA']['tl_test'], $this->objDataContainer->getDefinition());
 	}
 
 	public function testCreateProperty()
@@ -126,6 +137,8 @@ class DataContainerTest extends PHPUnit_Framework_TestCase
 
 		$this->assertTrue($this->objDataContainer->hasProperty('new'));
 		$this->assertEquals($objProperty, $this->objDataContainer->getProperty('new'));
+
+		$this->assertEquals($GLOBALS['TL_DCA']['tl_test'], $this->objDataContainer->getDefinition());
 	}
 
 	public function testGetPropertyNames()
@@ -140,6 +153,7 @@ class DataContainerTest extends PHPUnit_Framework_TestCase
 		$objPalette->addProperty($this->objDataContainer->getProperty('test'), 'default');
 
 		$this->assertEquals($GLOBALS['TL_DCA']['tl_test']['palettes']['test'], $objPalette->getDefinition());
+		$this->assertEquals($GLOBALS['TL_DCA']['tl_test'], $this->objDataContainer->getDefinition());
 	}
 
 	public function testHasPalette()
@@ -172,6 +186,7 @@ class DataContainerTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals($this->objDataContainer, $this->objDataContainer->removePalette('default'));
 		$this->assertFalse($this->objDataContainer->hasPalette('default'));
 		$this->assertFalse(isset($GLOBALS['TL_DCA']['tl_test']['palettes']['default']));
+		$this->assertEquals($GLOBALS['TL_DCA']['tl_test'], $this->objDataContainer->getDefinition());
 	}
 
 	public function testCreateSubPalette()
@@ -180,6 +195,7 @@ class DataContainerTest extends PHPUnit_Framework_TestCase
 		$objSubPalette->addProperty($this->objDataContainer->getProperty('test'));
 
 		$this->assertEquals($GLOBALS['TL_DCA']['tl_test']['subpalettes']['subpalette'], $objSubPalette->getDefinition());
+		$this->assertEquals($GLOBALS['TL_DCA']['tl_test'], $this->objDataContainer->getDefinition());
 	}
 
 	public function testHasSubPalette()
@@ -212,6 +228,8 @@ class DataContainerTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals($this->objDataContainer, $this->objDataContainer->removeSubPalette('sub'));
 		$this->assertFalse($this->objDataContainer->hasSubPalette('sub'));
 		$this->assertFalse(isset($GLOBALS['TL_DCA']['tl_test']['subpalettes']['sub']));
+
+		$this->assertEquals($GLOBALS['TL_DCA']['tl_test'], $this->objDataContainer->getDefinition());
 	}
 
 	public function testGetSelectors()

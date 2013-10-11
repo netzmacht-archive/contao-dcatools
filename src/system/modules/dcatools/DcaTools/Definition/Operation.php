@@ -236,4 +236,14 @@ class Operation extends Node implements OperationInterface
 	}
 
 
+	/**
+	 * @param bool $blnPropagation
+	 * @return $this|void
+	 */
+	public function updateDefinition($blnPropagation=true)
+	{
+		return $this;
+	}
+
+
 }

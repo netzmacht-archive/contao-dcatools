@@ -11,14 +11,14 @@
  * @copyright 2013 netzmacht creative David Molineus
  */
 
-namespace Netzmacht\DcaTools\Definition;
+namespace DcaTools\Definition;
 
 use Symfony\Component\EventDispatcher\Event;
 
 /**
  * Class SubPalette
  *
- * @package Netzmacht\Prototype\Palette
+ * @package Prototype\Palette
  */
 class SubPalette extends PropertyContainer
 {

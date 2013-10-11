@@ -11,12 +11,12 @@
  * @copyright 2013 netzmacht creative David Molineus
  */
 
-namespace Netzmacht\DcaTools\Structure;
+namespace DcaTools\Structure;
 
 /**
  * Class OperationInterface is used for operation components
  *
- * @package Netzmacht\DcaTools\Structure
+ * @package DcaTools\Structure
  */
 interface OperationInterface extends \DcGeneral\DataDefinition\OperationInterface, ExportInterface
 {

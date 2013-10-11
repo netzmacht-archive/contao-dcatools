@@ -9,9 +9,9 @@
 
 require_once dirname(__FILE__) . '/bootstrap.php';
 
-use \Netzmacht\DcaTools\Definition\DataContainer;
-use \Netzmacht\DcaTools\Definition\Property;
-use \Netzmacht\DcaTools\Definition;
+use DcaTools\Definition\DataContainer;
+use DcaTools\Definition\Property;
+use DcaTools\Definition;
 
 
 $GLOBALS['TL_DCA']['tl_test'] = array();
@@ -26,44 +26,8 @@ class DataContainerTest extends PHPUnit_Framework_TestCase
 
 	public function setUp()
 	{
-		$this->initializeTlTest();
+		$GLOBALS['TL_DCA']['tl_test'] = $GLOBALS['TEST_DCA'];
 		$this->objDataContainer = Definition::getDataContainer('tl_test');
-	}
-
-	protected function initializeTlTest()
-	{
-		$GLOBALS['TL_DCA']['tl_test'] = array
-		(
-			'config' => array
-			(
-			),
-
-			'palettes' => array
-			(
-				'__selector__' => array('done'),
-				'default' => '{title_legend},test',
-			),
-
-			'subpalettes' => array
-			(
-				'sub' => 'test',
-			),
-
-			'fields' => array
-			(
-				'test' => array
-				(
-					'label' => array('Test', 'Label'),
-					'inputType' => 'text',
-				),
-
-				'done' => array
-				(
-					'label' => array('Get', 'it done'),
-					'inputType' => 'checkbox',
-				)
-			)
-		);
 	}
 
 	public function tearDown()
@@ -186,7 +150,7 @@ class DataContainerTest extends PHPUnit_Framework_TestCase
 
 	public function testGetPalette()
 	{
-		$this->assertInstanceOf('Netzmacht\DcaTools\Definition\Palette', $this->objDataContainer->getPalette('default'));
+		$this->assertInstanceOf('DcaTools\Definition\Palette', $this->objDataContainer->getPalette('default'));
 	}
 
 	/**
@@ -226,7 +190,7 @@ class DataContainerTest extends PHPUnit_Framework_TestCase
 
 	public function testGetSubPalette()
 	{
-		$this->assertInstanceOf('Netzmacht\DcaTools\Definition\SubPalette', $this->objDataContainer->getSubPalette('sub'));
+		$this->assertInstanceOf('DcaTools\Definition\SubPalette', $this->objDataContainer->getSubPalette('sub'));
 	}
 
 	/**

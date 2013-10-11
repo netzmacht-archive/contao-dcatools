@@ -11,9 +11,9 @@
  * @copyright 2013 netzmacht creative David Molineus
  */
 
-namespace Netzmacht\DcaTools\Structure;
+namespace DcaTools\Structure;
 
-use Netzmacht\DcaTools\Definition\Property;
+use DcaTools\Definition\Property;
 
 interface PropertyContainerInterface extends \IteratorAggregate
 {

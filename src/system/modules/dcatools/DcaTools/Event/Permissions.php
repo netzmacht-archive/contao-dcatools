@@ -12,14 +12,14 @@
  */
 
 
-namespace Netzmacht\DcaTools\Event;
+namespace DcaTools\Event;
 
 use Symfony\Component\EventDispatcher\GenericEvent;
 
 /**
  * Class Permissions provides listeners for operations and permission events
  *
- * @package Netzmacht\DcaTools\Event
+ * @package DcaTools\Event
  */
 class Permissions
 {
@@ -103,7 +103,7 @@ class Permissions
 	 */
 	public static function isAllowed(GenericEvent $objEvent, array $arrConfig)
 	{
-		/** @var \Netzmacht\DcaTools\Definition\DataContainer $objDataContainer */
+		/** @var DcaTools\Definition\DataContainer $objDataContainer */
 		$objDataContainer = $objEvent->getSubject()->getDataContainer();
 
 		/** @var \BackendUser $objUser */

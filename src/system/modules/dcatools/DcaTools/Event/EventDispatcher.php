@@ -11,12 +11,12 @@
  * @copyright 2013 netzmacht creative David Molineus
  */
 
-namespace Netzmacht\DcaTools\Event;
+namespace DcaTools\Event;
 use Symfony\Component\EventDispatcher\GenericEvent;
 
 /**
  * Class EventDispatcher
- * @package Netzmacht\DcaTools\Event
+ * @package DcaTools\Event
  */
 class EventDispatcher extends \Symfony\Component\EventDispatcher\EventDispatcher
 {

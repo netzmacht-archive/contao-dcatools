@@ -11,16 +11,16 @@
  * @copyright 2013 netzmacht creative David Molineus
  */
 
-namespace Netzmacht\DcaTools;
+namespace DcaTools;
 
 
-use Netzmacht\DcaTools\Definition\DataContainer;
+use DcaTools\Definition\DataContainer;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 
 /**
  * Class Definition provide access to definition of
  *
- * @package Netzmacht\DcaTools
+ * @package DcaTools
  */
 class Definition
 {

@@ -11,15 +11,15 @@
  * @copyright 2013 netzmacht creative David Molineus
  */
 
-namespace Netzmacht\DcaTools\Definition;
+namespace DcaTools\Definition;
 
-use Netzmacht\DcaTools\Event\EventDispatcher;
-use Netzmacht\DcaTools\Structure\ExportInterface;
+use DcaTools\Event\EventDispatcher;
+use DcaTools\Structure\ExportInterface;
 use Symfony\Component\EventDispatcher\GenericEvent;
 
 /**
  * Class Node
- * @package Netzmacht\DcaTools\Node
+ * @package DcaTools\Node
  */
 abstract class Node  implements ExportInterface
 {

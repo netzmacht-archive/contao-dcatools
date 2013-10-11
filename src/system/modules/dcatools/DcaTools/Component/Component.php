@@ -11,17 +11,17 @@
  * @copyright 2013 netzmacht creative David Molineus
  */
 
-namespace Netzmacht\DcaTools\Component;
+namespace DcaTools\Component;
 
 use DcGeneral\Data\DefaultModel;
 use DcGeneral\Data\ModelInterface;
-use Netzmacht\DcaTools\Definition;
-use Netzmacht\DcaTools\Event\EventDispatcher;
+use DcaTools\Definition;
+use DcaTools\Event\EventDispatcher;
 use Symfony\Component\EventDispatcher\GenericEvent;
 
 /**
  * Class Component
- * @package Netzmacht\DcaTools\Component
+ * @package DcaTools\Component
  */
 abstract class Component extends EventDispatcher
 {

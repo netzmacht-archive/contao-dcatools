@@ -11,13 +11,13 @@
  * @copyright 2013 netzmacht creative David Molineus
  */
 
-namespace Netzmacht\DcaTools\Definition;
+namespace DcaTools\Definition;
 
 use Symfony\Component\EventDispatcher\Event;
 
 /**
  * Class Legend represents legends of a palette
- * @package Netzmacht\DcaTools\Palette
+ * @package DcaTools\Palette
  */
 class Legend extends PropertyContainer
 {

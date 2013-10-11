@@ -11,13 +11,13 @@
  * @copyright 2013 netzmacht creative David Molineus
  */
 
-namespace Netzmacht\DcaTools\Event;
+namespace DcaTools\Event;
 
 use Symfony\Component\EventDispatcher\GenericEvent;
 
 /**
  * Class DataContainerListeners
- * @package Netzmacht\DcaTools\Event
+ * @package DcaTools\Event
  */
 class DataContainerListeners extends Permissions
 {

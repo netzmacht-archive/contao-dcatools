@@ -11,10 +11,10 @@
  * @copyright 2013 netzmacht creative David Molineus
  */
 
-namespace Netzmacht\DcaTools\Definition;
+namespace DcaTools\Definition;
 
 use DcGeneral\DataDefinition\OperationInterface;
-use Netzmacht\DcaTools\Definition;
+use DcaTools\Definition;
 
 
 /**
@@ -26,7 +26,7 @@ use Netzmacht\DcaTools\Definition;
  *  - validate:     Can set the button as disabled or hidden.
  *  - generate:     Called when button is generated, use this for influencing the output.
  *
- * @package Netzmacht\DcaTools\Operation
+ * @package DcaTools\Operation
  */
 class Operation extends Node implements OperationInterface
 {

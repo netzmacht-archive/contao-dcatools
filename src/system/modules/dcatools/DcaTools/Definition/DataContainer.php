@@ -11,20 +11,20 @@
  * @copyright 2013 netzmacht creative David Molineus
  */
 
-namespace Netzmacht\DcaTools\Definition;
+namespace DcaTools\Definition;
 
 use DcGeneral\Contao\Dca\Conditions\ParentChildCondition;
 use DcGeneral\Contao\Dca\Conditions\RootCondition;
 use DcGeneral\Data\DefaultModel;
 use DcGeneral\DataDefinition\ContainerInterface;
-use Netzmacht\DcaTools\Definition;
+use DcaTools\Definition;
 use Symfony\Component\EventDispatcher\Event;
 use Symfony\Component\EventDispatcher\GenericEvent;
 
 
 /**
  * Class DataContainer
- * @package Netzmacht\DcaTools
+ * @package DcaTools
  */
 class DataContainer extends PropertyContainer implements ContainerInterface
 {

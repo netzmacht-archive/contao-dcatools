@@ -7,8 +7,8 @@ $GLOBALS['TL_DCA']['tl_example'] = array
 	(
 		'permissions' => array
 		(
-			array('\Netzmacht\DcaTools\Event\DataContainerPermissions', 'hasAccess', array('module' => 'test')),
-			array('\Netzmacht\DcaTools\Event\DataContainerPermissions', 'isAdmin'),
+			array('DcaTools\Event\DataContainerPermissions', 'hasAccess', array('module' => 'test')),
+			array('DcaTools\Event\DataContainerPermissions', 'isAdmin'),
 		),
 
 		'operationListeners' => true,
@@ -28,7 +28,7 @@ $GLOBALS['TL_DCA']['tl_example'] = array
 				(
 					'permissions' => array
 					(
-						array('\Netzmacht\DcaTools\Event\OperationPermissions', 'isAdmin'),
+						array('DcaTools\Event\OperationPermissions', 'isAdmin'),
 					),
 
 					'generate' => array

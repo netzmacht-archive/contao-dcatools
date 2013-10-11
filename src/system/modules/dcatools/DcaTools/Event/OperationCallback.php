@@ -11,14 +11,14 @@
  * @copyright 2013 netzmacht creative David Molineus
  */
 
-namespace Netzmacht\DcaTools\Event;
+namespace DcaTools\Event;
 
 use Symfony\Component\EventDispatcher\GenericEvent;
 
 
 /**
  * Class ContaoCallback
- * @package Netzmacht\DcaTools\Button
+ * @package DcaTools\Button
  */
 class OperationCallback
 {
@@ -47,10 +47,10 @@ class OperationCallback
 	{
 		$objCallback = new $this->arrCallback[0]();
 
-		/** @var \Netzmacht\DcaTools\Component\Operation $objOperation */
+		/** @var DcaTools\Component\Operation $objOperation */
 		$objOperation = $objEvent->getSubject();
 
-		/** @var \Netzmacht\DcaTools\Definition\DataContainer $objDataContainer */
+		/** @var DcaTools\Definition\DataContainer $objDataContainer */
 		$objDataContainer = $objOperation->getDefinition()->getDataContainer();
 
 		$strBuffer = $objCallback->{$this->arrCallback[1]}

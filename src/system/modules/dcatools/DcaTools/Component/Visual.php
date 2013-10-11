@@ -11,9 +11,9 @@
  * @copyright 2013 netzmacht creative David Molineus
  */
 
-namespace Netzmacht\DcaTools\Component;
+namespace DcaTools\Component;
 
-use Netzmacht\DcaTools\Definition\Node;
+use DcaTools\Definition\Node;
 use Symfony\Component\EventDispatcher\GenericEvent;
 
 abstract class Visual extends Component

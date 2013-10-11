@@ -11,15 +11,15 @@
  * @copyright 2013 netzmacht creative David Molineus
  */
 
-namespace Netzmacht\DcaTools\Component;
+namespace DcaTools\Component;
 
-use Netzmacht\DcaTools\Structure\OperationInterface;
-use Netzmacht\DcaTools\Definition;
+use DcaTools\Structure\OperationInterface;
+use DcaTools\Definition;
 use Symfony\Component\EventDispatcher\GenericEvent;
 
 /**
  * Class Operation
- * @package Netzmacht\DcaTools\Component
+ * @package DcaTools\Component
  */
 class Operation extends Visual implements OperationInterface
 {

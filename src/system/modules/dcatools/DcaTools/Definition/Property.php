@@ -11,13 +11,13 @@
  * @copyright 2013 netzmacht creative David Molineus
  */
 
-namespace Netzmacht\DcaTools\Definition;
+namespace DcaTools\Definition;
 
 use DcGeneral\DataDefinition\PropertyInterface;
 
 /**
  * Class Property
- * @package Netzmacht\DcaTools\Palette
+ * @package DcaTools\Palette
  */
 class Property extends Node implements PropertyInterface
 {

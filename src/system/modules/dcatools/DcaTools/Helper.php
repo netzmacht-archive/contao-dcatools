@@ -11,17 +11,17 @@
  * @copyright 2013 netzmacht creative David Molineus
  */
 
-namespace Netzmacht\DcaTools;
+namespace DcaTools;
 
 use DcGeneral\Data\DefaultModel;
-use Netzmacht\DcaTools\Component\DataContainer;
-use Netzmacht\DcaTools\Component\Operation;
-use Netzmacht\DcaTools\Event\OperationCallback;
+use DcaTools\Component\DataContainer;
+use DcaTools\Component\Operation;
+use DcaTools\Event\OperationCallback;
 
 /**
  * Class Helper provides hooks and callbacks for getting connected with Contao
  *
- * @package Netzmacht\DcaTools
+ * @package DcaTools
  */
 class Helper
 {
@@ -68,7 +68,7 @@ class Helper
 	public function hookLoadDataContainer($strName)
 	{
 		array_insert($GLOBALS['TL_DCA'][$strName]['config']['onload_callback'], 0, array(
-			array('Netzmacht\DcaTools\Helper', 'callbackInitializeDataContainer')
+			array('DcaTools\Helper', 'callbackInitializeDataContainer')
 		));
 	}
 
@@ -131,7 +131,7 @@ class Helper
 
 			$GLOBALS['TL_DCA'][$strTable]['list'][$strKey][$strOperation]['button_callback'] = array
 			(
-				'Netzmacht\DcaTools\Helper', $strCallback . $strOperation
+				'DcaTools\Helper', $strCallback . $strOperation
 			);
 		}
 	}

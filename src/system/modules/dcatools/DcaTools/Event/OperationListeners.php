@@ -11,7 +11,7 @@
  * @copyright 2013 netzmacht creative David Molineus
  */
 
-namespace Netzmacht\DcaTools\Event;
+namespace DcaTools\Event;
 
 use Symfony\Component\EventDispatcher\GenericEvent;
 
@@ -19,7 +19,7 @@ use Symfony\Component\EventDispatcher\GenericEvent;
 /**
  * Class OperationListeners stores listener which can be used for the operation generate event
  *
- * @package Netzmacht\DcaTools\Event
+ * @package DcaTools\Event
  */
 class OperationListeners extends Permissions
 {
@@ -94,7 +94,7 @@ class OperationListeners extends Permissions
 	 */
 	public static function isAllowed(GenericEvent $objEvent, array $arrConfig=array(), $blnStop=true)
 	{
-		/** @var \Netzmacht\DcaTools\Definition\DataContainer $objDataContainer */
+		/** @var DcaTools\Definition\DataContainer $objDataContainer */
 		$objDataContainer = $objEvent->getSubject()->getDataContainer();
 		
 		$strTable = (isset($arrConfig['table'])) ? $arrConfig['table'] : $objDataContainer->getName();
@@ -193,7 +193,7 @@ class OperationListeners extends Permissions
 		$objUser = \BackendUser::getInstance();
 		$objOperation = $objEvent->getSubject();
 
-		/** @var \Netzmacht\DcaTools\Definition\DataContainer $objDataContainer */
+		/** @var DcaTools\Definition\DataContainer $objDataContainer */
 		$objDataContainer = $objOperation->getDataContainer();
 
 		$arrRow = $objDataContainer->getModel()->getPropertiesAsArray();
@@ -244,7 +244,7 @@ class OperationListeners extends Permissions
 		\Input::setGet('act', 'toggle');
 
 		// trigger permission checking
-		/** @var \Netzmacht\DcaTools\Component\DataContainer $objDataContainer */
+		/** @var DcaTools\Component\DataContainer $objDataContainer */
 		$objDataContainer = $objEvent->getSubject()->getDataContainer();
 		$objDataContainer->dispatch('permissions');
 

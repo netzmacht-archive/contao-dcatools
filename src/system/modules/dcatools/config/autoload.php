@@ -16,7 +16,7 @@
  */
 ClassLoader::addNamespaces(array
 (
-	'Netzmacht',
+	'DcaTools',
 ));
 
 
@@ -26,29 +26,29 @@ ClassLoader::addNamespaces(array
 ClassLoader::addClasses(array
 (
 	// DcaTools
-	'Netzmacht\DcaTools\Helper'                               => 'system/modules/dcatools/DcaTools/Helper.php',
-	'Netzmacht\DcaTools\Event\EventDispatcher'                => 'system/modules/dcatools/DcaTools/Event/EventDispatcher.php',
-	'Netzmacht\DcaTools\Event\OperationListeners'             => 'system/modules/dcatools/DcaTools/Event/OperationListeners.php',
-	'Netzmacht\DcaTools\Event\OperationCallback'              => 'system/modules/dcatools/DcaTools/Event/OperationCallback.php',
-	'Netzmacht\DcaTools\Event\DataContainerListeners'         => 'system/modules/dcatools/DcaTools/Event/DataContainerListeners.php',
-	'Netzmacht\DcaTools\Event\Permissions'                    => 'system/modules/dcatools/DcaTools/Event/Permissions.php',
-	'Netzmacht\DcaTools\Model\DcGeneralModel'                 => 'system/modules/dcatools/DcaTools/Model/DcGeneralModel.php',
-	'Netzmacht\DcaTools\Definition\Operation'                 => 'system/modules/dcatools/DcaTools/Definition/Operation.php',
-	'Netzmacht\DcaTools\Definition\DataContainer'             => 'system/modules/dcatools/DcaTools/Definition/DataContainer.php',
-	'Netzmacht\DcaTools\Definition\Property'                  => 'system/modules/dcatools/DcaTools/Definition/Property.php',
-	'Netzmacht\DcaTools\Definition\Node'                      => 'system/modules/dcatools/DcaTools/Definition/Node.php',
-	'Netzmacht\DcaTools\Definition\Child'                     => 'system/modules/dcatools/DcaTools/Definition/Child.php',
-	'Netzmacht\DcaTools\Definition\Legend'                    => 'system/modules/dcatools/DcaTools/Definition/Legend.php',
-	'Netzmacht\DcaTools\Definition\PropertyContainer'         => 'system/modules/dcatools/DcaTools/Definition/PropertyContainer.php',
-	'Netzmacht\DcaTools\Definition\SubPalette'                => 'system/modules/dcatools/DcaTools/Definition/SubPalette.php',
-	'Netzmacht\DcaTools\Definition\Palette'                   => 'system/modules/dcatools/DcaTools/Definition/Palette.php',
-	'Netzmacht\DcaTools\DcaTools'                             => 'system/modules/dcatools/DcaTools/DcaTools.php',
-	'Netzmacht\DcaTools\Definition'                           => 'system/modules/dcatools/DcaTools/Definition.php',
-	'Netzmacht\DcaTools\Component\Operation'                  => 'system/modules/dcatools/DcaTools/Component/Operation.php',
-	'Netzmacht\DcaTools\Component\Component'                  => 'system/modules/dcatools/DcaTools/Component/Component.php',
-	'Netzmacht\DcaTools\Structure\PropertyContainerInterface' => 'system/modules/dcatools/DcaTools/Structure/PropertyContainerInterface.php',
-	'Netzmacht\DcaTools\Structure\ExportInterface'            => 'system/modules/dcatools/DcaTools/Structure/ExportInterface.php',
-	'Netzmacht\DcaTools\Structure\OperationInterface'         => 'system/modules/dcatools/DcaTools/Structure/OperationInterface.php',
+	'DcaTools\Helper'                               => 'system/modules/dcatools/DcaTools/Helper.php',
+	'DcaTools\Event\EventDispatcher'                => 'system/modules/dcatools/DcaTools/Event/EventDispatcher.php',
+	'DcaTools\Event\OperationListeners'             => 'system/modules/dcatools/DcaTools/Event/OperationListeners.php',
+	'DcaTools\Event\OperationCallback'              => 'system/modules/dcatools/DcaTools/Event/OperationCallback.php',
+	'DcaTools\Event\DataContainerListeners'         => 'system/modules/dcatools/DcaTools/Event/DataContainerListeners.php',
+	'DcaTools\Event\Permissions'                    => 'system/modules/dcatools/DcaTools/Event/Permissions.php',
+	'DcaTools\Model\DcGeneralModel'                 => 'system/modules/dcatools/DcaTools/Model/DcGeneralModel.php',
+	'DcaTools\Definition\Operation'                 => 'system/modules/dcatools/DcaTools/Definition/Operation.php',
+	'DcaTools\Definition\DataContainer'             => 'system/modules/dcatools/DcaTools/Definition/DataContainer.php',
+	'DcaTools\Definition\Property'                  => 'system/modules/dcatools/DcaTools/Definition/Property.php',
+	'DcaTools\Definition\Node'                      => 'system/modules/dcatools/DcaTools/Definition/Node.php',
+	'DcaTools\Definition\Child'                     => 'system/modules/dcatools/DcaTools/Definition/Child.php',
+	'DcaTools\Definition\Legend'                    => 'system/modules/dcatools/DcaTools/Definition/Legend.php',
+	'DcaTools\Definition\PropertyContainer'         => 'system/modules/dcatools/DcaTools/Definition/PropertyContainer.php',
+	'DcaTools\Definition\SubPalette'                => 'system/modules/dcatools/DcaTools/Definition/SubPalette.php',
+	'DcaTools\Definition\Palette'                   => 'system/modules/dcatools/DcaTools/Definition/Palette.php',
+	'DcaTools\DcaTools'                             => 'system/modules/dcatools/DcaTools/DcaTools.php',
+	'DcaTools\Definition'                           => 'system/modules/dcatools/DcaTools/Definition.php',
+	'DcaTools\Component\Operation'                  => 'system/modules/dcatools/DcaTools/Component/Operation.php',
+	'DcaTools\Component\Component'                  => 'system/modules/dcatools/DcaTools/Component/Component.php',
+	'DcaTools\Structure\PropertyContainerInterface' => 'system/modules/dcatools/DcaTools/Structure/PropertyContainerInterface.php',
+	'DcaTools\Structure\ExportInterface'            => 'system/modules/dcatools/DcaTools/Structure/ExportInterface.php',
+	'DcaTools\Structure\OperationInterface'         => 'system/modules/dcatools/DcaTools/Structure/OperationInterface.php',
 ));
 
 

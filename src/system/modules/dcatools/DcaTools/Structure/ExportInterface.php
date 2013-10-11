@@ -11,11 +11,11 @@
  * @copyright 2013 netzmacht creative David Molineus
  */
 
-namespace Netzmacht\DcaTools\Structure;
+namespace DcaTools\Structure;
 
 /**
  * Class Exportable
- * @package Netzmacht\DcaTools\Node
+ * @package DcaTools\Node
  */
 interface ExportInterface
 {

@@ -1,4 +1,4 @@
-<?php /** @var Netzmacht\DcaTools\Component\Operation $this */ if($this->getScope() == 'local'): ?>
+<?php /** @var DcaTools\Component\Operation $this */ if($this->getScope() == 'local'): ?>
 	<?php if($this->isDisabled()): ?>
 		<?php echo \Image::getHtml($this->getIcon(), $this->getLabel(), 'class="disabeld"'); ?>
 	<?php else: ?>

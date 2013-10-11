@@ -11,15 +11,15 @@
  * @copyright 2013 netzmacht creative David Molineus
  */
 
-namespace Netzmacht\DcaTools\Definition;
+namespace DcaTools\Definition;
 
-use Netzmacht\DcaTools\Structure\PropertyContainerInterface;
+use DcaTools\Structure\PropertyContainerInterface;
 use Symfony\Component\EventDispatcher\Event;
 
 
 /**
  * Class Palette provides methods for manipulating palette
- * @package Netzmacht\Prototype\Palette
+ * @package Prototype\Palette
  */
 class Palette extends Node implements PropertyContainerInterface
 {

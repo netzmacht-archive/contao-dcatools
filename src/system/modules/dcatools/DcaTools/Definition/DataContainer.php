@@ -18,7 +18,6 @@ use DcGeneral\Contao\Dca\Conditions\RootCondition;
 use DcGeneral\Data\DefaultModel;
 use DcGeneral\DataDefinition\ContainerInterface;
 use Netzmacht\DcaTools\Definition;
-use Netzmacht\DcaTools\Model\DcGeneralModel;
 use Symfony\Component\EventDispatcher\Event;
 use Symfony\Component\EventDispatcher\GenericEvent;
 

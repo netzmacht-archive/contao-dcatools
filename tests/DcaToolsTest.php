@@ -9,8 +9,8 @@
 
 require_once dirname(__FILE__) . '/bootstrap.php';
 
-use \Netzmacht\DcaTools\DataContainer;
-use \Netzmacht\DcaTools\DcaTools;
+use \Netzmacht\DcaTools\Definition\DataContainer;
+use \Netzmacht\DcaTools\Definition;
 
 $GLOBALS['TL_DCA']['tl_test'] = array();
 
@@ -38,7 +38,7 @@ class DcaToolsTest extends PHPUnit_Framework_TestCase
 		$this->objDataContainer = null;
 		unset($GLOBALS['TL_DCA']['tl_test']);
 
-		$obj         = new DcaTools();
+		$obj         = new Definition();
 		$refObject   = new ReflectionObject( $obj );
 		$refProperty = $refObject->getProperty( 'arrDataContainers' );
 		$refProperty->setAccessible( true );
@@ -48,26 +48,26 @@ class DcaToolsTest extends PHPUnit_Framework_TestCase
 
 	public function testGetDataContainer()
 	{
-		$this->assertEquals($this->objDataContainer, DcaTools::getDataContainer('tl_test'));
+		$this->assertEquals($this->objDataContainer, Definition::getDataContainer('tl_test'));
 	}
 
 	public function testRegisterListener()
 	{
 		$objDispatcher = new \Symfony\Component\EventDispatcher\EventDispatcher();
 
-		DcaTools::registerListener($objDispatcher, 'test', array('Foo', 'bar'));
+		Definition::registerListener($objDispatcher, 'test', array('Foo', 'bar'));
 		$this->assertEquals($objDispatcher->getListeners('test'), array(array('Foo', 'bar')));
 
 		$objDispatcher = new \Symfony\Component\EventDispatcher\EventDispatcher();
 
-		DcaTools::registerListener($objDispatcher, 'test', array('Test', 'Case'));
-		DcaTools::registerListener($objDispatcher, 'test', array(array('Foo', 'bar'), 1));
+		Definition::registerListener($objDispatcher, 'test', array('Test', 'Case'));
+		Definition::registerListener($objDispatcher, 'test', array(array('Foo', 'bar'), 1));
 
 		$this->assertEquals($objDispatcher->getListeners('test'), array(array('Foo', 'bar'), array('Test', 'Case')));
 
 		$objDispatcher = new \Symfony\Component\EventDispatcher\EventDispatcher();
 
-		DcaTools::registerListener($objDispatcher, 'test', array('Foo', 'bar', array('test' => 'case')));
+		Definition::registerListener($objDispatcher, 'test', array('Foo', 'bar', array('test' => 'case')));
 		$listener = $objDispatcher->getListeners('test');
 		$this->assertTrue($listener[0] instanceof Closure);
 	}

@@ -11,10 +11,9 @@
  * @copyright 2013 netzmacht creative David Molineus
  */
 
-namespace Netzmacht\DcaTools\Node;
+namespace Netzmacht\DcaTools\Definition;
 
-use Netzmacht\DcaTools\DcaTools;
-use Netzmacht\DcaTools\Property;
+use Netzmacht\DcaTools\Structure\PropertyContainerInterface;
 use Symfony\Component\EventDispatcher\Event;
 use Symfony\Component\EventDispatcher\GenericEvent;
 
@@ -23,7 +22,7 @@ use Symfony\Component\EventDispatcher\GenericEvent;
  * Class Container is an abstract class as base for SubPalettes and Legends which contains properties
  * @package Netzmacht\DcaTools\Palette
  */
-abstract class PropertyContainer extends Child implements PropertyAccess, Exportable
+abstract class PropertyContainer extends Node implements PropertyContainerInterface
 {
 
 	/**

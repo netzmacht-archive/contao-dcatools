@@ -11,18 +11,17 @@
  * @copyright 2013 netzmacht creative David Molineus
  */
 
-namespace Netzmacht\DcaTools\Node;
+namespace Netzmacht\DcaTools\Definition;
 
-use Netzmacht\DcaTools\DcaTools;
-use Netzmacht\DcaTools\Event\Event;
-use Symfony\Component\EventDispatcher\EventDispatcher;
+use Netzmacht\DcaTools\Event\EventDispatcher;
+use Netzmacht\DcaTools\Structure\ExportInterface;
 use Symfony\Component\EventDispatcher\GenericEvent;
 
 /**
  * Class Node
  * @package Netzmacht\DcaTools\Node
  */
-abstract class Node extends EventDispatcher implements Exportable
+abstract class Node extends EventDispatcher implements ExportInterface
 {
 	/**
 	 * @var int use for injecting element before other one
@@ -62,15 +61,22 @@ abstract class Node extends EventDispatcher implements Exportable
 
 
 	/**
+	 * @var DataContainer
+	 */
+	protected $objDataContainer;
+
+
+	/**
 	 * Constrcutor
 	 *
 	 * @param $strName
 	 * @param $definition
 	 */
-	public function __construct($strName, &$definition)
+	public function __construct($strName, DataContainer $objDataContainer, &$definition)
 	{
 		$this->strName = $strName;
 		$this->definition =& $definition;
+		$this->objDataContainer = $objDataContainer;
 	}
 
 
@@ -124,6 +130,107 @@ abstract class Node extends EventDispatcher implements Exportable
 
 
 	/**
+	 * Get root DataContainer object
+	 *
+	 * @return DataContainer
+	 */
+	public function getDataContainer()
+	{
+		return $this->objDataContainer;
+	}
+
+
+	/**
+	 * Change DataContainer of Child
+	 *
+	 * @param DataContainer $objDataContainer
+	 * @return $this
+	 */
+	public function setDataContainer(DataContainer $objDataContainer)
+	{
+		if($this->getDataContainer() != $objDataContainer)
+		{
+			// data container is changed, so element is deleted from origin one,
+			$this->dispatch('delete');
+
+			$this->objDataContainer = $objDataContainer;
+			$this->objDataContainer->dispatch('change');
+		}
+
+		return $this;
+	}
+
+
+	/**
+	 * Test if element has same DataContainer as root
+	 *
+	 * @param Child $node
+	 *
+	 * @return bool
+	 */
+	public function hasSameDataContainer(Child $node)
+	{
+		return ($this->getDataContainer() == $node->getDataContainer());
+	}
+
+
+	/**
+	 * Remove child from parent
+	 * @return mixed
+	 */
+	public abstract function remove();
+
+
+	/**
+	 * Get from definition
+	 *
+	 * @param $strKey
+	 * @return mixed
+	 */
+	abstract public function get($strKey);
+
+
+	/**
+	 * Add a node at a specified position
+	 *
+	 * @param array $arrTarget
+	 * @param Child $objElement
+	 * @param null $strReference
+	 * @param $intPosition
+	 *
+	 * @throws \RuntimeException
+	 */
+	protected function addAtPosition(array &$arrTarget, Child $objElement, $strReference=null, $intPosition=Child::POS_LAST)
+	{
+		if($objElement->getDataContainer() != $this->getDataContainer())
+		{
+			throw new \RuntimeException("DataContainers are not identical");
+		}
+
+		if($strReference === null || $strReference === static::POS_LAST)
+		{
+			$arrTarget[$objElement->getName()] = $objElement;
+		}
+		else
+		{
+			$intPos = array_search($strReference, array_keys($arrTarget));
+			($intPosition === static::POS_BEFORE) ?: ++$intPos;
+
+			if($intPos == 0 || $strReference === static::POS_FIRST)
+			{
+				$arrTarget = array_merge(array($objElement->getName() => $objElement), $arrTarget);
+			}
+			else
+			{
+				$arrTarget = array_slice($arrTarget, 0, $intPos, true) +
+					array($objElement->getName() => $objElement) +
+					array_slice($arrTarget, $intPos, count($arrTarget) - 1, true) ;
+			}
+		}
+	}
+
+
+	/**
 	 * @param $strKey
 	 * @return null
 	 */
@@ -165,7 +272,7 @@ abstract class Node extends EventDispatcher implements Exportable
 	/**
 	 * Copy node to a new one
 	 *
-	 * @param $strName new name
+	 * @param string $strName new name
 	 *
 	 * @return mixed
 	 */
@@ -200,19 +307,4 @@ abstract class Node extends EventDispatcher implements Exportable
 		$this->definition = $this->asString();
 	}
 
-
-	/**
-	 * Dispatch the event, will create an DcaTools event if none given
-	 *
-	 * @return GenericEvent
-	 */
-	public function dispatch($strEvent, \Symfony\Component\EventDispatcher\Event $objEvent=null)
-	{
-		if($objEvent === null)
-		{
-			$objEvent = new GenericEvent($this);
-		}
-
-		return parent::dispatch($strEvent, $objEvent);
-	}
 }

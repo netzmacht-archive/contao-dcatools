@@ -30,7 +30,7 @@ class OperationCallback
 
 
 	/**
-	 * @param Config $objConfig
+	 * @param array $arrCallback
 	 */
 	public function __construct(array $arrCallback)
 	{
@@ -49,14 +49,15 @@ class OperationCallback
 
 		$objOperation = $objEvent->getSubject();
 
-		/** @var \Netzmacht\DcaTools\DataContainer $objDataContainer */
+		/** @var \Netzmacht\DcaTools\Definition\DataContainer $objDataContainer */
 		$objDataContainer = $objOperation->getDataContainer();
 
-		$objOperation->setBuffer
+		$objEvent->setArgument
 		(
+			'buffer',
 			$objCallback->{$this->arrCallback[1]}
 			(
-				$objDataContainer->hasRecord() ? $objDataContainer->getRecord()->row() : array(),
+				$objDataContainer->hasModel() ? $objDataContainer->getModel()->getPropertiesAsArray() : array(),
 				$objOperation->getHref(),
 				$objOperation->getLabel(),
 				$objOperation->getTitle(),

@@ -11,17 +11,15 @@
  * @copyright 2013 netzmacht creative David Molineus
  */
 
-namespace Netzmacht\DcaTools;
+namespace Netzmacht\DcaTools\Definition;
 
 use DcGeneral\DataDefinition\OperationInterface;
-use Netzmacht\DcaTools\DataContainer;
-use Netzmacht\DcaTools\Node\Child;
-use Symfony\Component\EventDispatcher\EventDispatcher;
+use Netzmacht\DcaTools\Definition;
 
 
 /**
  * Class Operation provides a generic class which allows to define multiple events being triggered when a button component
- * of Contao DCA is generated. The button will be loaded using DcaTools::buttonCallback
+ * of Contao DCA is generated. The button will be loaded using Definition::buttonCallback
  *
  * Following events are supported:
  *  - initialize:   called in the constructor
@@ -30,70 +28,12 @@ use Symfony\Component\EventDispatcher\EventDispatcher;
  *
  * @package Netzmacht\DcaTools\Operation
  */
-class Operation extends Child implements OperationInterface
+class Operation extends Node implements OperationInterface
 {
-
-	/**
-	 * Operation Template
-	 * @var string
-	 */
-	protected $strTemplate = 'be_operation';
-
-
-	/**
-	 * Rendered button
-	 *
-	 * @var string
-	 */
-	protected $strBuffer;
-
-
 	/**
 	 * @var string
 	 */
 	protected $strScope;
-
-
-	/**
-	 * @var string
-	 */
-	protected $strAttributes;
-
-
-	/**
-	 * @var string
-	 */
-	protected $strLabel;
-
-
-	/**
-	 * @var string
-	 */
-	protected $strTitle;
-
-
-	/**
-	 * @var string
-	 */
-	protected $strHref;
-
-
-	/**
-	 * @var string
-	 */
-	protected $strIcon;
-
-
-	/**
-	 * @var bool
-	 */
-	protected $blnDisabled;
-
-
-	/**
-	 * @var bool
-	 */
-	protected $blnHidden;
 
 
 	/**
@@ -108,18 +48,6 @@ class Operation extends Child implements OperationInterface
 		$strConfig = $strScope == 'global' ? 'global_operations' : 'operations';
 
 		parent::__construct($strName, $objDataContainer, $definition['list'][$strConfig][$strName]);
-
-		// load event listeners from definition
-		if(isset($this->definition['events']) && is_array($this->definition['events']))
-		{
-			foreach($this->definition['events'] as $strEvent => $arrListeners)
-			{
-				foreach($arrListeners as $listener)
-				{
-					DcaTools::registerListener($this, $strEvent, $listener);
-				}
-			}
-		}
 
 		$this->strScope = $strScope;
 		$this->dispatch('initialize');
@@ -201,34 +129,6 @@ class Operation extends Child implements OperationInterface
 
 
 	/**
-	 * @param string $strTitle
-	 */
-	public function setTitle($strTitle)
-	{
-		$arrLabel = $this->get('label');
-		$arrLabel[0] = $strTitle;
-
-		$this->set('label', $arrLabel);
-	}
-
-
-	/**
-	 * @param bool $blnRaw
-	 *
-	 * @return string
-	 */
-	public function getTitle($blnRaw=true)
-	{
-		if(!$blnRaw && $this->getDataContainer()->hasRecord())
-		{
-			return sprintf($this->strTitle, $this->getDataContainer()->getRecord()->id);
-		}
-
-		return $this->strTitle;
-	}
-
-
-	/**
 	 * Return the callback to use.
 	 *
 	 * @return array
@@ -272,36 +172,6 @@ class Operation extends Child implements OperationInterface
 	/**
 	 * @return string
 	 */
-	public function getTemplateName()
-	{
-		return $this->strTemplate;
-	}
-
-
-	/**
-	 * Change used template
-	 *
-	 * @param string $strName
-	 * @event template
-	 */
-	public function setTemplateName($strName)
-	{
-		$this->strTemplate = $strName;
-	}
-
-
-	/**
-	 * @param $strBuffer
-	 */
-	public function setBuffer($strBuffer)
-	{
-		$this->strBuffer = $strBuffer;
-	}
-
-
-	/**
-	 * @return string
-	 */
 	public function getScope()
 	{
 		return $this->strScope;
@@ -314,73 +184,6 @@ class Operation extends Child implements OperationInterface
 	public function setScope($strScope)
 	{
 		$this->strScope = $strScope;
-	}
-
-
-	/**
-	 * Hide Operation
-	 */
-	public function hide()
-	{
-		$this->blnHidden = true;
-	}
-
-
-	/**
-	 * @return bool
-	 */
-	public function isHidden()
-	{
-		return $this->blnHidden;
-	}
-
-
-	/**
-	 * Disable operation. Operation will be displayed as disabled
-	 */
-	public function disable()
-	{
-		$this->blnDisabled = true;
-	}
-
-
-	/**
-	 * @return bool
-	 */
-	public function isDisabled()
-	{
-		return $this->blnDisabled;
-	}
-
-
-	/**
-	 *
-	 * @param array $arrConfig
-	 *
-	 * @return string
-	 */
-	public function generate(array $arrConfig = array('table' => true, 'id' => true))
-	{
-		// Trigger generate event
-		/** @var \Symfony\Component\EventDispatcher\GenericEvent $objEvent */
-		$objEvent = $this->dispatch('generate');
-
-		if($this->isHidden())
-		{
-			return '';
-		}
-
-		// This is for Contao style button callbacks which are wrapped in an event
-		if($this->strBuffer != '')
-		{
-			return $this->strBuffer;
-		}
-
-		$objTemplate = new \BackendTemplate($this->strTemplate);
-		$objTemplate->config = $objEvent->getArguments();
-		$objTemplate->operation = $this;
-
-		return $objTemplate->parse();
 	}
 
 
@@ -405,7 +208,7 @@ class Operation extends Child implements OperationInterface
 	 */
 	public function asString(array $arrConfig = array('table' => true, 'id' => true))
 	{
-		return $this->generate($arrConfig);
+		return $this->getName();
 	}
 
 

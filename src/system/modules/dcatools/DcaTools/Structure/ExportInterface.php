@@ -11,13 +11,13 @@
  * @copyright 2013 netzmacht creative David Molineus
  */
 
-namespace Netzmacht\DcaTools\Node;
+namespace Netzmacht\DcaTools\Structure;
 
 /**
  * Class Exportable
  * @package Netzmacht\DcaTools\Node
  */
-interface Exportable
+interface ExportInterface
 {
 
 	/**

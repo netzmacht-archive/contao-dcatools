@@ -11,11 +11,8 @@
  * @copyright 2013 netzmacht creative David Molineus
  */
 
-namespace Netzmacht\DcaTools\Palette;
+namespace Netzmacht\DcaTools\Definition;
 
-use Netzmacht\DcaTools\DataContainer;
-use Netzmacht\DcaTools\DcaTools;
-use Netzmacht\DcaTools\Node\PropertyContainer;
 use Symfony\Component\EventDispatcher\Event;
 
 /**
@@ -92,5 +89,15 @@ class SubPalette extends PropertyContainer
 				$this->addProperty($strProperty);
 			}
 		}
+	}
+
+
+	/**
+	 * @param null $strKey
+	 * @return mixed
+	 */
+	public function get($strKey=null)
+	{
+		return $this->definition;
 	}
 }

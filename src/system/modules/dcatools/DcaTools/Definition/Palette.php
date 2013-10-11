@@ -11,15 +11,9 @@
  * @copyright 2013 netzmacht creative David Molineus
  */
 
-namespace Netzmacht\DcaTools\Palette;
+namespace Netzmacht\DcaTools\Definition;
 
-use Netzmacht\DcaTools\DataContainer;
-use Netzmacht\DcaTools\DcaTools;
-use Netzmacht\DcaTools\Property;
-use Netzmacht\DcaTools\Node\Child;
-use Netzmacht\DcaTools\Node\PropertyAccess;
-use Netzmacht\DcaTools\Node\PropertyContainer;
-use Netzmacht\DcaTools\Node\Node;
+use Netzmacht\DcaTools\Structure\PropertyContainerInterface;
 use Symfony\Component\EventDispatcher\Event;
 
 
@@ -27,7 +21,7 @@ use Symfony\Component\EventDispatcher\Event;
  * Class Palette provides methods for manipulating palette
  * @package Netzmacht\Prototype\Palette
  */
-class Palette extends Child implements PropertyAccess
+class Palette extends Node implements PropertyContainerInterface
 {
 
 	/**
@@ -671,6 +665,16 @@ class Palette extends Child implements PropertyAccess
 		$this->dispatch('change');
 
 		return $this;
+	}
+
+
+	/**
+	 * @param $strKey
+	 * @return mixed|void
+	 */
+	public function get($strKey=null)
+	{
+		return $this->definition;
 	}
 
 }

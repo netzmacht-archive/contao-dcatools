@@ -91,7 +91,7 @@ class OperationListeners extends Permissions
 	 */
 	public static function isAllowed(GenericEvent $objEvent, array $arrConfig=array(), $blnStop=true)
 	{
-		/** @var \Netzmacht\DcaTools\DataContainer $objDataContainer */
+		/** @var \Netzmacht\DcaTools\Definition\DataContainer $objDataContainer */
 		$objDataContainer = $objEvent->getSubject()->getDataContainer();
 		
 		$strTable = (isset($arrConfig['table'])) ? $arrConfig['table'] : $objDataContainer->getName();
@@ -184,10 +184,10 @@ class OperationListeners extends Permissions
 		$objUser = \BackendUser::getInstance();
 		$objOperation = $objEvent->getSubject();
 
-		/** @var \Netzmacht\DcaTools\DataContainer $objDataContainer */
+		/** @var \Netzmacht\DcaTools\Definition\DataContainer $objDataContainer */
 		$objDataContainer = $objOperation->getDataContainer();
 
-		$arrRow = $objDataContainer->getRecord()->row();
+		$arrRow = $objDataContainer->getModel()->getPropertiesAsArray();
 
 		$strTable = (isset($arrConfig['table'])) ? $arrConfig['table'] : $objDataContainer->getName();
 		$strProperty = (isset($arrConfig['property'])) ? $arrConfig['property'] : 'published';
@@ -235,7 +235,7 @@ class OperationListeners extends Permissions
 		\Input::setGet('act', 'toggle');
 
 		// trigger permission checking
-		/** @var \Netzmacht\DcaTools\DataContainer $objDataContainer */
+		/** @var \Netzmacht\DcaTools\Definition\DataContainer $objDataContainer */
 		$objDataContainer = $objEvent->getSubject()->getDataContainer();
 		$objDataContainer->dispatch('permissions');
 

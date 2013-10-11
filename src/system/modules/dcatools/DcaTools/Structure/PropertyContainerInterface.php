@@ -11,11 +11,11 @@
  * @copyright 2013 netzmacht creative David Molineus
  */
 
-namespace Netzmacht\DcaTools\Node;
+namespace Netzmacht\DcaTools\Structure;
 
-use Netzmacht\DcaTools\Property;
+use Netzmacht\DcaTools\Definition\Property;
 
-interface PropertyAccess extends \IteratorAggregate
+interface PropertyContainerInterface extends \IteratorAggregate
 {
 
 	/**

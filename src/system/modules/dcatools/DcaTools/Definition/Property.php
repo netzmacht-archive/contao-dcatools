@@ -11,19 +11,15 @@
  * @copyright 2013 netzmacht creative David Molineus
  */
 
-namespace Netzmacht\DcaTools;
+namespace Netzmacht\DcaTools\Definition;
 
 use DcGeneral\DataDefinition\PropertyInterface;
-use Netzmacht\DcaTools\Node\Child;
-use Netzmacht\DcaTools\Node\PropertyContainer;
-use Netzmacht\DcaTools\Node\Node;
-use Netzmacht\DcaTools\Palette\SubPalette;
 
 /**
  * Class Property
  * @package Netzmacht\DcaTools\Palette
  */
-class Property extends Child implements PropertyInterface
+class Property extends Node implements PropertyInterface
 {
 	/**
 	 * @var PropertyContainer
@@ -261,19 +257,19 @@ class Property extends Child implements PropertyInterface
 	 */
 	public function hasActiveSubPalette()
 	{
-		$objRecord = $this->getDataContainer()->getRecord();
+		$objModel = $this->getDataContainer()->getModel();
 
-		if($objRecord === null)
+		if($objModel === null)
 		{
 			return false;
 		}
 
-		if($objRecord->{$this->getName()} == 1)
+		if($objModel->getProperty($this->getName()) == 1)
 		{
 			return $this->getDataContainer()->hasSubPalette($this->getName());
 		}
 
-		return $this->getDataContainer()->hasSubPalette($this->strName . '_' . $objRecord->{$this->strName});
+		return $this->getDataContainer()->hasSubPalette($this->strName . '_' . $objModel->getProperty($this->getName()));
 	}
 
 
@@ -285,14 +281,14 @@ class Property extends Child implements PropertyInterface
 	 */
 	public function getActiveSubPalette()
 	{
-		$objRecord = $this->getDataContainer()->getRecord();
+		$objModel = $this->getDataContainer()->getModel();
 
-		if($objRecord === null)
+		if($objModel === null)
 		{
 			return null;
 		}
 
-		$varValue = $objRecord->{$this->strName};
+		$varValue = $objModel->getProperty($this->strName);
 
 		if($varValue == 1)
 		{
@@ -303,7 +299,7 @@ class Property extends Child implements PropertyInterface
 		}
 		else
 		{
-			return $this->getDataContainer()->getSubPalette($this->strName . '_' . $objRecord->{$this->strName});
+			return $this->getDataContainer()->getSubPalette($this->strName . '_' . $objModel->getProperty($this->strName));
 		}
 
 		return null;

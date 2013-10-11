@@ -11,11 +11,8 @@
  * @copyright 2013 netzmacht creative David Molineus
  */
 
-namespace Netzmacht\DcaTools\Palette;
+namespace Netzmacht\DcaTools\Definition;
 
-use Netzmacht\DcaTools\DataContainer;
-use Netzmacht\DcaTools\Node\PropertyContainer;
-use Netzmacht\DcaTools\Palette\Palette;
 use Symfony\Component\EventDispatcher\Event;
 
 /**
@@ -53,6 +50,18 @@ class Legend extends PropertyContainer
 		parent::__construct($strName, $objDataContainer, $definition);
 
 		$this->objPalette = $objPalette;
+	}
+
+
+	/**
+	 * Get Definition
+	 *
+	 * @param $strKey
+	 * @return mixed
+	 */
+	public function get($strKey=null)
+	{
+		return $this->asString();
 	}
 
 

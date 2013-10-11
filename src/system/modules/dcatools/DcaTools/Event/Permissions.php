@@ -45,6 +45,7 @@ class Permissions
 
 	public static function hasAccess(GenericEvent $objEvent, array $arrConfig)
 	{
+		/** @var \BackendUser $objUser */
 		$objUser = \BackendUser::getInstance();
 
 		// Has access to an module
@@ -102,7 +103,7 @@ class Permissions
 	 */
 	public static function isAllowed(GenericEvent $objEvent, array $arrConfig)
 	{
-		/** @var \Netzmacht\DcaTools\DataContainer $objDataContainer */
+		/** @var \Netzmacht\DcaTools\Definition\DataContainer $objDataContainer */
 		$objDataContainer = $objEvent->getSubject()->getDataContainer();
 
 		/** @var \BackendUser $objUser */
@@ -110,9 +111,9 @@ class Permissions
 
 		$arrRow = array();
 
-		if($objDataContainer->hasRecord())
+		if($objDataContainer->hasModel())
 		{
-			$arrRow = $objDataContainer->getRecord()->row();
+			$arrRow = $objDataContainer->getModel()->getPropertiesAsArray();
 		}
 
 		if(!isset($arrConfig['ptable']))

@@ -9,6 +9,7 @@
 
 namespace Netzmacht\DcaTools;
 
+use DcGeneral\Data\DefaultModel;
 use Netzmacht\DcaTools\Event\OperationCallback;
 
 /**
@@ -29,23 +30,22 @@ class Helper
 	 */
 	public function __call($strMethod, $arrArguments)
 	{
-		$objDataContainer = DcaTools::getDataContainer($arrArguments[6]);
-
 		if (strncmp($strMethod, 'operationCallback', 17) === 0)
 		{
+			$objDataContainer = Definition::getDataContainer($arrArguments[6]);
+
 			$strOperation = substr($strMethod, 17);
 			$objOperation = $objDataContainer->getOperation($strOperation, 'local');
 
-			$strClass = \Model::getClassFromTable($arrArguments[6]);
+			$objModel = new DefaultModel();
+			$objModel->setPropertiesAsArray(array_shift($arrArguments));
 
-			/** @var \Model $objModel */
-			$objModel = new $strClass;
-			$objModel->setRow(array_shift($arrArguments));
-
-			$objDataContainer->setRecord($objModel);
+			$objDataContainer->setModel($objModel);
 		}
 		elseif (strncmp($strMethod, 'globalOperationCallback', 23) === 0)
 		{
+			$objDataContainer = Definition::getDataContainer($arrArguments[5]);
+
 			$strOperation = substr($strMethod, 23);
 			$objOperation = $objDataContainer->getOperation($strOperation, 'global');
 		}
@@ -53,9 +53,7 @@ class Helper
 		if(isset($objOperation))
 		{
 			$objOperation->setHref($arrArguments[0]);
-			$objOperation->setLabel($arrArguments[1]);
-			$objOperation->setTitle($arrArguments[2]);
-			$objOperation->setIcon($arrArguments[3]);
+			$objOperation->setLabel(array($arrArguments[1], $arrArguments[2]));
 			$objOperation->setAttributes($arrArguments[4]);
 
 			return $objOperation->generate();
@@ -68,12 +66,9 @@ class Helper
 	 */
 	public function hookLoadDataContainer($strName)
 	{
-		if(isset($GLOBALS['TL_DCA'][$strName]['dcatools']))
-		{
-			array_insert($GLOBALS['TL_DCA'][$strName]['config']['onload_callback'], 0, array(
-				array('Netzmacht\DcaTools\Helper', 'callbackInitializeDataContainer')
-			));
-		}
+		array_insert($GLOBALS['TL_DCA'][$strName]['config']['onload_callback'], 0, array(
+			array('Netzmacht\DcaTools\Helper', 'callbackInitializeDataContainer')
+		));
 	}
 
 
@@ -83,7 +78,12 @@ class Helper
 	 */
 	public function callbackInitializeDataContainer($dc)
 	{
-		$objDataContainer = DcaTools::getDataContainer($dc->table);
+		if(!isset($GLOBALS['TL_DCA'][$dc->table]['dcatools']))
+		{
+			return;
+		}
+
+		$objDataContainer = Definition::getDataContainer($dc->table);
 
 		$arrConfig =& $GLOBALS['TL_DCA'][$dc->table]['dcatools'];
 
@@ -92,7 +92,7 @@ class Helper
 		{
 			foreach($arrConfig['initialize'] as $listener)
 			{
-				DcaTools::registerListener($objDataContainer, 'initialize', $listener);
+				Definition::registerListener($objDataContainer, 'initialize', $listener);
 			}
 		}
 
@@ -100,7 +100,7 @@ class Helper
 		{
 			foreach($arrConfig['permissions'] as $listener)
 			{
-				DcaTools::registerListener($objDataContainer, 'permissions', $listener);
+				Definition::registerListener($objDataContainer, 'permissions', $listener);
 			}
 		}
 

@@ -11,17 +11,14 @@
  * @copyright 2013 netzmacht creative David Molineus
  */
 
-namespace Netzmacht\DcaTools;
+namespace Netzmacht\DcaTools\Definition;
 
 use DcGeneral\Contao\Dca\Conditions\ParentChildCondition;
 use DcGeneral\Contao\Dca\Conditions\RootCondition;
+use DcGeneral\Data\DefaultModel;
 use DcGeneral\DataDefinition\ContainerInterface;
-use Netzmacht\DcaTools\Operation;
+use Netzmacht\DcaTools\Definition;
 use Netzmacht\DcaTools\Model\DcGeneralModel;
-use Netzmacht\DcaTools\Node\PropertyContainer;
-use Netzmacht\DcaTools\Node\Node;
-use Netzmacht\DcaTools\Palette\Palette;
-use Netzmacht\DcaTools\Palette\SubPalette;
 use Symfony\Component\EventDispatcher\Event;
 use Symfony\Component\EventDispatcher\GenericEvent;
 
@@ -55,25 +52,25 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 
 
 	/**
-	 * @var \Model|\Database\Result|DcGeneralModel
+	 * @var \DcGeneral\Data\ModelInterface
 	 */
-	protected $objRecord;
+	protected $objModel;
 
 
 	/**
 	 * Constructor
 	 *
 	 * @param $strName
-	 * @param \Model|\Database\Result|\Model|\DcGeneral\Data\ModelInterface|null $objRecord
+	 * @param \Model|\Database\Result|\Model|\DcGeneral\Data\ModelInterface|null $objModel
 	 */
-	public function __construct($strName, $objRecord=null)
+	public function __construct($strName, $objModel=null)
 	{
 		$this->strName = $strName;
 		$this->definition =& $GLOBALS['TL_DCA'][$strName];
 
-		if($objRecord !== null)
+		if($objModel !== null)
 		{
-			$this->setRecord($objRecord);
+			$this->setModel($objModel);
 		}
 
 		$this->addListener('updateSelectors', array($this, 'updateSelectors'));
@@ -166,7 +163,7 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 	/**
 	 * Get DataContainer
 	 *
-	 * @return $this|DataContainer
+	 * @return $this
 	 */
 	public function getDataContainer()
 	{
@@ -177,35 +174,34 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 	/**
 	 * @return \Database\Result|\Model|\DcGeneral\Data\ModelInterface
 	 */
-	public function getRecord()
+	public function getModel()
 	{
-		return $this->objRecord;
+		return $this->objModel;
 	}
 
 
 	/**
-	 * @param $objRecord
+	 * Set Model of DataContainer
+	 * @param $objModel
 	 *
 	 * @return $this
 	 *
 	 * @throws \RuntimeException
 	 */
-	public function setRecord($objRecord)
+	public function setModel($objModel)
 	{
-		if($objRecord instanceof \Model || $objRecord instanceof \Database\Result)
+		if($objModel instanceof \Model\Collection || $objModel instanceof \Model || $objModel instanceof \Database\Result)
 		{
-			$this->objRecord = $objRecord;
+			/** @var \Model|\Model\Collection|\Database\Result $objModel */
+			$this->objModel = new DefaultModel();
+			$this->objModel->setPropertiesAsArray($objModel->row());
 		}
-		elseif($objRecord instanceof \Model\Collection)
+		elseif($objModel instanceof \DcGeneral\Data\ModelInterface)
 		{
-			$this->objRecord = $objRecord->current();
-		}
-		elseif($objRecord instanceof \DcGeneral\Data\ModelInterface)
-		{
-			$this->objRecord = new DcGeneralModel($objRecord);
+			$this->objModel = $objModel;
 		}
 		else {
-			throw new \RuntimeException("Type of Record is not supported");
+			throw new \RuntimeException("Type of Model is not supported");
 		}
 
 		return $this;
@@ -215,9 +211,9 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 	/**
 	 * return @bool
 	 */
-	public function hasRecord()
+	public function hasModel()
 	{
-		return ($this->objRecord !== null);
+		return ($this->objModel !== null);
 	}
 
 
@@ -402,7 +398,7 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 	{
 		if(is_string($objNode))
 		{
-			$objNode = DcaTools::getDataContainer($objNode);
+			$objNode = Definition::getDataContainer($objNode);
 		}
 		elseif(!$objNode instanceof DataContainer)
 		{
@@ -1130,7 +1126,7 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 				$this->arrPalettes[$objPalette->getName()] = $this->arrPalettes[$objEvent->getArgument('origin')];
 				unset($this->arrPalettes[$objEvent->getArgument('origin')]);
 
-				// no break
+				// no break;
 
 			case 'create':
 			case 'change':
@@ -1157,11 +1153,11 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 				/** @var GenericEvent $objEvent */
 				$objDispatcher = $objEvent->getSubject();
 
-				/** @var $objDispatcher SubPalette */
+				/** @var SubPalette $objDispatcher  */
 				$this->arrSubPalettes[$objDispatcher->getName()] = $this->arrSubPalettes[$objEvent->getArgument('origin')];
 				unset($this->arrSubPalettes[$objEvent->getArgument('origin')]);
 
-				//no break
+				#break;
 
 			case 'create':
 			case 'change':
@@ -1204,6 +1200,21 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 		{
 			$objPalette->updateDefinition();
 		}
+	}
+
+
+	/**
+	 * @param $strKey
+	 * @return mixed|null
+	 */
+	public function get($strKey)
+	{
+		if(isset($this->definition[$strKey]))
+		{
+			return $this->definition[$strKey];
+		}
+
+		return null;
 	}
 
 }

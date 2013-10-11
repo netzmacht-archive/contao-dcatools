@@ -526,27 +526,6 @@ class Palette extends Node implements PropertyContainerInterface
 
 
 	/**
-	 * Append Palette to a DataContainer
-	 *
-	 * @param DataContainer $objDataContainer
-	 * @param null $strReference
-	 * @param $intPosition
-	 *
-	 * @return Palette
-	 */
-	public function appendTo(DataContainer $objDataContainer, $strReference=null, $intPosition=Palette::POS_LAST)
-	{
-		if(!$objDataContainer->hasPalette($this))
-		{
-			$this->objDataContainer = $objDataContainer;
-			$objDataContainer->addPalette($this, $strReference, $intPosition);
-		}
-
-		return $this;
-	}
-
-
-	/**
 	 * remove Palette
 	 * @return Palette
 	 */

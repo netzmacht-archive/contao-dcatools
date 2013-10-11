@@ -135,7 +135,13 @@ class Legend extends PropertyContainer
 	 */
 	public function appendTo(Palette $objPalette, $reference=null, $intPosition=Legend::POS_LAST)
 	{
-		$objPalette->addLegend($this, $reference, $intPosition);
+		if($this->getPalette() != $objPalette)
+		{
+			$this->getPalette()->removeLegend($this);
+			$this->objPalette = $objPalette;
+		}
+
+		$this->getPalette()->moveLegend($this, $reference, $intPosition);
 
 		return $this;
 	}

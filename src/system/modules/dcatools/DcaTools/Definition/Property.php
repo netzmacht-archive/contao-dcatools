@@ -362,8 +362,6 @@ class Property extends Node implements PropertyInterface
 		if($this->getParent() != $objContainer)
 		{
 			$this->getParent()->removeProperty($this);
-		}
-		else {
 			$this->objParent = $objContainer;
 		}
 

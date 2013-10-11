@@ -244,7 +244,7 @@ class OperationListeners extends Permissions
 		\Input::setGet('act', 'toggle');
 
 		// trigger permission checking
-		/** @var \Netzmacht\DcaTools\Definition\DataContainer $objDataContainer */
+		/** @var \Netzmacht\DcaTools\Component\DataContainer $objDataContainer */
 		$objDataContainer = $objEvent->getSubject()->getDataContainer();
 		$objDataContainer->dispatch('permissions');
 

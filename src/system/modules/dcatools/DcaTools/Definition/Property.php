@@ -36,9 +36,29 @@ class Property extends Node implements PropertyInterface
 	{
 		$arrDefinition = $objDataContainer->getDefinition();
 
-		parent::__construct($strName, $objDataContainer, $arrDefinition['propertys'][$strName]);
+		parent::__construct($strName, $objDataContainer, $arrDefinition['fields'][$strName]);
 
 		$this->objParent = $objParent === null ? $objDataContainer : $objParent;
+	}
+
+
+	/**
+	 * @param string $strName
+	 * @return $this
+	 */
+	public function setName($strName)
+	{
+		if($strName != $this->strName)
+		{
+			parent::setName($strName);
+
+			$this->updateDefinition();
+		}
+		else {
+			parent::setName($strName);
+		}
+
+		return $this;
 	}
 
 
@@ -417,7 +437,6 @@ class Property extends Node implements PropertyInterface
 		}
 
 		$this->definition = $objNode->getDefinition();
-		$this->dispatch('change');
 
 		return $this;
 	}
@@ -442,5 +461,24 @@ class Property extends Node implements PropertyInterface
 	{
 		return $this->getName();
 	}
+
+
+	/**
+	 *  Update the definition of current element
+	 *
+	 * @param bool $blnPropagation
+	 * @return $this
+	 */
+	public function updateDefinition($blnPropagation = true)
+	{
+		if($blnPropagation)
+		{
+			$this->getParent()->updateDefinition();
+			$this->getDataContainer()->updateDefinition();
+		}
+
+		return $this;
+	}
+
 
 }

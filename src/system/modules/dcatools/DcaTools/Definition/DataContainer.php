@@ -88,14 +88,12 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 		foreach($this->arrSubPalettes as $strName => $objSubPalette)
 		{
 			$this->arrSubPalettes[$strName] = clone $objSubPalette;
-			$this->arrSubPalettes[$strName]->setDataContainer($this);
 		}
 
 		// clone palettes
 		foreach($this->arrPalettes as $strName => $objSubPalette)
 		{
 			$this->arrSubPalettes[$strName] = clone $objSubPalette;
-			$this->arrSubPalettes[$strName]->setDataContainer($this);
 		}
 
 		// selectors will be automatically created
@@ -106,11 +104,7 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 		{
 			foreach($arrOperations as $strName => $objOperation)
 			{
-				/** @var Operation $objClone */
-				$objClone = clone $objOperation;
-				$objClone->setDataContainer($this);
-
-				$this->arrOperations[$strScope][$strName] = $objClone;
+				$this->arrOperations[$strScope][$strName] = clone $objOperation;
 			}
 		}
 	}
@@ -378,7 +372,6 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 			else
 			{
 				$this->arrProperties[$strProperty] = clone $objProperty;
-				$this->arrProperties[$strProperty]->setDataContainer($this);
 			}
 
 			if(isset($arrSelectors[$strProperty]))
@@ -411,7 +404,7 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 			}
 		}
 
-		$this->dispatch('change');
+		$this->updateDefinition();
 	}
 
 
@@ -423,7 +416,11 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 	public function copy($strName=null)
 	{
 		$objCopy = parent::copy($strName);
-		$objCopy->dispatch('change');
+
+		if($strName)
+		{
+			$objCopy->updateDefinition();
+		}
 
 		return $objCopy;
 	}
@@ -511,7 +508,6 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 		{
 			$objProperty = $this->getProperty($strName);
 			unset($this->arrProperties[$strName]);
-			$objProperty->dispatch('delete');
 
 			// unset property not matter if auto update is on because we check against definition if property exists
 			unset($this->definition['fields'][$strName]);
@@ -534,7 +530,6 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 		$objProperty->addListener('delete', array($this, 'propertyListener'));
 
 		$this->arrProperties[$strName] = $objProperty;
-		$this->dispatch('change');
 
 		return $this->arrProperties[$strName];
 	}
@@ -606,15 +601,9 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 		$this->definition['palettes'][$strName] = '';
 
 		$objPalette = new Palette($strName, $this);
-		$objPalette->addListener('create', array($this, 'paletteListener'));
-		$objPalette->addListener('rename', array($this, 'paletteListener'));
-		$objPalette->addListener('remove', array($this, 'paletteListener'));
-		$objPalette->addListener('change', array($this, 'paletteListener'));
-
 		$this->arrPalettes[$strName] = $objPalette;
-		$objPalette->dispatch('create');
 
-		return $this->getPalette($strName);
+		return $objPalette;
 	}
 
 
@@ -642,8 +631,6 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 
 			unset($this->arrPalettes[$strName]);
 			unset($this->definition['palettes'][$strName]);
-
-			$objPalette->dispatch('remove');
 		}
 
 		return $this;
@@ -669,15 +656,9 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 		$this->definition['palettes'][$strName] = array();
 
 		$objSubPalette = new SubPalette($strName, $this);
-		$objSubPalette->addListener('create', array($this, 'subPaletteListener'));
-		$objSubPalette->addListener('rename', array($this, 'paletteListener'));
-		$objSubPalette->addListener('remove', array($this, 'paletteListener'));
-		$objSubPalette->addListener('change', array($this, 'paletteListener'));
-
 		$this->arrSubPalettes[$strName] = $objSubPalette;
-		$objSubPalette->dispatch('create');
 
-		return $this->getSubPalette($strName);
+		return $objSubPalette;
 	}
 
 
@@ -751,8 +732,6 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 
 			unset($this->arrSubPalettes[$strName]);
 			unset($this->definition['subpalettes'][$strName]);
-
-			$objSubPalette->dispatch('remove');
 		}
 
 		return $this;
@@ -943,13 +922,7 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 		$this->definition['list'][$strFrom][$strName] = array();
 
 		$objOperation = new Operation($strName, $strScope, $this);
-		$objOperation->addListener('move',   array($this, 'operationListener'));
-		$objOperation->addListener('rename', array($this, 'operationListener'));
-		$objOperation->addListener('change', array($this, 'operationListener'));
-		$objOperation->addListener('remove', array($this, 'operationListener'));
-
 		$this->arrOperations[$strScope][$strName] = $objOperation;
-		$objOperation->dispatch('change');
 
 		return $objOperation;
 	}
@@ -993,7 +966,6 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 		}
 
 		$this->addAtPosition($this->arrOperations[$strScope], $objOperation, $reference, $intPosition);
-		$objOperation->dispatch('move');
 
 		return $this;
 	}
@@ -1017,116 +989,11 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 
 		if(isset($this->arrOperations[$strScope][$operation]))
 		{
-			/** @var Operation $objOperation */
-			$objOperation = $this->arrOperations[$strScope][$operation];
 			unset($this->arrOperations[$strScope][$operation]);
-			$objOperation->dispatch('remove');
+			unset($this->definition[$strScope][$operation]);
 		}
 
 		return $this;
-	}
-
-
-	/**
-	 * Listen to property events
-	 *
-	 * @param Event $objEvent
-	 *
-	 * @return mixed
-	 */
-	public function propertyListener(Event $objEvent)
-	{
-		/** @var $objProperty Property */
-		$objProperty = $objEvent->getDispatcher();
-		$strName = $objProperty->getName();
-
-		if($objEvent->getName() == 'delete')
-		{
-			foreach($this->getPalettes() as $objPalette)
-			{
-				if($objPalette->hasProperty($strName))
-				{
-					$objPalette->removeProperty($strName);
-				}
-			}
-
-			foreach($this->getSubPalettes() as $objSubPalette)
-			{
-				if($objSubPalette->hasProperty($strName))
-				{
-					$objSubPalette->removeProperty($strName);
-				}
-			}
-
-			if($objProperty->isSelector())
-			{
-				$key = array_search($strName, $this->definition['palettes']['__selector__']);
-				unset($this->definition['palettes']['__selector__'][$key]);
-			}
-
-			$this->dispatch('change');
-		}
-	}
-
-
-	/**
-	 * Listen to property events
-	 *
-	 * @param Event $objEvent
-	 *
-	 * @return mixed
-	 */
-	protected function paletteListener(Event $objEvent)
-	{
-		switch($objEvent->getName())
-		{
-			case 'rename':
-				/** @var GenericEvent $objEvent */
-				$objPalette = $objEvent->getSubject();
-
-				$this->arrPalettes[$objPalette->getName()] = $this->arrPalettes[$objEvent->getArgument('origin')];
-				unset($this->arrPalettes[$objEvent->getArgument('origin')]);
-
-				// no break;
-
-			case 'create':
-			case 'change':
-			case 'move':
-			case 'remove':
-				$this->dispatch('change');
-				break;
-		}
-	}
-
-
-	/**
-	 * Listen to property events
-	 *
-	 * @param Event $objEvent
-	 *
-	 * @return mixed
-	 */
-	protected function subPaletteListener(Event $objEvent)
-	{
-		switch($objEvent->getName())
-		{
-			case 'rename':
-				/** @var GenericEvent $objEvent */
-				$objDispatcher = $objEvent->getSubject();
-
-				/** @var SubPalette $objDispatcher  */
-				$this->arrSubPalettes[$objDispatcher->getName()] = $this->arrSubPalettes[$objEvent->getArgument('origin')];
-				unset($this->arrSubPalettes[$objEvent->getArgument('origin')]);
-
-				#break;
-
-			case 'create':
-			case 'change':
-			case 'move':
-			case 'remove':
-				$this->dispatch('change');
-				break;
-		}
 	}
 
 
@@ -1136,35 +1003,39 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 	public function remove()
 	{
 		unset($GLOBALS['TL_DCA'][$this->getName()]);
-
-		$this->dispatch('remove');
 	}
 
 
 	/**
-	 * Trigger update definition of child elements
+	 * Update definition
 	 *
+	 * @param bool $blnPropagation
+	 * @return $this
 	 */
-	public function updateDefinition()
+	public function updateDefinition($blnPropagation=true)
 	{
-		foreach($this->arrProperties as $objProperty)
+		foreach($this->getProperties() as $objProperty)
 		{
-			$objProperty->updateDefinition();
+			$objProperty->updateDefinition(false);
 		}
 
-		foreach($this->arrSubPalettes as $objPalette)
+		foreach($this->getSubPalettes() as $objPalette)
 		{
-			$objPalette->updateDefinition();
+			$objPalette->updateDefinition(false);
 		}
 
-		foreach($this->arrPalettes as $objPalette)
+		foreach($this->getPalettes() as $objPalette)
 		{
-			$objPalette->updateDefinition();
+			$objPalette->updateDefinition(false);
 		}
+
+		return $this;
 	}
 
 
 	/**
+	 * Get definition information
+	 *
 	 * @param $strKey
 	 * @return mixed|null
 	 */

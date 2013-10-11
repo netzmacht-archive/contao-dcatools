@@ -47,8 +47,6 @@ class Palette extends Node implements PropertyContainerInterface
 
 		parent::__construct($strName, $objDataContainer, $definition['palettes'][$strName]);
 
-		$this->addListener('change', array($this, 'updateDefinition'));
-
 		$this->loadFromDefinition();
 	}
 
@@ -358,7 +356,7 @@ class Palette extends Node implements PropertyContainerInterface
 	/**
 	 * add existing legend to palette
 	 *
-	 * @param Legend|string $objLegend
+	 * @param string $objLegend
 	 * @param string|Legend|null $reference
 	 * @param int $intPosition
 	 *
@@ -366,43 +364,19 @@ class Palette extends Node implements PropertyContainerInterface
 	 *
 	 * @throws \RuntimeException
 	 */
-	public function addLegend($objLegend, $reference=null, $intPosition=Palette::POS_LAST)
+	public function createLegend($strName, $reference=null, $intPosition=Palette::POS_LAST)
 	{
-		if(is_string($objLegend))
+		if($this->hasLegend($strName))
 		{
-			$objLegend = new Legend($objLegend, $this->getDataContainer(), $this);
+			throw new \RuntimeException("Legend '{$strName}' already exists.");
 		}
 
-		if($this->hasLegend($objLegend))
-		{
-			throw new \RuntimeException("Legend '{$objLegend->getName()}' is already added.");
-		}
-
-		$objLegend->addListener('move',   array($this, 'legendListener'));
-		$objLegend->addListener('remove', array($this, 'legendListener'));
-		$objLegend->addListener('change', array($this, 'legendListener'));
+		$objLegend = new Legend($strName, $this->getDataContainer(), $this);
 
 		$this->addAtPosition($this->arrLegends, $objLegend, $reference, $intPosition);
-		$objLegend->dispatch('move');
+		$this->updateDefinition();
 
 		return $this;
-	}
-
-
-	/**
-	 * Create a new legend
-	 *
-	 * @param $strName
-	 *
-	 * @return Legend
-	 *
-	 * @throws \RuntimeException
-	 */
-	public function createLegend($strName)
-	{
-		$this->addLegend($strName);
-
-		return $this->getLegend($strName);
 	}
 
 
@@ -410,11 +384,10 @@ class Palette extends Node implements PropertyContainerInterface
 	 * Remove legend of palette
 	 *
 	 * @param Legend|string $legend
-	 * @param bool $blnFromAllPalettes
 	 *
 	 * @return $this
 	 */
-	public function removeLegend($legend, $blnFromAllPalettes=false)
+	public function removeLegend($legend)
 	{
 		$strName = is_object($legend) ? $legend->getName() : $legend;
 
@@ -423,8 +396,7 @@ class Palette extends Node implements PropertyContainerInterface
 			$objLegend = $this->arrLegends[$strName];
 			unset($this->arrLegends[$strName]);
 
-			$strEvent = $blnFromAllPalettes ? 'delete' : 'remove';
-			$objLegend->dispatch($strEvent);
+			$this->updateDefinition();
 		}
 
 		return $this;
@@ -447,7 +419,7 @@ class Palette extends Node implements PropertyContainerInterface
 		}
 
 		$this->addAtPosition($this->arrLegends, $objLegend, $reference, $intPosition);
-		$objLegend->dispatch('move');
+		$this->updateDefinition();
 
 		return $this;
 	}
@@ -501,11 +473,7 @@ class Palette extends Node implements PropertyContainerInterface
 			}
 
 			// prevent faulty dca breaks loading
-			try {
-				$this->addLegend($objLegend);
-			}
-			catch(\RuntimeException $e){}
-
+			$this->arrLegends[$objLegend->getName()] = $objLegend;
 		}
 
 		return $this;
@@ -591,53 +559,6 @@ class Palette extends Node implements PropertyContainerInterface
 
 
 	/**
-	 * Listen to property changes
-	 *
-	 * @param Event $objEvent
-	 *
-	 * @return void
-	 */
-	public function propertyListener(Event $objEvent)
-	{
-		switch($objEvent->getName())
-		{
-			case 'change':
-				$this->dispatch('change');
-				break;
-		}
-	}
-
-
-	/**
-	 * @param Event $objEvent
-	 */
-	public function legendListener(Event $objEvent)
-	{
-		switch($objEvent->getName())
-		{
-			case 'rename':
-				/** @var $objEvent \Netzmacht\DcaTools\Event\Event */
-				$objConfig = $objEvent->getConfig();
-				$objDispatcher = $objEvent->getDispatcher();
-
-				/** @var $objDispatcher Legend */
-				$this->arrLegends[$objDispatcher->getName()] = $this->arrLegends[$objConfig->get('origin')];
-				unset($this->arrLegends[$objConfig->get('origin')]);
-
-				// no break here
-
-			case 'move':
-			case 'remove':
-			case 'change':
-				$this->updateDefinition();
-
-				$this->dispatch('change');
-				break;
-		}
-	}
-
-
-	/**
 	 * Extend an existing node of the same type
 	 *
 	 * @param Node $objNode
@@ -662,7 +583,7 @@ class Palette extends Node implements PropertyContainerInterface
 			$this->arrLegends[$strName] = clone $objLegend;
 		}
 
-		$this->dispatch('change');
+		$this->updateDefinition();
 
 		return $this;
 	}
@@ -675,6 +596,19 @@ class Palette extends Node implements PropertyContainerInterface
 	public function get($strKey=null)
 	{
 		return $this->definition;
+	}
+
+
+	/**
+	 * Update the definition of current element
+	 *
+	 * @param bool $blnPropagation
+	 *
+	 * @return $this
+	 */
+	public function updateDefinition($blnPropagation = true)
+	{
+		$this->definition = $this->asString();
 	}
 
 }

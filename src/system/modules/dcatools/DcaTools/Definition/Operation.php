@@ -50,7 +50,6 @@ class Operation extends Node implements OperationInterface
 		parent::__construct($strName, $objDataContainer, $definition['list'][$strConfig][$strName]);
 
 		$this->strScope = $strScope;
-		$this->dispatch('initialize');
 	}
 
 

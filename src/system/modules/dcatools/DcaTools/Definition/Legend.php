@@ -249,8 +249,26 @@ class Legend extends PropertyContainer
 			throw new \RuntimeException("Node '{$node->getName()}' is not the same Node type");
 		}
 
-		$this->arrProperties = array_merge($this->arrProperties, $node->getProperties());
-		$this->dispatch('change');
+		foreach($node->getProperties() as $objNode)
+		{
+			$this->arrProperties[$objNode->getName()] = clone $objNode;
+		}
+
+		$this->updateDefinition();
+
+		return $this;
+	}
+
+
+	/**
+	 * Update data definition
+	 */
+	public function updateDefinition($blnPropagation=true)
+	{
+		if($blnPropagation)
+		{
+			$this->getPalette()->updateDefinition();
+		}
 
 		return $this;
 	}

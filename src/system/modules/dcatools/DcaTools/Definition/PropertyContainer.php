@@ -75,16 +75,8 @@ abstract class PropertyContainer extends Node implements PropertyContainerInterf
 
 		$objProperty = clone $this->getDataContainer()->getProperty($strName);
 
-			// register PropertyContainer to Property events
-		$objProperty->addListener('move',   array($this, 'propertyListener'));
-		$objProperty->addListener('change', array($this, 'propertyListener'));
-		$objProperty->addListener('remove', array($this, 'propertyListener'));
-
-		// register DataContainer to delete event
-		$objProperty->addListener('delete', array($this->getDataContainer()), 'propertyListener');
-
 		$this->addAtPosition($this->arrProperties, $objProperty, $reference, $intPosition);
-		$objProperty->dispatch('move');
+		$this->updateDefinition();
 
 		return $this;
 	}
@@ -154,16 +146,9 @@ abstract class PropertyContainer extends Node implements PropertyContainerInterf
 		}
 
 		$objProperty = clone $this->getDataContainer()->getProperty($strName);
-
-		// register PropertyContainer to Property events
-		$objProperty->addListener('move',   array($this, 'propertyListener'));
-		$objProperty->addListener('change', array($this, 'propertyListener'));
-		$objProperty->addListener('remove', array($this, 'propertyListener'));
-
-		// register DataContainer to delete event
-		$objProperty->addListener('delete', array($this->getDataContainer()), 'propertyListener');
 		$this->arrProperties[$strName] = $objProperty;
-		$objProperty->dispatch('move');
+
+		$this->updateDefinition();
 
 		return $objProperty;
 	}
@@ -183,11 +168,13 @@ abstract class PropertyContainer extends Node implements PropertyContainerInterf
 
 		if($this->hasProperty($strName))
 		{
-			$strEvent = $blnFromDataContainer ? 'delete' : 'remove';
-			$this->arrProperties[$strName]->dispatch($strEvent);
+			if($blnFromDataContainer)
+			{
+				$this->getDataContainer()->removeProperty($strName);
+			}
 
 			unset($this->arrProperties[$strName]);
-			$this->dispatch('change');
+			$this->updateDefinition();
 		}
 
 		return $this;
@@ -220,7 +207,7 @@ abstract class PropertyContainer extends Node implements PropertyContainerInterf
 			unset($this->arrProperties[$strName]);
 
 			$this->addAtPosition($this->arrProperties, $objProperty, $reference, $intPosition);
-			$objProperty->dispatch('move');
+			$this->updateDefinition();
 		}
 		else
 		{
@@ -328,33 +315,17 @@ abstract class PropertyContainer extends Node implements PropertyContainerInterf
 
 
 	/**
-	 * @param Event $objEvent
+	 * Update defintion
 	 *
-	 * @return mixed
+	 * @param bool $blnPropagation
+	 *
+	 * @return $this
 	 */
-	public function propertyListener(Event $objEvent)
+	public function updateDefinition($blnPropagation=true)
 	{
-		switch($objEvent->getName())
-		{
-			case 'rename':
-				/** @var GenericEvent $objEvent */
-				/** @var Property $objProperty */
-				$objProperty = $objEvent->getSubject();
+		$this->definition = $this->asString();
 
-				$this->arrProperties[$objProperty->getName()] = $this->arrProperties[$objEvent->getArgument('origin')];
-				unset($this->arrProperties[$objEvent->getArgument('origin')]);
-
-				// no break
-
-			case 'move':
-			case 'change':
-			case 'remove':
-				$this->updateDefinition();
-
-				// propagate changes
-				$this->dispatch('change');
-				break;
-		}
+		return $this;
 	}
 
 }

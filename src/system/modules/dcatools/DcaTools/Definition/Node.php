@@ -21,7 +21,7 @@ use Symfony\Component\EventDispatcher\GenericEvent;
  * Class Node
  * @package Netzmacht\DcaTools\Node
  */
-abstract class Node extends EventDispatcher implements ExportInterface
+abstract class Node  implements ExportInterface
 {
 	/**
 	 * @var int use for injecting element before other one
@@ -110,12 +110,13 @@ abstract class Node extends EventDispatcher implements ExportInterface
 	 */
 	public function setName($strName)
 	{
-		$objEvent = new GenericEvent();
-		$objEvent->setArgument('origin', $this->strName);
+		if($this->strName != $strName)
+		{
+			$this->strName = $strName;
+			$this->updateDefinition();
+		}
 
-		$strEvent = ($this->strName != '') ? 'rename' : 'change';
-
-		$this->dispatch($strEvent, $objEvent);
+		return $this;
 	}
 
 
@@ -138,27 +139,6 @@ abstract class Node extends EventDispatcher implements ExportInterface
 	public function getDataContainer()
 	{
 		return $this->objDataContainer;
-	}
-
-
-	/**
-	 * Change DataContainer of Child
-	 *
-	 * @param DataContainer $objDataContainer
-	 * @return $this
-	 */
-	public function setDataContainer(DataContainer $objDataContainer)
-	{
-		if($this->getDataContainer() != $objDataContainer)
-		{
-			// data container is changed, so element is deleted from origin one,
-			$this->dispatch('delete');
-
-			$this->objDataContainer = $objDataContainer;
-			$this->objDataContainer->dispatch('change');
-		}
-
-		return $this;
 	}
 
 
@@ -299,13 +279,13 @@ abstract class Node extends EventDispatcher implements ExportInterface
 	}
 
 
-
 	/**
 	 * Update the definition of current element
+	 *
+	 * @param bool $blnPropagation
+	 *
+	 * @return $this
 	 */
-	public function updateDefinition()
-	{
-		$this->definition = $this->asString();
-	}
+	abstract public function updateDefinition($blnPropagation=true);
 
 }

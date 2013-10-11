@@ -69,7 +69,7 @@ class SubPalette extends PropertyContainer
 		/** @var $objNode PropertyContainer */
 
 		$this->arrProperties = array_merge($this->arrProperties, $node->getProperties());
-		$this->dispatch('change');
+		$this->updateDefinition();
 
 		return $this;
 	}

@@ -22,34 +22,13 @@ abstract class Component extends EventDispatcher
 {
 
 	/**
-	 * Template name
-	 * @var string
-	 */
-	protected $strTemplate;
-
-
-	/**
 	 * @var ModelInterface
 	 */
 	protected $objModel;
 
 
 	/**
-	 * Template Format
-	 *
-	 * @var string
-	 */
-	protected $strFormat = 'html5';
-
-
-	/**
-	 * @var bool
-	 */
-	protected $blnHidden;
-
-
-	/**
-	 * @var Definition\Child
+	 * @var Definition\Node
 	 */
 	protected $objDefinition;
 
@@ -59,44 +38,19 @@ abstract class Component extends EventDispatcher
 	 *
 	 * @param $objDefinition
 	 */
-	public function __construct(Node $objDefinition)
+	public function __construct(Definition\Node $objDefinition)
 	{
 		$this->objDefinition = $objDefinition;
-
-		$arrEvents = $objDefinition->get('events');
-
-		if(is_array($arrEvents))
-		{
-			foreach($arrEvents as $strEvent => $arrListeners)
-			{
-				$this->addListeners($strEvent, $arrListeners);
-			}
-		}
 	}
 
 
 	/**
-	 * Get Template name
-	 *
-	 * @return string
+	 * @return Definition\Node
 	 */
-	public function getTemplateName()
+	public function getDefinition()
 	{
-		return $this->strTemplate;
+		return $this->objDefinition;
 	}
-
-
-	/**
-	 * Change used template
-	 *
-	 * @param string $strName
-	 * @event template
-	 */
-	public function setTemplateName($strName)
-	{
-		$this->strTemplate = $strName;
-	}
-
 
 	/**
 	 * @param ModelInterface $objModel
@@ -117,64 +71,20 @@ abstract class Component extends EventDispatcher
 
 
 	/**
-	 * Hide Operation
-	 */
-	public function hide()
-	{
-		$this->blnHidden = true;
-	}
-
-
-	/**
 	 * @return bool
 	 */
-	public function isHidden()
+	public function hasModel()
 	{
-		return $this->blnHidden;
+		return ($this->objModel !== null);
 	}
 
 
 	/**
 	 * @return mixed
 	 */
-	abstract protected function compile(GenericEvent $objEvent);
-
-
-	/**
-	 * @return string
-	 */
-	public function generate()
+	public function getName()
 	{
-		if($this->isHidden())
-		{
-			return;
-		}
-
-		$objEvent = new GenericEvent();
-		$objEvent->setArgument('render', true);
-
-		$objEvent = $this->dispatch('generate', $objEvent);
-
-		// check if rendering is denied
-		if(!$objEvent->getArgument('render'))
-		{
-			return;
-		}
-
-		// check for generated component
-		if($objEvent->hasArgument('buffer') && $objEvent->getArgument('buffer') != '')
-		{
-			return $objEvent->getArgument('buffer');
-		}
-
-		$this->compile($objEvent);
-
-		ob_start();
-		include \Controller::getTemplate($this->strTemplate);
-		$strBuffer = ob_get_contents();
-		ob_end_clean();
-
-		return $strBuffer;
+		return $this->objDefinition->getName();
 	}
 
 }

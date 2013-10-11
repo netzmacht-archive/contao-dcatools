@@ -17,7 +17,7 @@ use Symfony\Component\EventDispatcher\GenericEvent;
  * Class Operation
  * @package Netzmacht\DcaTools\Component
  */
-class Operation extends Component implements OperationInterface
+class Operation extends Visual implements OperationInterface
 {
 
 	/**

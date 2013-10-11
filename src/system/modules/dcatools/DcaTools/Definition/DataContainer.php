@@ -44,11 +44,6 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 	 */
 	protected $arrSubPalettes = array();
 
-	/**
-	 * @var Property[]
-	 */
-	protected $arrSelectors = array();
-
 
 	/**
 	 * @var \DcGeneral\Data\ModelInterface
@@ -71,42 +66,18 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 		{
 			$this->setModel($objModel);
 		}
-
-		$this->addListener('updateSelectors', array($this, 'updateSelectors'));
-		$this->addListener('removeFromDataContainer', array($this, 'propertyListener'));
 	}
 
 
 	/**
-	 * Clone DataContainer
+	 * Clone DataContainer will remove all sub elements because they can not be cloned
 	 */
 	public function __clone()
 	{
-		parent::__clone();
-
-		// clone subpalettes
-		foreach($this->arrSubPalettes as $strName => $objSubPalette)
-		{
-			$this->arrSubPalettes[$strName] = clone $objSubPalette;
-		}
-
-		// clone palettes
-		foreach($this->arrPalettes as $strName => $objSubPalette)
-		{
-			$this->arrSubPalettes[$strName] = clone $objSubPalette;
-		}
-
-		// selectors will be automatically created
-		unset($this->arrSelectors);
-
-		// clone operations
-		foreach($this->arrOperations as $strScope => $arrOperations)
-		{
-			foreach($arrOperations as $strName => $objOperation)
-			{
-				$this->arrOperations[$strScope][$strName] = clone $objOperation;
-			}
-		}
+		$this->arrSubPalettes = array();
+		$this->arrOperations  = array();
+		$this->arrPalettes    = array();
+		$this->arrProperties  = array();
 	}
 
 
@@ -373,11 +344,6 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 			{
 				$this->arrProperties[$strProperty] = clone $objProperty;
 			}
-
-			if(isset($arrSelectors[$strProperty]))
-			{
-				$this->arrSelectors[$strProperty] = $this->arrProperties[$strProperty];
-			}
 		}
 
 		// extend Palettes and make sure that Legends and Properties are also combined
@@ -442,7 +408,6 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 			if(!isset($this->arrProperties[$strName]))
 			{
 				$objProperty = new Property($strName, $this);
-				$objProperty->addListener('delete', array($this, 'propertyListener'));
 
 				$this->arrProperties[$strName] = $objProperty;
 			}
@@ -527,8 +492,6 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 		$this->definition['fields'][$strName] = array();
 
 		$objProperty = new Property($strName, $this);
-		$objProperty->addListener('delete', array($this, 'propertyListener'));
-
 		$this->arrProperties[$strName] = $objProperty;
 
 		return $this->arrProperties[$strName];
@@ -872,11 +835,6 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 			if(!isset($this->arrOperations[$strScope][$strName]))
 			{
 				$objOperation = new Operation($strName, $strScope, $this);
-				$objOperation->addListener('move',   array($this, 'operationListener'));
-				$objOperation->addListener('rename', array($this, 'operationListener'));
-				$objOperation->addListener('change', array($this, 'operationListener'));
-				$objOperation->addListener('remove', array($this, 'operationListener'));
-
 				$this->arrOperations[$strScope][$strName] = $objOperation;
 			}
 

@@ -47,31 +47,36 @@ class OperationCallback
 	{
 		$objCallback = new $this->arrCallback[0]();
 
+		/** @var \Netzmacht\DcaTools\Component\Operation $objOperation */
 		$objOperation = $objEvent->getSubject();
 
 		/** @var \Netzmacht\DcaTools\Definition\DataContainer $objDataContainer */
-		$objDataContainer = $objOperation->getDataContainer();
+		$objDataContainer = $objOperation->getDefinition()->getDataContainer();
 
-		$objEvent->setArgument
+		$strBuffer = $objCallback->{$this->arrCallback[1]}
 		(
-			'buffer',
-			$objCallback->{$this->arrCallback[1]}
-			(
-				$objDataContainer->hasModel() ? $objDataContainer->getModel()->getPropertiesAsArray() : array(),
-				$objOperation->getHref(),
-				$objOperation->getLabel(),
-				$objOperation->getTitle(),
-				$objOperation->getIcon(),
-				$objOperation->getAttributes(),
-				$objOperation->getDataContainer()->getName(),
-				null,
-				null,
-				false,
-				null,
-				null,
-				null
-			)
+			$objOperation->hasModel() ? $objOperation->getModel()->getPropertiesAsArray() : array(),
+			$objOperation->getHref(),
+			$objOperation->getLabel(),
+			$objOperation->getTitle(),
+			$objOperation->getIcon(),
+			$objOperation->getAttributes(),
+			$objDataContainer->getName(),
+			null,
+			null,
+			false,
+			null,
+			null,
+			null
 		);
+
+		if($strBuffer == '')
+		{
+			$objOperation->hide();
+		}
+		else {
+			$objEvent->setArgument('buffer', $strBuffer);
+		}
 	}
 
 }

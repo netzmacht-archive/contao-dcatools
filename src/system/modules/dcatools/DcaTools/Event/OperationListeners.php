@@ -41,6 +41,7 @@ class OperationListeners extends Permissions
 
 		if($blnStop)
 		{
+			$objEvent->setArgument('buffer', '');
 			$objEvent->stopPropagation();
 			$objEvent->getSubject()->hide();
 		}
@@ -65,6 +66,7 @@ class OperationListeners extends Permissions
 
 		if($blnStop)
 		{
+			$objEvent->setArgument('buffer', '');
 			$objEvent->getSubject()->hide();
 			$objEvent->stopPropagation();
 		}
@@ -106,6 +108,7 @@ class OperationListeners extends Permissions
 
 		if($blnStop)
 		{
+			$objEvent->setArgument('buffer', '');
 			$objEvent->getSubject()->hide();
 			$objEvent->stopPropagation();
 		}
@@ -141,6 +144,8 @@ class OperationListeners extends Permissions
 			$strIcon = isset($arrConfig['icon']) ? $arrConfig['icon'] : str_replace('.', '_.', $objButton->getIcon());
 			$objButton->setIcon($strIcon);
 			$objButton->disable();
+
+			$objEvent->setArgument('buffer', '');
 		}
 
 		return true;
@@ -159,6 +164,7 @@ class OperationListeners extends Permissions
 	public static function referer(GenericEvent $objEvent, array $arrConfig=array(), $blnStop=true)
 	{
 		$objEvent->getSubject()->setHref(\Controller::getReferer(true));
+		$objEvent->setArgument('buffer', '');
 		$objEvent->setArgument('plain', true);
 
 		return true;
@@ -179,6 +185,8 @@ class OperationListeners extends Permissions
 			static::toggleState($objEvent, $arrConfig, \Input::get('tid'), (\Input::get('state') == 1));
 			\Controller::redirect(\Controller::getReferer());
 		}
+
+		$objEvent->setArgument('buffer', '');
 
 		/** @var \BackendUser $objUser */
 		$objUser = \BackendUser::getInstance();

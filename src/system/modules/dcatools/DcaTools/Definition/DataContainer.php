@@ -15,11 +15,8 @@ namespace DcaTools\Definition;
 
 use DcGeneral\Contao\Dca\Conditions\ParentChildCondition;
 use DcGeneral\Contao\Dca\Conditions\RootCondition;
-use DcGeneral\Data\DefaultModel;
 use DcGeneral\DataDefinition\ContainerInterface;
 use DcaTools\Definition;
-use Symfony\Component\EventDispatcher\Event;
-use Symfony\Component\EventDispatcher\GenericEvent;
 
 
 /**
@@ -46,26 +43,20 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 
 
 	/**
-	 * @var \DcGeneral\Data\ModelInterface
+	 * @var DataContainer[]
 	 */
-	protected $objModel;
+	protected static $arrDataContainers = array();
 
 
 	/**
 	 * Constructor
 	 *
 	 * @param $strName
-	 * @param \Model|\Database\Result|\Model|\DcGeneral\Data\ModelInterface|null $objModel
 	 */
-	public function __construct($strName, $objModel=null)
+	protected function __construct($strName)
 	{
 		$this->strName = $strName;
 		$this->definition =& $GLOBALS['TL_DCA'][$strName];
-
-		if($objModel !== null)
-		{
-			$this->setModel($objModel);
-		}
 	}
 
 
@@ -82,6 +73,23 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 
 
 	/**
+	 * Get an instance of DataContainer
+	 *
+	 * @param $strName
+	 * @return DataContainer
+	 */
+	public static function getInstance($strName)
+	{
+		if(!isset(static::$arrDataContainers[$strName]))
+		{
+			static::$arrDataContainers[$strName] = new self($strName);
+		}
+
+		return static::$arrDataContainers[$strName];
+	}
+
+
+	/**
 	 * Get DataContainer
 	 *
 	 * @return $this
@@ -89,57 +97,6 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 	public function getDataContainer()
 	{
 		return $this;
-	}
-
-
-	/**
-	 * @return \Database\Result|\Model|\DcGeneral\Data\ModelInterface
-	 */
-	public function getModel()
-	{
-		return $this->objModel;
-	}
-
-
-	/**
-	 * Set Model of DataContainer
-	 * @param $objModel
-	 *
-	 * @return $this
-	 *
-	 * @throws \RuntimeException
-	 */
-	public function setModel($objModel)
-	{
-		if($objModel instanceof \Model\Collection || $objModel instanceof \Model || $objModel instanceof \Database\Result)
-		{
-			/** @var \Model|\Model\Collection|\Database\Result $objModel */
-			$this->objModel = new DefaultModel();
-			$this->objModel->setPropertiesAsArray($objModel->row());
-		}
-		elseif(is_array($objModel))
-		{
-			$this->objModel = new DefaultModel();
-			$this->objModel->setPropertiesAsArray($objModel);
-		}
-		elseif($objModel instanceof \DcGeneral\Data\ModelInterface)
-		{
-			$this->objModel = $objModel;
-		}
-		else {
-			throw new \RuntimeException("Type of Model is not supported");
-		}
-
-		return $this;
-	}
-
-
-	/**
-	 * return @bool
-	 */
-	public function hasModel()
-	{
-		return ($this->objModel !== null);
 	}
 
 
@@ -443,7 +400,7 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 			}
 		}
 
-		return $this->arrProperties;
+		return parent::getProperties();
 	}
 
 
@@ -499,7 +456,7 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 
 
 	/**
-	 * @return Palette[]
+	 * @return \ArrayIterator|Palette[]
 	 */
 	public function getPalettes()
 	{
@@ -516,7 +473,7 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 			}
 		}
 
-		return $this->arrPalettes;
+		return new \ArrayIterator($this->arrPalettes);
 	}
 
 
@@ -533,9 +490,15 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 	{
 		if(!isset($this->arrPalettes[$strName]))
 		{
-			if(!isset($this->definition['palettes'][$strName]))
+			if(!$this->hasPalette($strName))
 			{
 				throw new \RuntimeException("Palette '$strName' does not exist");
+			}
+
+			// palette definition does not exists automatically because of support of MetaPalettes
+			if(!isset($this->definition['palette'][$strName]))
+			{
+				$this->definition['palette'][$strName] = array();
 			}
 
 			$this->arrPalettes[$strName] = new Palette($strName, $this);
@@ -577,7 +540,7 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 	 */
 	public function hasPalette($strName)
 	{
-		return isset($this->definition['palettes'][$strName]);
+		return  isset($this->definition['palettes'][$strName]);
 	}
 
 
@@ -626,7 +589,7 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 
 
 	/**
-	 * @return SubPalette[]
+	 * @return \ArrayIterator|SubPalette[]
 	 */
 	public function getSubPalettes()
 	{
@@ -638,7 +601,7 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 			}
 		}
 
-		return $this->arrSubPalettes;
+		return new \ArrayIterator($this->arrSubPalettes);
 	}
 
 
@@ -702,7 +665,7 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 
 
 	/**
-	 * @return Property[]
+	 * @return \ArrayIterator|Property[]
 	 */
 	public function getSelectors()
 	{
@@ -713,7 +676,7 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 			$arrSelectors[$strName] = $this->getProperty($strName);
 		}
 
-		return $arrSelectors;
+		return new \ArrayIterator($arrSelectors);
 	}
 
 
@@ -802,7 +765,7 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 	 *
 	 * @param string $strScope global for global operations else local one will be loaded
 	 *
-	 * @return Operation[]
+	 * @return \ArrayIterator|Operation[]
 	 */
 	public function getOperations($strScope='local')
 	{
@@ -814,7 +777,7 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 			$this->getOperation($strOperation, $strScope);
 		}
 
-		return $this->arrOperations[$strScope];
+		return new \ArrayIterator($this->arrOperations[$strScope]);
 	}
 
 

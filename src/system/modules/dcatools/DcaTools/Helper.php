@@ -13,7 +13,6 @@
 
 namespace DcaTools;
 
-use DcGeneral\Data\DefaultModel;
 use DcaTools\Component\DataContainer;
 use DcaTools\Component\Operation;
 use DcaTools\Event\OperationCallback;
@@ -25,6 +24,9 @@ use DcaTools\Event\OperationCallback;
  */
 class Helper
 {
+	const DataContainer = 'DcaTools\Component\DataContainer';
+
+	protected static $arrComponents = array();
 
 	/**
 	 * Use magic stuff for generating operations
@@ -59,6 +61,8 @@ class Helper
 
 			return $objOperation->generate();
 		}
+
+		return null;
 	}
 
 
@@ -79,38 +83,35 @@ class Helper
 	 */
 	public function callbackInitializeDataContainer($dc)
 	{
-		if(!isset($GLOBALS['TL_DCA'][$dc->table]['dcatools']))
+		if(isset($GLOBALS['TL_DCA'][$dc->table]['dcatools']))
 		{
-			return;
+			$arrConfig =& $GLOBALS['TL_DCA'][$dc->table]['dcatools'];
+
+			// initialize and check permissions
+			if(isset($arrConfig['events']))
+			{
+				$objDataContainer = new DataContainer($dc->table);
+				$objDataContainer->initialize();
+			}
 		}
 
-		$arrConfig =& $GLOBALS['TL_DCA'][$dc->table]['dcatools'];
-
-		// initialize and check permissions
-		if(isset($arrConfig['events']))
-		{
-			$objDataContainer = new DataContainer($dc->table);
-			$objDataContainer->initialize();
-		}
-
-		$this->scanOperationEvents($dc->table, $arrConfig, 'operations');
-		$this->scanOperationEvents($dc->table, $arrConfig, 'global_operations');
+		$this->scanOperationEvents($dc->table, 'operations');
+		$this->scanOperationEvents($dc->table, 'global_operations');
 	}
 
 
 	/**
 	 * @param string $strTable
-	 * @param array $arrConfig
 	 * @param string $strKey
 	 */
-	protected function scanOperationEvents($strTable, array $arrConfig, $strKey)
+	protected function scanOperationEvents($strTable, $strKey)
 	{
-		if(!isset($arrConfig['scan'][$strKey]) && $arrConfig['scan'][$strKey])
+		$strCallback = ($strKey == 'operations' ? 'operationCallback' : 'globalOperationCallback');
+
+		if(!isset($GLOBALS['TL_DCA'][$strTable]['list'][$strKey]))
 		{
 			return;
 		}
-
-		$strCallback = ($strKey == 'operations' ? 'operationCallback' : 'globalOperationCallback');
 
 		foreach($GLOBALS['TL_DCA'][$strTable]['list'][$strKey] as $strOperation => $arrOperation)
 		{
@@ -134,5 +135,43 @@ class Helper
 				'DcaTools\Helper', $strCallback . $strOperation
 			);
 		}
+	}
+
+
+	/**
+	 * @param $strName
+	 * @param string $strType
+	 *
+	 * @return mixed
+	 */
+	public static function getComponent($strName, $strType=Helper::DataContainer)
+	{
+		if(!isset(static::$arrComponents[$strType][$strName]))
+		{
+			static::$arrComponents[$strType][$strName] = new $strType($strName);
+		}
+
+		return static::$arrComponents[$strType][$strName];
+	}
+
+
+	/**
+	 * Callback for getting entries of a data container
+	 *
+	 * @param null $dc
+	 *
+	 * @return array
+	 */
+	public static function getAllowedIds($strName)
+	{
+		if(TL_MODE != 'BE')
+		{
+			return array();
+		}
+
+		/** @var \DcaTools\Component\DataContainer $objComponent */
+		$objComponent = static::getComponent($strName);
+
+		return $objComponent->getAllowedIds();
 	}
 }

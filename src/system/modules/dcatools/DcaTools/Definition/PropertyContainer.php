@@ -65,7 +65,6 @@ abstract class PropertyContainer extends Node implements PropertyContainerInterf
 		}
 		else {
 			$strName = $property;
-			$property = clone $this->getDataContainer()->getProperty($strName);
 		}
 
 		if($this->hasProperty($strName))
@@ -74,6 +73,7 @@ abstract class PropertyContainer extends Node implements PropertyContainerInterf
 		}
 
 		$objProperty = clone $this->getDataContainer()->getProperty($strName);
+		$objProperty->setParent($this);
 
 		$this->addAtPosition($this->arrProperties, $objProperty, $reference, $intPosition);
 		$this->updateDefinition();
@@ -103,11 +103,13 @@ abstract class PropertyContainer extends Node implements PropertyContainerInterf
 
 
 	/**
-	 * @return array|Property[]
+	 * Get Properties
+	 *
+	 * @return \ArrayIterator|Property[]
 	 */
 	public function getProperties()
 	{
-		return $this->arrProperties;
+		return new \ArrayIterator($this->arrProperties);
 	}
 
 
@@ -218,28 +220,6 @@ abstract class PropertyContainer extends Node implements PropertyContainerInterf
 	}
 
 
-	/**
-	 * Get all properties and also include activated properties in SubPalettes
-	 *
-	 * @return array
-	 */
-	public function getActiveProperties()
-	{
-		$arrProperties = array();
-
-		foreach($this->getProperties() as $objProperty)
-		{
-			$arrProperties[$objProperty->getName()] = $objProperty;
-
-			if($objProperty->isSelector() && $objProperty->hasActiveSubPalette())
-			{
-				$arrProperties = array_merge($arrProperties, $objProperty->getActiveSubPalette()->getActiveProperties());
-			}
-		}
-
-		return $arrProperties;
-	}
-
 
 	/**
 	 * Get iterator for accessing properties
@@ -248,7 +228,7 @@ abstract class PropertyContainer extends Node implements PropertyContainerInterf
 	 */
 	public function getIterator()
 	{
-		return new \ArrayIterator($this->arrProperties);
+		return $this->getProperties();
 	}
 
 
@@ -299,7 +279,7 @@ abstract class PropertyContainer extends Node implements PropertyContainerInterf
 	 */
 	public function asString()
 	{
-		return implode(',', array_keys($this->arrProperties));
+		return static::convertToString($this);
 	}
 
 
@@ -310,7 +290,52 @@ abstract class PropertyContainer extends Node implements PropertyContainerInterf
 	 */
 	public function asArray()
 	{
-		return array_keys($this->arrProperties);
+		return static::convertToArray($this);
+	}
+
+
+	/**
+	 * Convert list of properties to an array
+	 *
+	 * @param \Traversable $objIterator
+	 *
+	 * @return array
+	 */
+	public static function convertToArray(\Traversable $objIterator)
+	{
+		$arrReturn = array();
+
+		foreach($objIterator as $strName => $objProperty)
+		{
+			$arrReturn[] = $strName;
+		}
+
+		return $arrReturn;
+	}
+
+
+	/**
+	 * Convert list of properties to a string
+	 *
+	 * @param \Traversable $objIterator
+	 *
+	 * @return string
+	 */
+	public static function convertToString(\Traversable $objIterator)
+	{
+		$strReturn = '';
+
+		foreach($objIterator as $strName => $objProperty)
+		{
+			if($strReturn != '')
+			{
+				$strReturn .= ',';
+			}
+
+			$strReturn .= $strName;
+		}
+
+		return $strReturn;
 	}
 
 

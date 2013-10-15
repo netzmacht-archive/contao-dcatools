@@ -23,6 +23,9 @@ ClassLoader::addNamespaces(array
 /**
  * Register the classes
  */
+NamespaceClassLoader::add('DcaTools', 'system/modules/dcatools');
+
+/*
 ClassLoader::addClasses(array
 (
 	// DcaTools
@@ -32,6 +35,7 @@ ClassLoader::addClasses(array
 	'DcaTools\Event\OperationCallback'              => 'system/modules/dcatools/DcaTools/Event/OperationCallback.php',
 	'DcaTools\Event\DataContainerListeners'         => 'system/modules/dcatools/DcaTools/Event/DataContainerListeners.php',
 	'DcaTools\Event\Permissions'                    => 'system/modules/dcatools/DcaTools/Event/Permissions.php',
+	'DcaTools\Model\ContaoModel'                    => 'system/modules/dcatools/DcaTools/Model/ContaoModel.php',
 	'DcaTools\Definition\Operation'                 => 'system/modules/dcatools/DcaTools/Definition/Operation.php',
 	'DcaTools\Definition\DataContainer'             => 'system/modules/dcatools/DcaTools/Definition/DataContainer.php',
 	'DcaTools\Definition\Property'                  => 'system/modules/dcatools/DcaTools/Definition/Property.php',
@@ -49,7 +53,7 @@ ClassLoader::addClasses(array
 	'DcaTools\Structure\ExportInterface'            => 'system/modules/dcatools/DcaTools/Structure/ExportInterface.php',
 	'DcaTools\Structure\OperationInterface'         => 'system/modules/dcatools/DcaTools/Structure/OperationInterface.php',
 ));
-
+*/
 
 /**
  * Register the templates

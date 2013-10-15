@@ -253,60 +253,6 @@ class Property extends Node implements PropertyInterface
 
 
 	/**
-	 * @return bool
-	 */
-	public function hasActiveSubPalette()
-	{
-		$objModel = $this->getDataContainer()->getModel();
-
-		if($objModel === null)
-		{
-			return false;
-		}
-
-		if($objModel->getProperty($this->getName()) == 1)
-		{
-			return $this->getDataContainer()->hasSubPalette($this->getName());
-		}
-
-		return $this->getDataContainer()->hasSubPalette($this->strName . '_' . $objModel->getProperty($this->getName()));
-	}
-
-
-	/**
-	 * Get activated sub palette. Method does not check if element is an selector and if SubPalette exists.
-	 * Methods has to be called before
-	 *
-	 * @return SubPalette|null
-	 */
-	public function getActiveSubPalette()
-	{
-		$objModel = $this->getDataContainer()->getModel();
-
-		if($objModel === null)
-		{
-			return null;
-		}
-
-		$varValue = $objModel->getProperty($this->strName);
-
-		if($varValue == 1)
-		{
-			if($this->getDataContainer()->hasSubPalette($this->strName))
-			{
-				return $this->getDataContainer()->getSubPalette($this->strName);
-			}
-		}
-		else
-		{
-			return $this->getDataContainer()->getSubPalette($this->strName . '_' . $objModel->getProperty($this->strName));
-		}
-
-		return null;
-	}
-
-
-	/**
 	 * get a defined subpalette
 	 *
 	 * @param null $mixedValue

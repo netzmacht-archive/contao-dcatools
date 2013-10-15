@@ -15,7 +15,7 @@ namespace DcaTools\Structure;
 
 use DcaTools\Definition\Property;
 
-interface PropertyContainerInterface extends \IteratorAggregate
+interface PropertyContainerInterface extends \IteratorAggregate, ExportInterface
 {
 
 	/**
@@ -31,7 +31,7 @@ interface PropertyContainerInterface extends \IteratorAggregate
 
 
 	/**
-	 * @return Property[]
+	 * @return \ArrayIterator|Property[]
 	 */
 	public function getProperties();
 
@@ -80,14 +80,6 @@ interface PropertyContainerInterface extends \IteratorAggregate
 
 
 	/**
-	 * Get all propertys and also include activated propertys in SubPalettes
-	 *
-	 * @return array
-	 */
-	public function getActiveProperties();
-
-
-	/**
 	 * Check if container has selector propertys
 	 *
 	 * @return bool
@@ -101,5 +93,22 @@ interface PropertyContainerInterface extends \IteratorAggregate
 	 * @return Property[]
 	 */
 	public function getSelectors();
+
+
+	/**
+	 * @param \Traversable $objIterator
+	 * @return mixed
+	 */
+	public static function convertToString(\Traversable $objIterator);
+
+
+	/**
+	 * Convert list of properties to an array
+	 *
+	 * @param \Traversable $objIterator
+	 *
+	 * @return array
+	 */
+	public static function convertToArray(\Traversable $objIterator);
 
 }

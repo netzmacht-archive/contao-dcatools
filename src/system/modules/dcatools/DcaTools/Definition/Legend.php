@@ -44,7 +44,7 @@ class Legend extends PropertyContainer
 	 */
 	public function __construct($strName, DataContainer $objDataContainer, Palette $objPalette)
 	{
-		// no propertys stored so far
+		// no properties stored so far
 		$definition = '';
 
 		parent::__construct($strName, $objDataContainer, $definition);
@@ -193,43 +193,45 @@ class Legend extends PropertyContainer
 	/**
 	 * Export as string
 	 *
-	 * @param bool $blnActive
+	 * @param \Traversable $objIterator
 	 *
-	 * @return mixed|string
+	 * @return string
 	 */
-	public function asString($blnActive=false)
+	public static function convertToString(\Traversable $objIterator)
 	{
-		if(empty($this->arrProperties))
+		/** @var Legend $objIterator */
+		$strExport = parent::convertToString($objIterator);
+
+		if($strExport == '')
 		{
-			return '';
+			return $strExport;
 		}
 
-		$strModifier = implode(':', $this->arrModifiers);
+		$strModifier = implode(':', $objIterator->getModifiers());
 		$strModifier = $strModifier == '' ? '' : (':'. $strModifier);
 
-		$arrProperties = array_keys($blnActive ? $this->getActiveProperties() : $this->getProperties());
-
-		return sprintf('{%s_legend%s},%s', $this->getName(), $strModifier, implode(',', $arrProperties));
+		return sprintf('{%s_legend%s},%s', $objIterator->getName(), $strModifier, $strExport);
 	}
 
 
 	/**
-	 * Export as array, following MetaPalettes syntax
+	 * Export as array
 	 *
-	 * @param bool $blnActive
+	 * @param \Traversable $objIterator
 	 *
-	 * @return array
+	 * @return string
 	 */
-	public function asArray($blnActive=false)
+	public static function convertToArray(\Traversable $objIterator)
 	{
+		/** @var Legend $objIterator */
+		$arrProperties = parent::convertToArray($objIterator);
+
 		$arrModifiers = array_map(
 			function($item) {
 				return ':' . $item;
 			},
-			$this->arrModifiers
+			$objIterator->getModifiers()
 		);
-
-		$arrProperties = array_keys($blnActive ? $this->getActiveProperties() : $this->getProperties());
 
 		return array_merge($arrModifiers, $arrProperties);
 	}
@@ -248,16 +250,17 @@ class Legend extends PropertyContainer
 	{
 		if(is_string($node))
 		{
-			$objNode = $this->getPalette()->getLegend($node);
+			$node = $this->getPalette()->getLegend($node);
 		}
 		elseif(get_class($node) != get_class($this))
 		{
 			throw new \RuntimeException("Node '{$node->getName()}' is not the same Node type");
 		}
 
-		foreach($node->getProperties() as $objNode)
+		foreach($node->getProperties() as $objProperty)
 		{
-			$this->arrProperties[$objNode->getName()] = clone $objNode;
+			$this->arrProperties[$objProperty->getName()] = clone $objProperty;
+			$this->arrProperties[$objProperty->getName()]->setParent($this);
 		}
 
 		$this->updateDefinition();

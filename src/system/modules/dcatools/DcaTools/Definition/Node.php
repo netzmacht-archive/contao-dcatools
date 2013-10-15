@@ -73,7 +73,7 @@ abstract class Node  implements ExportInterface
 	 * @param DataContainer $objDataContainer
 	 * @param mixed $definition
 	 */
-	public function __construct($strName, DataContainer $objDataContainer, &$definition)
+	protected function __construct($strName, DataContainer $objDataContainer, &$definition)
 	{
 		$this->strName = $strName;
 		$this->definition =& $definition;
@@ -198,7 +198,7 @@ abstract class Node  implements ExportInterface
 	 * @param $strKey
 	 * @return null
 	 */
-	protected  function getFromDefinition($strKey)
+	public function getFromDefinition($strKey)
 	{
 		if(!is_array($this->definition))
 		{

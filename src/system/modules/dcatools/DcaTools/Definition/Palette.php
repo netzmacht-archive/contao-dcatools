@@ -86,6 +86,11 @@ class Palette extends Node implements PropertyContainerInterface
 	 */
 	public function addProperty(Property $objProperty, $strLegend='default', $reference=null, $intPosition=Palette::POS_LAST)
 	{
+		if(!$this->hasLegend($strLegend))
+		{
+			$this->createLegend($strLegend);
+		}
+
 		$this->getLegend($strLegend)->addProperty($objProperty, $reference, $intPosition);
 
 		return $this;
@@ -116,18 +121,11 @@ class Palette extends Node implements PropertyContainerInterface
 
 
 	/**
-	 * @return array|Property[]
+	 * @return \RecursiveIteratorIterator|Property[]
 	 */
 	public function getProperties()
 	{
-		$arrProperties = array();
-
-		foreach($this->arrLegends as $objLegend)
-		{
-			$arrProperties = array_merge($arrProperties, $objLegend->getProperties());
-		}
-
-		return $arrProperties;
+		return new \RecursiveIteratorIterator($this->getLegends());
 	}
 
 
@@ -173,29 +171,6 @@ class Palette extends Node implements PropertyContainerInterface
 		}
 
 		return $this;
-	}
-
-
-	/**
-	 * Get all propertys and also include activated propertys in supalettes
-	 *
-	 * @return array
-	 */
-	public function getActiveProperties()
-	{
-		$arrProperties = array();
-
-		foreach($this->getProperties() as $objProperty)
-		{
-			$arrProperties[$objProperty->getName()] = $objProperty;
-
-			if($objProperty->isSelector() && $objProperty->hasActiveSubPalette())
-			{
-				$arrProperties = array_merge($arrProperties, $objProperty->getActiveSubPalette()->getProperties());
-			}
-		}
-
-		return $arrProperties;
 	}
 
 
@@ -253,7 +228,7 @@ class Palette extends Node implements PropertyContainerInterface
 	/**
 	 * Get all selectors containing to the
 	 *
-	 * @return Property[]
+	 * @return \ArrayIterator|Property[]
 	 */
 	public function getSelectors()
 	{
@@ -267,7 +242,7 @@ class Palette extends Node implements PropertyContainerInterface
 			}
 		}
 
-		return $arrSelectors;
+		return new \ArrayIterator($arrSelectors);
 	}
 
 
@@ -279,28 +254,6 @@ class Palette extends Node implements PropertyContainerInterface
 	public function getSubPalettes()
 	{
 		return $this->getDataContainer()->getSubPalettes();
-	}
-
-
-	/**
-	 * Get all active SubPalettes
-	 *
-	 * @return SubPalette[]
-	 */
-	public function getActiveSubPalettes()
-	{
-		$arrSubPalettes = array();
-
-		foreach($this->getDataContainer()->getSelectors() as $objProperty)
-		{
-			if($objProperty->hasActiveSubPalette())
-			{
-				$objSubPalette = $objProperty->getActiveSubPalette();
-				$arrSubPalettes[$objSubPalette->getName()] = $objSubPalette;
-			}
-		}
-
-		return $arrSubPalettes;
 	}
 
 
@@ -327,11 +280,11 @@ class Palette extends Node implements PropertyContainerInterface
 	/**
 	 * Get all legends
 	 *
-	 * @return Legend[]
+	 * @return \ArrayIterator|Legend[]
 	 */
 	public function getLegends()
 	{
-		return $this->arrLegends;
+		return new \ArrayIterator($this->arrLegends);
 	}
 
 
@@ -356,11 +309,11 @@ class Palette extends Node implements PropertyContainerInterface
 	/**
 	 * add existing legend to palette
 	 *
-	 * @param string $objLegend
+	 * @param string $strName
 	 * @param string|Legend|null $reference
 	 * @param int $intPosition
 	 *
-	 * @return $this
+	 * @return Legend
 	 *
 	 * @throws \RuntimeException
 	 */
@@ -376,7 +329,7 @@ class Palette extends Node implements PropertyContainerInterface
 		$this->addAtPosition($this->arrLegends, $objLegend, $reference, $intPosition);
 		$this->updateDefinition();
 
-		return $this;
+		return $objLegend;
 	}
 
 
@@ -481,25 +434,36 @@ class Palette extends Node implements PropertyContainerInterface
 
 
 	/**
-	 * Export to string
+	 * Export as string
 	 *
-	 * @param bool $blnActive
-	 *
-	 * @return mixed|string
+	 * @return string
 	 */
-	public function asString($blnActive=false)
+	public function asString()
+	{
+		return static::convertToString($this);
+	}
+
+
+	/**
+	 * Convert list of properties to an array
+	 *
+	 * @param \Traversable $objIterator
+	 *
+	 * @return array
+	 */
+	public static function convertToString(\Traversable $objIterator)
 	{
 		$strExport = '';
 
-		foreach($this->getLegends() as $objLegend)
+		foreach($objIterator as $objLegend)
 		{
-			$strProperties = $objLegend->asString($blnActive);
+			/** @var Legend $objLegend */
+			$strProperties = $objLegend->asString();
 
 			if($strProperties)
 			{
 				$strExport .= $strProperties . ';';
 			}
-
 		}
 
 		return $strExport;
@@ -509,16 +473,29 @@ class Palette extends Node implements PropertyContainerInterface
 	/**
 	 * Export to array
 	 *
-	 * @param bool $blnActive
-	 * @return array|mixed
+	 * @return array
 	 */
-	public function asArray($blnActive=false)
+	public function asArray()
+	{
+		return static::convertToArray($this);
+	}
+
+
+	/**
+	 * Convert list of properties to an array
+	 *
+	 * @param \Traversable $objIterator
+	 *
+	 * @return array
+	 */
+	public static function convertToArray(\Traversable $objIterator)
 	{
 		$arrExport = array();
 
-		foreach($this->getLegends() as $objLegend)
+		foreach($objIterator as $strLegend => $objLegend)
 		{
-			$arrExport = array_merge($arrExport, $objLegend->asArray($blnActive));
+			/** @var Legend $objLegend */
+			$arrExport[$strLegend] = $objLegend->asArray();
 		}
 
 		return $arrExport;

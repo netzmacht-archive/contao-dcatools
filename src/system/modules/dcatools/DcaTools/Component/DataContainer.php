@@ -14,6 +14,7 @@
 namespace DcaTools\Component;
 
 use DcaTools\Definition;
+use DcaTools\Structure\PropertyContainerInterface;
 use Symfony\Component\EventDispatcher\GenericEvent;
 
 /**
@@ -22,6 +23,24 @@ use Symfony\Component\EventDispatcher\GenericEvent;
  */
 class DataContainer extends Component
 {
+	protected static $arrInstances = array();
+
+
+	/**
+	 * @param $strName
+	 *
+	 * @return DataContainer
+	 */
+	public static function getInstance($strName)
+	{
+		if(!isset(static::$arrInstances[$strName]))
+		{
+			static::$arrInstances[$strName] = new DataContainer($strName);
+		}
+
+		return static::$arrInstances[$strName];
+	}
+
 
 	/**
 	 * @param Definition\Node $strName
@@ -32,14 +51,12 @@ class DataContainer extends Component
 
 		$arrConfig = $this->objDefinition->get('dcatools');
 
-		if(isset($arrConfig['initialize']) && is_array($arrConfig['initialize']))
+		if(is_array($arrConfig))
 		{
-			$this->addListeners('initialize', $arrConfig['initialize']);
-		}
-
-		if(isset($arrConfig['permissions']) && is_array($arrConfig['permissions']))
-		{
-			$this->addListeners('permissions', $arrConfig['permissions']);
+			foreach($arrConfig as $strName => $arrListeners)
+			{
+				$this->addListeners($strName, $arrListeners);
+			}
 		}
 	}
 
@@ -85,4 +102,75 @@ class DataContainer extends Component
 		}
 	}
 
+
+	/**
+	 * Get all entries of an element filtered for user access. Events need to be registered to get it works
+	 *
+	 * This is useful for getting all content elements where each ptable can register its getter
+	 *
+	 * @param string $strParent
+	 *
+	 * @return array
+	 */
+	public function getAllowedIds($strParent=null)
+	{
+		$objEvent = new GenericEvent($this);
+		$objEvent['ids'] = array();
+
+		if($strParent !== null)
+		{
+			$objEvent['parentDataContainer'] = $strParent;
+		}
+
+		$objEvent = $this->dispatch('getAllowedIds', $objEvent);
+		return $objEvent['ids'];
+	}
+
+
+	/**
+	 * Get all allowed ptables for a user.
+	 *
+	 * It is nessecary to register getAllowedDynamicParents events for the data container to set the ptables
+	 *
+	 * @return array
+	 *
+	 * @throws \RuntimeException
+	 */
+	public function getAllowedDynamicParents()
+	{
+		if(!$this->objDefinition->getFromDefinition('config/dynamicPtable'))
+		{
+			throw new \RuntimeException("DataContainer '{$this->getName()}' does not have dynamic ptables");
+		}
+
+		$obEvent = new GenericEvent($this);
+		$obEvent['ptables'] = array();
+
+		$objEvent = $this->dispatch('getAllowedDynamicParents', $obEvent);
+		return $objEvent['ptables'];
+	}
+
+
+	/**
+	 * Get all allowed entries grouped by ptable and pid
+	 *
+	 * @param string $strParent
+	 * @param array $arrFields
+	 *
+	 * @return array
+	 */
+	public function getAllowedEntries($strParent=null, array $arrFields=array())
+	{
+		$objEvent = new GenericEvent($this);
+		$objEvent['entries'] = array();
+		$objEvent['fields'] = $arrFields;
+
+		if($strParent !== null)
+		{
+			$objEvent['parentDataContainer'] = $strParent;
+		}
+
+		$objEvent = $this->dispatch('getAllowedEntries', $objEvent);
+		return $objEvent['entries'];
+	}
 }

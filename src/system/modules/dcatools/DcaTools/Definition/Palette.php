@@ -137,6 +137,17 @@ class Palette extends Node implements PropertyContainerInterface
 
 
 	/**
+	 * Get all property names
+	 *
+	 * @return array
+	 */
+	public function getPropertyNames()
+	{
+		return array_keys($this->getProperties());
+	}
+
+
+	/**
 	 * Check if property exists in container
 	 *
 	 * @param string $strName

@@ -105,11 +105,11 @@ abstract class PropertyContainer extends Node implements PropertyContainerInterf
 	/**
 	 * Get Properties
 	 *
-	 * @return \ArrayIterator|Property[]
+	 * @return Property[]
 	 */
 	public function getProperties()
 	{
-		return new \ArrayIterator($this->arrProperties);
+		return $this->arrProperties;
 	}
 
 
@@ -220,6 +220,17 @@ abstract class PropertyContainer extends Node implements PropertyContainerInterf
 	}
 
 
+	/**
+	 * Retrieve the names of all defined properties.
+	 *
+	 * @return string[]
+	 */
+	public function getPropertyNames()
+	{
+		return array_keys($this->arrProperties);
+	}
+
+
 
 	/**
 	 * Get iterator for accessing properties
@@ -228,7 +239,7 @@ abstract class PropertyContainer extends Node implements PropertyContainerInterf
 	 */
 	public function getIterator()
 	{
-		return $this->getProperties();
+		return new \ArrayIterator($this->getProperties());
 	}
 
 
@@ -279,53 +290,9 @@ abstract class PropertyContainer extends Node implements PropertyContainerInterf
 	 */
 	public function asString()
 	{
-		return static::convertToString($this);
-	}
-
-
-	/**
-	 * Export property names as array
-	 *
-	 * @return mixed
-	 */
-	public function asArray()
-	{
-		return static::convertToArray($this);
-	}
-
-
-	/**
-	 * Convert list of properties to an array
-	 *
-	 * @param \Traversable $objIterator
-	 *
-	 * @return array
-	 */
-	public static function convertToArray(\Traversable $objIterator)
-	{
-		$arrReturn = array();
-
-		foreach($objIterator as $strName => $objProperty)
-		{
-			$arrReturn[] = $strName;
-		}
-
-		return $arrReturn;
-	}
-
-
-	/**
-	 * Convert list of properties to a string
-	 *
-	 * @param \Traversable $objIterator
-	 *
-	 * @return string
-	 */
-	public static function convertToString(\Traversable $objIterator)
-	{
 		$strReturn = '';
 
-		foreach($objIterator as $strName => $objProperty)
+		foreach($this->getProperties() as $strName => $objProperty)
 		{
 			if($strReturn != '')
 			{
@@ -336,6 +303,24 @@ abstract class PropertyContainer extends Node implements PropertyContainerInterf
 		}
 
 		return $strReturn;
+	}
+
+
+	/**
+	 * Export property names as array
+	 *
+	 * @return mixed
+	 */
+	public function asArray()
+	{
+		$arrReturn = array();
+
+		foreach($this->getProperties() as $strName => $objProperty)
+		{
+			$arrReturn[] = $strName;
+		}
+
+		return $arrReturn;
 	}
 
 

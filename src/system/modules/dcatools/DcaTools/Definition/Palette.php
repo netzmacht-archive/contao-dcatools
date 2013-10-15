@@ -121,11 +121,18 @@ class Palette extends Node implements PropertyContainerInterface
 
 
 	/**
-	 * @return \RecursiveIteratorIterator|Property[]
+	 * @return array|Property[]
 	 */
 	public function getProperties()
 	{
-		return new \RecursiveIteratorIterator($this->getLegends());
+		$arrProperties = array();
+
+		foreach($this->arrLegends as $objLegend)
+		{
+			$arrProperties = array_merge($arrProperties, $objLegend->getProperties());
+		}
+
+		return $arrProperties;
 	}
 
 
@@ -228,7 +235,7 @@ class Palette extends Node implements PropertyContainerInterface
 	/**
 	 * Get all selectors containing to the
 	 *
-	 * @return \ArrayIterator|Property[]
+	 * @return Property[]
 	 */
 	public function getSelectors()
 	{
@@ -242,7 +249,7 @@ class Palette extends Node implements PropertyContainerInterface
 			}
 		}
 
-		return new \ArrayIterator($arrSelectors);
+		return $arrSelectors;
 	}
 
 
@@ -280,11 +287,11 @@ class Palette extends Node implements PropertyContainerInterface
 	/**
 	 * Get all legends
 	 *
-	 * @return \ArrayIterator|Legend[]
+	 * @return Legend[]
 	 */
 	public function getLegends()
 	{
-		return new \ArrayIterator($this->arrLegends);
+		return $this->arrLegends;
 	}
 
 
@@ -309,7 +316,7 @@ class Palette extends Node implements PropertyContainerInterface
 	/**
 	 * add existing legend to palette
 	 *
-	 * @param string $strName
+	 * @param string $objLegend
 	 * @param string|Legend|null $reference
 	 * @param int $intPosition
 	 *
@@ -402,6 +409,7 @@ class Palette extends Node implements PropertyContainerInterface
 			array_shift($arrProperties);
 
 			$objLegend = new Legend($matches[1], $this->getDataContainer(), $this);
+			$this->arrLegends[$objLegend->getName()] = $objLegend;
 
 			if(isset($matches[2]))
 			{
@@ -411,22 +419,11 @@ class Palette extends Node implements PropertyContainerInterface
 			// create each property
 			foreach($arrProperties as $strProperty)
 			{
-				if($strProperty == '')
+				if($strProperty != '' && $this->getDataContainer()->hasProperty($strProperty))
 				{
-					continue;
+					$objLegend->addProperty($strProperty);
 				}
-
-				$objProperty = clone $this->getDataContainer()->getProperty($strProperty);
-
-				// prevent faulty dca breaks loading
-				try {
-					$objLegend->addProperty($objProperty);
-				}
-				catch(\RuntimeException $e){}
 			}
-
-			// prevent faulty dca breaks loading
-			$this->arrLegends[$objLegend->getName()] = $objLegend;
 		}
 
 		return $this;
@@ -434,36 +431,23 @@ class Palette extends Node implements PropertyContainerInterface
 
 
 	/**
-	 * Export as string
+	 * Export
 	 *
-	 * @return string
+	 * @return array|mixed
 	 */
 	public function asString()
 	{
-		return static::convertToString($this);
-	}
-
-
-	/**
-	 * Convert list of properties to an array
-	 *
-	 * @param \Traversable $objIterator
-	 *
-	 * @return array
-	 */
-	public static function convertToString(\Traversable $objIterator)
-	{
 		$strExport = '';
 
-		foreach($objIterator as $objLegend)
+		foreach($this->getLegends() as $objLegend)
 		{
-			/** @var Legend $objLegend */
 			$strProperties = $objLegend->asString();
 
 			if($strProperties)
 			{
 				$strExport .= $strProperties . ';';
 			}
+
 		}
 
 		return $strExport;
@@ -473,29 +457,15 @@ class Palette extends Node implements PropertyContainerInterface
 	/**
 	 * Export to array
 	 *
-	 * @return array
+	 * @return array|mixed
 	 */
 	public function asArray()
 	{
-		return static::convertToArray($this);
-	}
-
-
-	/**
-	 * Convert list of properties to an array
-	 *
-	 * @param \Traversable $objIterator
-	 *
-	 * @return array
-	 */
-	public static function convertToArray(\Traversable $objIterator)
-	{
 		$arrExport = array();
 
-		foreach($objIterator as $strLegend => $objLegend)
+		foreach($this->getLegends() as $objLegend)
 		{
-			/** @var Legend $objLegend */
-			$arrExport[$strLegend] = $objLegend->asArray();
+			$arrExport = array_merge($arrExport, $objLegend->asArray());
 		}
 
 		return $arrExport;

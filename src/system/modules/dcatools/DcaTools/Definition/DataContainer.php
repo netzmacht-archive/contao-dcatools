@@ -456,7 +456,7 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 
 
 	/**
-	 * @return \ArrayIterator|Palette[]
+	 * @return |Palette[]
 	 */
 	public function getPalettes()
 	{
@@ -473,7 +473,7 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 			}
 		}
 
-		return new \ArrayIterator($this->arrPalettes);
+		return $this->arrPalettes;
 	}
 
 
@@ -493,12 +493,6 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 			if(!$this->hasPalette($strName))
 			{
 				throw new \RuntimeException("Palette '$strName' does not exist");
-			}
-
-			// palette definition does not exists automatically because of support of MetaPalettes
-			if(!isset($this->definition['palette'][$strName]))
-			{
-				$this->definition['palette'][$strName] = array();
 			}
 
 			$this->arrPalettes[$strName] = new Palette($strName, $this);
@@ -589,7 +583,7 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 
 
 	/**
-	 * @return \ArrayIterator|SubPalette[]
+	 * @return SubPalette[]
 	 */
 	public function getSubPalettes()
 	{
@@ -601,7 +595,7 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 			}
 		}
 
-		return new \ArrayIterator($this->arrSubPalettes);
+		return $this->arrSubPalettes;
 	}
 
 
@@ -665,7 +659,7 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 
 
 	/**
-	 * @return \ArrayIterator|Property[]
+	 * @return Property[]
 	 */
 	public function getSelectors()
 	{
@@ -676,7 +670,7 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 			$arrSelectors[$strName] = $this->getProperty($strName);
 		}
 
-		return new \ArrayIterator($arrSelectors);
+		return $arrSelectors;
 	}
 
 
@@ -765,7 +759,7 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 	 *
 	 * @param string $strScope global for global operations else local one will be loaded
 	 *
-	 * @return \ArrayIterator|Operation[]
+	 * @return Operation[]
 	 */
 	public function getOperations($strScope='local')
 	{
@@ -777,7 +771,7 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 			$this->getOperation($strOperation, $strScope);
 		}
 
-		return new \ArrayIterator($this->arrOperations[$strScope]);
+		return new $this->arrOperations[$strScope];
 	}
 
 

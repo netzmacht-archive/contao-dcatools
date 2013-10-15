@@ -17,8 +17,6 @@ namespace DcaTools;
 use DcaTools\Definition\DataContainer;
 use DcaTools\Definition\Palette;
 use DcaTools\Definition\Property;
-use DcaTools\Iterator\ActiveProperties;
-use DcaTools\Iterator\ActiveSubPalettes;
 use DcaTools\Structure\PropertyContainerInterface;
 use DcGeneral\Data\ModelInterface;
 
@@ -113,11 +111,31 @@ class Definition
 	 * @param ModelInterface $objModel
 	 * @param bool $blnRecursive
 	 *
-	 * @return ActiveProperties
+	 * @return array
 	 */
 	public static function getActivePropertiesFor(PropertyContainerInterface $objContainer, ModelInterface $objModel, $blnRecursive=false)
 	{
-		return new ActiveProperties($objContainer->getProperties(), $objModel, $blnRecursive);
+		$arrProperties = array();
+
+		foreach($objContainer->getProperties() as $strName => $objProperty)
+		{
+			$arrProperties[$strName] = $objProperty;
+
+			$objSubPalette = static::getActivePropertySubPalette($objProperty, $objModel);
+
+			if($objSubPalette !== null)
+			{
+				if($blnRecursive)
+				{
+					$arrProperties = array_merge($arrProperties, static::getActivePropertiesFor($objSubPalette, $objModel, $blnRecursive));
+				}
+				else {
+					$arrProperties = array_merge($arrProperties, $objSubPalette->getProperties());
+				}
+			}
+		}
+
+		return $arrProperties;
 	}
 
 
@@ -128,11 +146,23 @@ class Definition
 	 * @param Palette $objPalette
 	 * @param ModelInterface $objModel
 	 *
-	 * @return ActiveSubPalettes
+	 * @return \DcaTools\Definition\SubPalette[]
 	 */
 	public static function getActiveSubPalettesFor(Palette $objPalette, ModelInterface $objModel)
 	{
-		return new ActiveSubPalettes($objPalette, $objModel);
+		$arrSubPalettes = array();
+
+		foreach($objPalette->getSelectors() as $objProperty)
+		{
+			$objSubPalette = static::getActivePropertySubPalette($objProperty, $objModel);
+
+			if($objSubPalette !== null)
+			{
+				$arrSubPalettes[$objSubPalette->getName()] = $objSubPalette;
+			}
+		}
+
+		return $arrSubPalettes;
 	}
 
 

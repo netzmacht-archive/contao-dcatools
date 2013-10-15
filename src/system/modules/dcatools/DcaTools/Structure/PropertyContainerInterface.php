@@ -31,7 +31,7 @@ interface PropertyContainerInterface extends \IteratorAggregate, ExportInterface
 
 
 	/**
-	 * @return \ArrayIterator|Property[]
+	 * @return Property[]
 	 */
 	public function getProperties();
 
@@ -93,22 +93,5 @@ interface PropertyContainerInterface extends \IteratorAggregate, ExportInterface
 	 * @return Property[]
 	 */
 	public function getSelectors();
-
-
-	/**
-	 * @param \Traversable $objIterator
-	 * @return mixed
-	 */
-	public static function convertToString(\Traversable $objIterator);
-
-
-	/**
-	 * Convert list of properties to an array
-	 *
-	 * @param \Traversable $objIterator
-	 *
-	 * @return array
-	 */
-	public static function convertToArray(\Traversable $objIterator);
 
 }

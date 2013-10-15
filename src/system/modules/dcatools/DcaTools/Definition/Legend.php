@@ -197,20 +197,15 @@ class Legend extends PropertyContainer
 	 *
 	 * @return string
 	 */
-	public static function convertToString(\Traversable $objIterator)
+	public function asString()
 	{
 		/** @var Legend $objIterator */
-		$strExport = parent::convertToString($objIterator);
+		$strExport = parent::asString();
 
-		if($strExport == '')
-		{
-			return $strExport;
-		}
-
-		$strModifier = implode(':', $objIterator->getModifiers());
+		$strModifier = implode(':', $this->getModifiers());
 		$strModifier = $strModifier == '' ? '' : (':'. $strModifier);
 
-		return sprintf('{%s_legend%s},%s', $objIterator->getName(), $strModifier, $strExport);
+		return sprintf('{%s_legend%s},%s', $this->getName(), $strModifier, $strExport);
 	}
 
 
@@ -221,16 +216,16 @@ class Legend extends PropertyContainer
 	 *
 	 * @return string
 	 */
-	public static function convertToArray(\Traversable $objIterator)
+	public function asArray()
 	{
 		/** @var Legend $objIterator */
-		$arrProperties = parent::convertToArray($objIterator);
+		$arrProperties = parent::asArray();
 
 		$arrModifiers = array_map(
 			function($item) {
 				return ':' . $item;
 			},
-			$objIterator->getModifiers()
+			$this->getModifiers()
 		);
 
 		return array_merge($arrModifiers, $arrProperties);

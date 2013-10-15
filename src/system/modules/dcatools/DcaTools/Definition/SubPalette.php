@@ -76,6 +76,24 @@ class SubPalette extends PropertyContainer
 
 
 	/**
+	 * Get Selector of the subpalette
+	 * @return Property[]|void
+	 */
+	public function getSelector()
+	{
+		$arrSelectors = array();
+
+		foreach(parent::getSelectors() as $strName => $objProperty)
+		{
+			if(strpos($this->getName(), $strName) === 0)
+			{
+				$arrSelectors[$strName] = $objProperty;
+			}
+		}
+	}
+
+
+	/**
 	 * Load propertys from definition
 	 */
 	protected function loadFromDefinition()
@@ -84,7 +102,7 @@ class SubPalette extends PropertyContainer
 
 		foreach($arrProperties as $strProperty)
 		{
-			if($strProperty != '')
+			if($strProperty != '' && $this->getDataContainer()->hasProperty($strProperty))
 			{
 				$this->addProperty($strProperty);
 			}

@@ -51,14 +51,6 @@ class ContaoModel implements ModelInterface
 		{
 			$this->strIdColumn = $strIdColumn;
 		}
-		elseif(is_array($objModel))
-		{
-			$this->strIdColumn = $strIdColumn;
-			$arrRow = $objModel;
-
-			$objModel = new DefaultModel();
-			$objModel->setPropertiesAsArray($arrRow);
-		}
 
 		$this->objModel = $objModel;
 	}

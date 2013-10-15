@@ -463,9 +463,9 @@ class Palette extends Node implements PropertyContainerInterface
 	{
 		$arrExport = array();
 
-		foreach($this->getLegends() as $objLegend)
+		foreach($this->getLegends() as $strLegend => $objLegend)
 		{
-			$arrExport = array_merge($arrExport, $objLegend->asArray());
+			$arrExport[$strLegend] = $objLegend->asArray();
 		}
 
 		return $arrExport;

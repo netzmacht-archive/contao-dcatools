@@ -238,7 +238,7 @@ abstract class Node  implements ExportInterface
 	 *
 	 * @param string $strName new name
 	 *
-	 * @return mixed
+	 * @return static
 	 */
 	public function copy($strName)
 	{
@@ -258,7 +258,7 @@ abstract class Node  implements ExportInterface
 	 */
 	public function __clone()
 	{
-		unset($this->definition);
+		//unset($this->definition);
 	}
 
 

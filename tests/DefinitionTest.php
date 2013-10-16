@@ -33,7 +33,15 @@ class DefinitionTest extends PHPUnit_Framework_TestCase
 		$this->objDataContainer = null;
 		unset($GLOBALS['TL_DCA']['tl_test']);
 
-		$refObject   = new ReflectionObject( new Definition() );
+		$ref = new ReflectionClass('DcaTools\Definition\DataContainer');
+		$obj = $ref->newInstanceWithoutConstructor();
+
+		$constructor = $ref->getConstructor();
+		$constructor->setAccessible( true );
+
+		$constructor->invokeArgs( $obj, array('tl_test') ) ;
+
+		$refObject   = new ReflectionObject( $obj );
 		$refProperty = $refObject->getProperty( 'arrDataContainers' );
 		$refProperty->setAccessible( true );
 		$refProperty->setValue(null, array());

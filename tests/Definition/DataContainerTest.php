@@ -35,7 +35,14 @@ class DataContainerTest extends PHPUnit_Framework_TestCase
 		$this->objDataContainer = null;
 		$GLOBALS['TL_DCA']['tl_test'] = null;
 
-		$obj         = new Definition();
+		$ref = new ReflectionClass('DcaTools\Definition\DataContainer');
+		$obj = $ref->newInstanceWithoutConstructor();
+
+		$constructor = $ref->getConstructor();
+		$constructor->setAccessible( true );
+
+		$constructor->invokeArgs( $obj, array('tl_test') ) ;
+
 		$refObject   = new ReflectionObject( $obj );
 		$refProperty = $refObject->getProperty( 'arrDataContainers' );
 		$refProperty->setAccessible( true );
@@ -46,54 +53,6 @@ class DataContainerTest extends PHPUnit_Framework_TestCase
 	public function testGetDataContainer()
 	{
 		$this->assertEquals($this->objDataContainer, $this->objDataContainer->getDataContainer());
-	}
-
-	public function testGetModel()
-	{
-		$this->assertNull($this->objDataContainer->getModel());
-
-		$objModel = new ContentModel();
-		$objDcModel = new \DcGeneral\Data\DefaultModel();
-		$objDcModel->setPropertiesAsArray($objModel->row());
-		$this->objDataContainer->setModel($objModel);
-		$this->assertEquals($objDcModel, $this->objDataContainer->getModel());
-
-		$objDataContainer = new DataContainer('tl_test', $objModel);
-		$this->assertEquals($objDcModel, $objDataContainer->getModel());
-	}
-
-	public function testSetModel()
-	{
-		// Contao SUCKS, cannot test against the same model
-		$objModel = ArticleModel::findAll(array('limit' => 1, 'return' => 'Model'));
-		$objDcModel = new \DcGeneral\Data\DefaultModel();
-		$objDcModel->setPropertiesAsArray($objModel->row());
-		$this->assertEquals($this->objDataContainer->setModel($objModel), $this->objDataContainer);
-		$this->assertEquals($objDcModel, $this->objDataContainer->getModel($objModel));
-
-		$objCollection = PageModel::findAll(array('limit' => 2));
-
-		$this->objDataContainer->setModel($objCollection);
-		$objDcModel = new \DcGeneral\Data\DefaultModel();
-		$objDcModel->setPropertiesAsArray($objCollection->current()->row());
-		$this->assertEquals($objDcModel, $this->objDataContainer->getModel());
-
-		$objResult = \Database::getInstance()->query('SELECT * FROM tl_content limit 2');
-		$objDcModel = new \DcGeneral\Data\DefaultModel();
-		$objDcModel->setPropertiesAsArray($objResult->row());
-		$this->objDataContainer->setModel($objResult);
-		$this->assertEquals($objDcModel, $this->objDataContainer->getModel());
-
-		$this->assertEquals($GLOBALS['TL_DCA']['tl_test'], $this->objDataContainer->getDefinition());
-	}
-
-	public function testHasModel()
-	{
-		$this->assertFalse($this->objDataContainer->hasModel());
-
-		$objModel = new StyleModel();
-		$this->objDataContainer->setModel($objModel);
-		$this->assertTrue($this->objDataContainer->hasModel());
 	}
 
 

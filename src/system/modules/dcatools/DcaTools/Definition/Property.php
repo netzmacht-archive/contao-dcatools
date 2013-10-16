@@ -34,11 +34,34 @@ class Property extends Node implements PropertyInterface
 	 */
 	public function __construct($strName, DataContainer $objDataContainer, PropertyContainer $objParent=null)
 	{
-		$arrDefinition = $objDataContainer->getDefinition();
+		$arrDefinition =& $objDataContainer->getDefinition();
 
 		parent::__construct($strName, $objDataContainer, $arrDefinition['fields'][$strName]);
 
 		$this->objParent = $objParent === null ? $objDataContainer : $objParent;
+	}
+
+
+	/**
+	 * Copy Propety to a new one
+	 *
+	 * @param string $strName new name
+	 *
+	 * @return static
+	 */
+	public function copy($strName)
+	{
+		$strOld = $this->getName();
+
+		$this->strName = $strName;
+		$objCopy = clone $this;
+
+		$arrDefinition =& $this->objDataContainer->getDefinition();
+		$arrDefinition['fields'][$strName] = $this->definition;
+
+		$this->strName = $strOld;
+
+		return $objCopy;
 	}
 
 
@@ -57,19 +80,27 @@ class Property extends Node implements PropertyInterface
 	 * Set label
 	 *
 	 * @param array $arrLabel
+	 *
+	 * @return $this;
 	 */
 	public function setLabel(array $arrLabel)
 	{
 		$this->set('label', $arrLabel);
+
+		return $this;
 	}
 
 
 	/**
 	 * @param array $arrLabel
+	 *
+	 * @return $this
 	 */
 	public function setLabelByRef(array &$arrLabel)
 	{
 		$this->definition['label'] =& $arrLabel;
+
+		return $this;
 	}
 
 
@@ -86,10 +117,14 @@ class Property extends Node implements PropertyInterface
 
 	/**
 	 * @param $strType
+	 *
+	 * @return $this
 	 */
 	public function setWidgetType($strType)
 	{
 		$this->definition['inputType'] = $strType;
+
+		return $this;
 	}
 
 
@@ -107,10 +142,14 @@ class Property extends Node implements PropertyInterface
 	/**
 	 * @param $strKey
 	 * @param $value
+	 *
+	 * @return $this
 	 */
 	public function setEvaluationAttribute($strKey, $value)
 	{
 		$this->definition['eval'][$strKey] = $value;
+
+		return $this;
 	}
 
 
@@ -142,10 +181,14 @@ class Property extends Node implements PropertyInterface
 
 	/**
 	 * @param $blnValue
+	 *
+	 * @return $this
 	 */
 	public function setSearchable($blnValue)
 	{
-		$this->set('search', $blnValue);
+		$this->set('search', (bool) $blnValue);
+
+		return $this;
 	}
 
 
@@ -162,10 +205,14 @@ class Property extends Node implements PropertyInterface
 
 	/**
 	 * @param $blnValue
+	 *
+	 * @return $this
 	 */
 	public function setFilterable($blnValue)
 	{
-		$this->set('filter', $blnValue);
+		$this->set('filter', (bool) $blnValue);
+
+		return $this;
 	}
 
 
@@ -182,10 +229,14 @@ class Property extends Node implements PropertyInterface
 
 	/**
 	 * @param $blnValue
+	 *
+	 * @return $this
 	 */
 	public function setSortable($blnValue)
 	{
-		$this->set('filter', $blnValue);
+		$this->set('sorting', $blnValue);
+
+		return $this;
 	}
 
 	/**
@@ -209,10 +260,14 @@ class Property extends Node implements PropertyInterface
 	/**
 	 * @param $strKey
 	 * @param $value
+	 *
+	 * @return $this
 	 */
 	public function set($strKey, $value)
 	{
 		$this->definition[$strKey] = $value;
+
+		return $this;
 	}
 
 
@@ -227,10 +282,14 @@ class Property extends Node implements PropertyInterface
 
 	/**
 	 * @param PropertyContainer $objParent
+	 *
+	 * @return $this;
 	 */
 	public function setParent(PropertyContainer $objParent)
 	{
 		$this->objParent = $objParent;
+
+		return $this;
 	}
 
 
@@ -243,9 +302,16 @@ class Property extends Node implements PropertyInterface
 	 */
 	public function isSelector($blnSelector=null)
 	{
-		if($blnSelector)
+		if($blnSelector !== null)
 		{
-			$this->getDataContainer()->addSelector($this);
+			if($blnSelector)
+			{
+				$this->getDataContainer()->addSelector($this);
+			}
+			else {
+				$this->getDataContainer()->removeSelector($this);
+			}
+
 		}
 
 		return $this->getDataContainer()->hasSelector($this->getName());
@@ -282,15 +348,17 @@ class Property extends Node implements PropertyInterface
 	 */
 	public function hasSubPalette($mixedValue=null)
 	{
-		$strName = $this->strName;
+		if(!$this->isSelector())
+		{
+			return false;
+		}
 
 		if($mixedValue === null || $mixedValue === '1' || $mixedValue === true)
 		{
-			return $this->getDataContainer()->hasSubPalette($strName);
+			return $this->getDataContainer()->hasSubPalette($this->strName);
 		}
 
-		$strName .= '_' . $mixedValue;
-		return $this->getDataContainer()->hasSubPalette($strName);
+		return $this->getDataContainer()->hasSubPalette($this->strName . '_' . $mixedValue);
 	}
 
 
@@ -348,6 +416,10 @@ class Property extends Node implements PropertyInterface
 
 
 	/**
+	 * Remove property from parent and datacontainer if set too true
+	 *
+	 * You should not use the object anymore after removing it!
+	 *
 	 * @param bool $blnRemoveFromDataContainer
 	 *
 	 * @return $this
@@ -355,6 +427,13 @@ class Property extends Node implements PropertyInterface
 	public function remove($blnRemoveFromDataContainer=false)
 	{
 		$this->objParent->removeProperty($this, $blnRemoveFromDataContainer);
+
+		if($this->objParent == $this->objDataContainer)
+		{
+			unset($this->objDataContainer);
+		}
+
+		unset($this->objParent);
 
 		return $this;
 	}
@@ -403,7 +482,7 @@ class Property extends Node implements PropertyInterface
 	 */
 	public function asArray()
 	{
-		return $this->getName();
+		return $this->getDefinition();
 	}
 
 

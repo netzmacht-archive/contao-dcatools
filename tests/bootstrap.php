@@ -54,7 +54,11 @@ $TEST_DCA = array
 		'test' => array
 		(
 			'label' => array('Test', 'Label'),
+			'search' => false,
+			'sorting' => true,
+			'filter' => true,
 			'inputType' => 'text',
+			'eval' => array('tl_class'),
 		),
 
 		'done' => array

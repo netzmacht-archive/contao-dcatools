@@ -428,11 +428,13 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 
 		if($this->hasProperty($strName))
 		{
-			$objProperty = $this->getProperty($strName);
 			unset($this->arrProperties[$strName]);
-
-			// unset property not matter if auto update is on because we check against definition if property exists
 			unset($this->definition['fields'][$strName]);
+		}
+
+		if($blnFromDataContainer)
+		{
+			$this->getDataContainer()->removeProperty($strName);
 		}
 
 		return $this;
@@ -732,7 +734,7 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 	{
 		$strName = is_object($property) ? $property->getName() : $property;
 
-		return $this->hasProperty($strName) && in_array($strName, (array) $this->definition['palettes']['__selector__']);
+		return ($this->hasProperty($strName) && in_array($strName, (array) $this->definition['palettes']['__selector__']));
 	}
 
 
@@ -743,12 +745,14 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 	 */
 	public function removeSelector($property)
 	{
-		if(!$property instanceof Property)
+		if($property instanceof Property)
 		{
-			$property = $this->getProperty($property);
+			$property = $this->getName();
 		}
 
-		$property->isSelector(false);
+		$intKey = array_search($property, $this->definition['palettes']['__selector__']);
+		unset($this->definition['palettes']['__selector__'][$intKey]);
+		$this->definition['palettes']['__selector__'] = array_values($this->definition['palettes']['__selector__']);
 
 		return $this;
 	}

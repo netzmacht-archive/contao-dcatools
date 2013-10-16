@@ -265,17 +265,6 @@ class Palette extends Node implements PropertyContainerInterface
 
 
 	/**
-	 * Get all SubPalettes, same as DataContainer->getSubPalettes
-	 *
-	 * @return SubPalette[]
-	 */
-	public function getSubPalettes()
-	{
-		return $this->getDataContainer()->getSubPalettes();
-	}
-
-
-	/**
 	 * Get a legend
 	 *
 	 * @param $strName

@@ -58,9 +58,23 @@ class Operation extends Visual implements OperationInterface
 	 */
 	public function __construct($strTable, $strName, $strScope='local')
 	{
-		$objDefinition = Definition::getDataContainer($strTable)->getOperation($strName, $strScope);
+		$objDefinition = Definition::getDataContainer($strTable);
 
 		parent::__construct($objDefinition);
+
+		$arrEvents = $objDefinition->getFromDefinition(sprintf(
+			'dcatools/%s/%s',
+			$strScope === 'global' ? 'global_operations' : 'operations',
+			$strName
+		));
+
+		if(is_array($arrEvents))
+		{
+			foreach($arrEvents as $strEvent => $arrListeners)
+			{
+				$this->addListeners($strEvent, $arrListeners);
+			}
+		}
 	}
 
 

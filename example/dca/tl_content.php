@@ -5,13 +5,42 @@ $GLOBALS['TL_DCA']['tl_example'] = array
 (
 	'dcatools' => array
 	(
-		'permissions' => array
+		'events' => array
 		(
-			array('DcaTools\Event\DataContainerPermissions', 'hasAccess', array('module' => 'test')),
-			array('DcaTools\Event\DataContainerPermissions', 'isAdmin'),
+			'permissions' => array
+			(
+				array('DcaTools\Event\DataContainerPermissions', 'hasAccess', array('module' => 'test')),
+				array('DcaTools\Event\DataContainerPermissions', 'isAdmin'),
+			),
+
+			'getAlowedEntries' => array
+			(
+				array('DcaTools\DataContainer\Content', 'getAllowedEntries'),
+			),
+
+			'getAllowedIds' => array
+			(
+				array('DcaTools\DataContainer\Content', 'getAllowedIds'),
+			),
+
+			'getAllowedDynamicParents' => array
+			(
+				array('DcaTools\DataContainer\Content', 'getAllowedDynamicParents')
+			),
 		),
 
-		'operationListeners' => true,
+		'operations' => array
+		(
+			'edit' => array
+			(
+				array('Netzmacht\FontAwesome\FontAwesome', 'generateOperation'),
+			),
+		),
+
+		'global_operations' => array
+		(
+
+		),
 	),
 
 
@@ -24,18 +53,6 @@ $GLOBALS['TL_DCA']['tl_example'] = array
 				'label' => $GLOBALS['TL_LANG']['tl_example']['edit'],
 				'href'  => 'act=edit',
 				'icon'  => 'edit.gif',
-				'events' => array
-				(
-					'permissions' => array
-					(
-						array('DcaTools\Event\OperationPermissions', 'isAdmin'),
-					),
-
-					'generate' => array
-					(
-						array('Netzmacht\FontAwesome\FontAwesome', 'generateOperation'),
-					),
-				),
 			),
 		)
 	)

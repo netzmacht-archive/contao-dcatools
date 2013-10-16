@@ -90,7 +90,7 @@ class Helper
 			// initialize and check permissions
 			if(isset($arrConfig['events']))
 			{
-				$objDataContainer = new DataContainer($dc->table);
+				$objDataContainer = DataContainer::getInstance($dc->table);
 				$objDataContainer->initialize();
 			}
 		}
@@ -108,21 +108,24 @@ class Helper
 	{
 		$strCallback = ($strKey == 'operations' ? 'operationCallback' : 'globalOperationCallback');
 
-		if(!isset($GLOBALS['TL_DCA'][$strTable]['list'][$strKey]))
+		if(!isset($GLOBALS['TL_DCA'][$strTable]['dcatools'][$strKey]))
 		{
 			return;
 		}
 
-		foreach($GLOBALS['TL_DCA'][$strTable]['list'][$strKey] as $strOperation => $arrOperation)
+		foreach($GLOBALS['TL_DCA'][$strTable]['dcatools'][$strKey] as $strOperation => $arrListeners)
 		{
-			if(!isset($arrOperation['events']))
+			// operation does not exists only event listeners
+			if(!isset($GLOBALS['TL_DCA'][$strTable]['list'][$strKey][$strOperation]))
 			{
 				continue;
 			}
 
+			$arrOperation = $GLOBALS['TL_DCA'][$strTable]['list'][$strKey][$strOperation];
+
 			if(isset($arrOperation['button_callback']))
 			{
-				$GLOBALS['TL_DCA'][$strTable]['list'][$strKey][$strOperation]['events']['generate'][] = array(
+				$GLOBALS['TL_DCA'][$strTable]['dcatools'][$strKey][] = array(
 					function($objEvent) use($arrOperation) {
 						$objCallback = new OperationCallback($arrOperation['button_callback']);
 						$objCallback->execute($objEvent);

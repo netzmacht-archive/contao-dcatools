@@ -41,25 +41,6 @@ abstract class Visual extends Component
 
 
 	/**
-	 * @param Node $objDefinition
-	 */
-	public function __construct(Node $objDefinition)
-	{
-		parent::__construct($objDefinition);
-
-		$arrEvents = $objDefinition->get('events');
-
-		if(is_array($arrEvents))
-		{
-			foreach($arrEvents as $strEvent => $arrListeners)
-			{
-				$this->addListeners($strEvent, $arrListeners);
-			}
-		}
-	}
-
-
-	/**
 	 * Get Template name
 	 *
 	 * @return string

@@ -15,6 +15,6 @@
 /**
  * Events
  */
-$GLOBALS['TL_DCA']['tl_content']['dcatools']['getAllowedEntries'][]         = array('DcaTools\DataContainer\Content', 'getAllowedEntries');
-$GLOBALS['TL_DCA']['tl_content']['dcatools']['getAllowedIds'][]             = array('DcaTools\DataContainer\Content', 'getAllowedIds');
-$GLOBALS['TL_DCA']['tl_content']['dcatools']['getAllowedDynamicParents'][]  = array('DcaTools\DataContainer\Content', 'getAllowedDynamicParents');
+$GLOBALS['TL_DCA']['tl_content']['dcatools']['events']['getAllowedEntries'][]         = array('DcaTools\DataContainer\Content', 'getAllowedEntries');
+$GLOBALS['TL_DCA']['tl_content']['dcatools']['events']['getAllowedIds'][]             = array('DcaTools\DataContainer\Content', 'getAllowedIds');
+$GLOBALS['TL_DCA']['tl_content']['dcatools']['events']['getAllowedDynamicParents'][]  = array('DcaTools\DataContainer\Content', 'getAllowedDynamicParents');

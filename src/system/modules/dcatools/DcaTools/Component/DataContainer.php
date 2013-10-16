@@ -51,9 +51,9 @@ class DataContainer extends Component
 
 		$arrConfig = $this->objDefinition->get('dcatools');
 
-		if(is_array($arrConfig))
+		if(isset($arrConfig['events']) && is_array($arrConfig['events']))
 		{
-			foreach($arrConfig as $strName => $arrListeners)
+			foreach($arrConfig['events'] as $strName => $arrListeners)
 			{
 				$this->addListeners($strName, $arrListeners);
 			}

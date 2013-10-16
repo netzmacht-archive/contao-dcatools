@@ -17,8 +17,12 @@ namespace DcaTools;
 use DcaTools\Definition\DataContainer;
 use DcaTools\Definition\Palette;
 use DcaTools\Definition\Property;
+use DcaTools\Definition\Legend;
+use DcaTools\Iterator\ActivePalette;
+use DcaTools\Iterator\ActivePropertyContainer;
 use DcaTools\Structure\PropertyContainerInterface;
 use DcGeneral\Data\ModelInterface;
+
 
 /**
  * Class Definition provide access to definition of
@@ -84,7 +88,7 @@ class Definition
 	 *
 	 * @return Definition\Palette
 	 */
-	public static function getPalette($strTable, $strName)
+	public static function getPalette($strTable, $strName='default')
 	{
 		return static::getDataContainer($strTable)->getPalette($strName);
 	}
@@ -110,34 +114,168 @@ class Definition
 	 * @param PropertyContainerInterface $objContainer
 	 * @param ModelInterface $objModel
 	 * @param bool $blnRecursive
+	 * @param bool $blnRecursive Also integrate fields of SubPalettes
 	 *
-	 * @return array
+	 * @return \RecursiveIteratorIterator
 	 */
 	public static function getActivePropertiesFor(PropertyContainerInterface $objContainer, ModelInterface $objModel, $blnRecursive=false)
 	{
+		if($objContainer instanceof Palette)
+		{
+			return new \RecursiveIteratorIterator(new ActivePalette($objContainer, $objModel, $blnRecursive));
+		}
+
+		return new \RecursiveIteratorIterator(new ActivePropertyContainer($objContainer, $objModel, $blnRecursive));
+	}
+
+
+	/**
+	 * Get the ActivePalette iterator
+	 *
+	 * @param Palette $objPalette
+	 * @param ModelInterface $objModel
+	 *
+	 * @return ActivePalette
+	 */
+	public static function getActivePalette(Palette $objPalette, ModelInterface $objModel)
+	{
+		return new ActivePalette($objPalette, $objModel);
+	}
+
+
+	/**
+	 * Get active properties as an array list
+	 *
+	 * @param PropertyContainerInterface $objContainer
+	 * @param ModelInterface $objModel
+	 * @param bool $blnRecursive Also integrate fields of SubPalettes
+	 *
+	 * @return array
+	 */
+	public static function getActivePropertiesAsArrayFor(PropertyContainerInterface $objContainer, ModelInterface $objModel, $blnRecursive=true)
+	{
+		$objIterator = static::getActivePropertiesFor($objContainer, $objModel, $blnRecursive);
 		$arrProperties = array();
 
-		foreach($objContainer->getProperties() as $strName => $objProperty)
+		foreach($objIterator as $strName => $objProperty)
 		{
-			$arrProperties[$strName] = $objProperty;
-
-			$objSubPalette = static::getActivePropertySubPalette($objProperty, $objModel);
-
-			if($objSubPalette !== null)
-			{
-				if($blnRecursive)
-				{
-					$arrProperties = array_merge($arrProperties, static::getActivePropertiesFor($objSubPalette, $objModel, $blnRecursive));
-				}
-				else {
-					$arrProperties = array_merge($arrProperties, $objSubPalette->getProperties());
-				}
-			}
+			$arrProperties[] = $strName;
 		}
 
 		return $arrProperties;
 	}
 
+
+	/**
+	 * Get Active Palette as array
+	 *
+	 * @param Palette $objPalette
+	 * @param ModelInterface $objModel
+	 * @param bool $blnRecursive Also integrate fields of SubPalettes
+	 * @param bool $blnIncludeModifiers add modifier like :hide to fields as well (MetaPalettes syntax)
+	 *
+	 * @return array
+	 */
+	public static function getActivePaletteAsArray(Palette $objPalette, ModelInterface $objModel, $blnRecursive=true, $blnIncludeModifiers=false)
+	{
+		$objIterator = static::getActivePalette($objPalette, $objModel);
+		$arrPalette = array();
+
+		/** @var Legend $objLegend */
+		foreach($objIterator as $strLegend => $objLegend)
+		{
+			if($objIterator->hasChildren())
+			{
+				$arrPalette[$strLegend] = static::getActivePropertiesAsArrayFor($objLegend, $objModel, $blnRecursive);
+
+				if($blnIncludeModifiers)
+				{
+					$arrModifiers = array_map(
+						function($item) {
+							return ':' . $item;
+						},
+						$objLegend->getModifiers()
+					);
+
+					$arrPalette[$strLegend] = array_merge($arrModifiers, $arrPalette);
+				}
+			}
+		}
+
+		return $arrPalette;
+	}
+
+
+	/**
+	 * Get active properties as comma separated list
+	 *
+	 * @param PropertyContainerInterface $objContainer
+	 * @param ModelInterface $objModel
+	 *
+	 * @return array
+	 */
+	public static function getActivePropertiesAsStringFor(PropertyContainerInterface $objContainer, ModelInterface $objModel)
+	{
+		$objIterator = static::getActivePropertiesFor($objContainer, $objModel);
+		$strProperties = array();
+
+		foreach($objIterator as $strName => $objProperty)
+		{
+			if($strProperties != '')
+			{
+				$strProperties .= ',';
+			}
+
+			$strProperties .= $strName;
+		}
+
+		return $strProperties;
+	}
+
+
+	/**
+	 * Get Active Palette as string
+	 *
+	 * @param Palette $objPalette
+	 * @param ModelInterface $objModel
+	 * @param bool $blnIncludeModifiers add modifier like :hide to fields as well (MetaPalettes syntax)
+	 *
+	 * @return array
+	 */
+	public static function getActivePaletteAsString(Palette $objPalette, ModelInterface $objModel, $blnIncludeModifiers=true)
+	{
+		$objIterator = static::getActivePalette($objPalette, $objModel);
+		$strPalette = '';
+
+		/** @var Legend $objLegend */
+		foreach($objIterator as $strLegend => $objLegend)
+		{
+			if($objIterator->hasChildren())
+			{
+				$strModifier = '';
+
+				if($blnIncludeModifiers)
+				{
+					$strModifier = implode(':', $objLegend->getModifiers());
+					$strModifier = $strModifier == '' ? '' : (':'. $strModifier);
+				}
+
+				if($strPalette != '')
+				{
+					$strPalette .= ';';
+				}
+
+				$strPalette .= sprintf(
+					'{%s_legend%s},%s',
+					$strLegend,
+					$strModifier,
+					static::getActivePropertiesAsStringFor($objLegend, $objModel)
+				);
+			}
+		}
+
+		return $strPalette;
+	}
 
 
 	/**
@@ -176,23 +314,12 @@ class Definition
 	 */
 	public static function getActivePropertySubPalette(Property $objProperty, ModelInterface $objModel)
 	{
-		$objDataContainer = $objProperty->getDataContainer();
+		$objProperty->getDataContainer();
+		$varValue = $objModel->getProperty($objProperty->getName());
 
-		if($objProperty->isSelector())
+		if($objProperty->hasSubPalette($varValue))
 		{
-			if($objModel->getProperty($objProperty->getName()) == 1 && $objDataContainer->hasSubPalette($objProperty->getName()))
-			{
-				return $objDataContainer->getSubPalette($objProperty->getName());
-			}
-			else
-			{
-				$strSubPalette = $objProperty->getName() . '_' . $objModel->getProperty($objProperty->getName());
-
-				if($objDataContainer->hasSubPalette($strSubPalette))
-				{
-					return $objDataContainer->getSubPalette($strSubPalette);
-				}
-			}
+			return $objProperty->getSubPalette($varValue);
 		}
 
 		return null;

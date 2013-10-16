@@ -25,6 +25,12 @@ class Operation extends Visual implements OperationInterface
 {
 
 	/**
+	 * @var array
+	 */
+	protected static $arrInstances = array();
+
+
+	/**
 	 * Operation Template
 	 * @var string
 	 */
@@ -56,7 +62,7 @@ class Operation extends Visual implements OperationInterface
 	 * @param string $strName
 	 * @param string $strScope
 	 */
-	public function __construct($strTable, $strName, $strScope='local')
+	protected function __construct($strTable, $strName, $strScope='local')
 	{
 		$objDefinition = Definition::getDataContainer($strTable);
 
@@ -75,6 +81,26 @@ class Operation extends Visual implements OperationInterface
 				$this->addListeners($strEvent, $arrListeners);
 			}
 		}
+	}
+
+
+	/**
+	 * Get instance of Operation
+	 *
+	 * @param $strTable
+	 * @param $strName
+	 * @param string $strScope
+	 *
+	 * @return Operation[]
+	 */
+	public static function getInstance($strTable, $strName, $strScope='local')
+	{
+		if(!isset(static::$arrInstances[$strScope][$strTable][$strName]))
+		{
+			static::$arrInstances[$strScope][$strTable][$strName] = new self($strTable, $strName, $strScope);
+		}
+
+		return static::$arrInstances[$strScope][$strTable][$strName];
 	}
 
 

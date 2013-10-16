@@ -41,14 +41,14 @@ class Helper
 		if (strncmp($strMethod, 'operationCallback', 17) === 0)
 		{
 			$strOperation = substr($strMethod, 17);
-			$objOperation = new Operation($arrArguments[6], $strOperation, 'local');
+			$objOperation = Operation::getInstance($arrArguments[6], $strOperation, 'local');
 
 			$objOperation->setModel(array_shift($arrArguments));
 		}
 		elseif (strncmp($strMethod, 'globalOperationCallback', 23) === 0)
 		{
 			$strOperation = substr($strMethod, 23);
-			$objOperation = new Operation($arrArguments[5], $strOperation, 'global');
+			$objOperation =  Operation::getInstance($arrArguments[5], $strOperation, 'global');
 		}
 
 		if(isset($objOperation))

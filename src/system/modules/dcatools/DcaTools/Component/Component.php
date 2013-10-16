@@ -43,7 +43,7 @@ abstract class Component extends EventDispatcher
 	 *
 	 * @param $objDefinition
 	 */
-	public function __construct(Definition\Node $objDefinition)
+	protected function __construct(Definition\Node $objDefinition)
 	{
 		$this->objDefinition = $objDefinition;
 	}

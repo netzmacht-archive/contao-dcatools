@@ -45,7 +45,7 @@ class DataContainer extends Component
 	/**
 	 * @param Definition\Node $strName
 	 */
-	public function __construct($strName)
+	protected function __construct($strName)
 	{
 		parent::__construct(Definition::getDataContainer($strName));
 

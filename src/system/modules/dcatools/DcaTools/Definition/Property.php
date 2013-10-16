@@ -256,21 +256,41 @@ class Property extends Node implements PropertyInterface
 	 * get a defined subpalette
 	 *
 	 * @param null $mixedValue
-	 * @param int $intFlag
 	 * @return SubPalette
 	 * @throws \RuntimeException
 	 */
-	public function getSubPalette($mixedValue=null, $intFlag=null)
+	public function getSubPalette($mixedValue=null)
 	{
 		$strName = $this->strName;
 
-		if($mixedValue === null)
+		if($mixedValue === null || $mixedValue === '1' || $mixedValue === true)
 		{
-			return $this->getDataContainer()->getSubPalette($strName, $intFlag);
+			return $this->getDataContainer()->getSubPalette($strName);
 		}
 
 		$strName .= '_' . $mixedValue;
-		return $this->getDataContainer()->getSubPalette($strName, $intFlag);
+		return $this->getDataContainer()->getSubPalette($strName);
+	}
+
+
+	/**
+	 * get a defined subpalette
+	 *
+	 * @param null $mixedValue
+	 * @return SubPalette
+	 * @throws \RuntimeException
+	 */
+	public function hasSubPalette($mixedValue=null)
+	{
+		$strName = $this->strName;
+
+		if($mixedValue === null || $mixedValue === '1' || $mixedValue === true)
+		{
+			return $this->getDataContainer()->hasSubPalette($strName);
+		}
+
+		$strName .= '_' . $mixedValue;
+		return $this->getDataContainer()->hasSubPalette($strName);
 	}
 
 

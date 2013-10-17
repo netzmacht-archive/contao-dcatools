@@ -109,6 +109,7 @@ class DataContainerTest extends PHPUnit_Framework_TestCase
 	{
 		$objPalette = $this->objDataContainer->createPalette('test');
 		$objPalette->createLegend('default');
+
 		$objPalette->addProperty($this->objDataContainer->getProperty('test'), 'default');
 
 		$this->assertEquals($GLOBALS['TL_DCA']['tl_test']['palettes']['test'], $objPalette->getDefinition());

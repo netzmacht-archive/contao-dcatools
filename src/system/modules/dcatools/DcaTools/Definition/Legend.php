@@ -13,6 +13,7 @@
 
 namespace DcaTools\Definition;
 
+use DcaTools\Definition;
 use Symfony\Component\EventDispatcher\Event;
 
 /**
@@ -50,6 +51,15 @@ class Legend extends PropertyContainer
 		parent::__construct($strName, $objDataContainer, $definition);
 
 		$this->objPalette = $objPalette;
+	}
+
+
+	/**
+	 * Prepare for cloning
+	 */
+	public function __clone()
+	{
+		unset($this->objPalette);
 	}
 
 
@@ -133,7 +143,7 @@ class Legend extends PropertyContainer
 	 *
 	 * @return $this
 	 */
-	public function appendTo(Palette $objPalette, $reference=null, $intPosition=Legend::POS_LAST)
+	public function appendTo(Palette $objPalette, $reference=null, $intPosition=Definition::LAST)
 	{
 		if($this->getPalette() != $objPalette)
 		{
@@ -155,6 +165,7 @@ class Legend extends PropertyContainer
 	public function remove()
 	{
 		$this->getPalette()->removeLegend($this);
+		unset($this->objPalette);
 
 		return $this;
 	}
@@ -169,7 +180,7 @@ class Legend extends PropertyContainer
 	 */
 	public function appendAfter($reference)
 	{
-		$this->getPalette()->moveLegend($this, $reference, static::POS_AFTER);
+		$this->getPalette()->moveLegend($this, $reference, Definition::AFTER);
 
 		return $this;
 	}
@@ -184,7 +195,7 @@ class Legend extends PropertyContainer
 	 */
 	public function appendBefore($reference)
 	{
-		$this->getPalette()->moveLegend($this, $reference, static::POS_BEFORE);
+		$this->getPalette()->moveLegend($this, $reference, Definition::BEFORE);
 
 		return $this;
 	}
@@ -202,6 +213,11 @@ class Legend extends PropertyContainer
 		/** @var Legend $objIterator */
 		$strExport = parent::asString();
 
+		if($strExport == '')
+		{
+			return $strExport;
+		}
+
 		$strModifier = implode(':', $this->getModifiers());
 		$strModifier = $strModifier == '' ? '' : (':'. $strModifier);
 
@@ -212,14 +228,19 @@ class Legend extends PropertyContainer
 	/**
 	 * Export as array
 	 *
-	 * @param \Traversable $objIterator
+	 * @param bool $blnIncludeModifiers
 	 *
 	 * @return string
 	 */
-	public function asArray()
+	public function asArray($blnIncludeModifiers=false)
 	{
 		/** @var Legend $objIterator */
 		$arrProperties = parent::asArray();
+
+		if(!$blnIncludeModifiers)
+		{
+			return $arrProperties;
+		}
 
 		$arrModifiers = array_map(
 			function($item) {
@@ -261,6 +282,21 @@ class Legend extends PropertyContainer
 		$this->updateDefinition();
 
 		return $this;
+	}
+
+
+	/**
+	 * Prepare argument so that an array of name and the object is passed
+	 *
+	 * @param Palette $objReference
+	 * @param Legend|string $node
+	 * @param bool $blnNull return null if property does not exists
+	 *
+	 * @return array[string|Legend|null]
+	 */
+	public static function argument(Palette $objReference, $node, $blnNull=true)
+	{
+		return static::prepareArgument($objReference, $node, $blnNull, 'Legend');
 	}
 
 

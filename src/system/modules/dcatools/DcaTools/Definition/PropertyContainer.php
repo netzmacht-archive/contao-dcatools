@@ -13,6 +13,7 @@
 
 namespace DcaTools\Definition;
 
+use DcaTools\Definition;
 use DcaTools\Structure\PropertyContainerInterface;
 use Symfony\Component\EventDispatcher\Event;
 use Symfony\Component\EventDispatcher\GenericEvent;
@@ -53,32 +54,44 @@ abstract class PropertyContainer extends Node implements PropertyContainerInterf
 	 * @param string|Property|null $reference property reference
 	 * @param int $intPosition Position where to insert
 	 *
-	 * @return $this
+	 * @return Property
 	 *
 	 * @throws \RuntimeException
 	 */
-	public function addProperty($property, $reference=null, $intPosition=Node::POS_LAST)
+	public function addProperty($property, $reference=null, $intPosition=Definition::LAST)
 	{
-		if($property instanceof Property)
-		{
-			$strName = $property->getName();
-		}
-		else {
-			$strName = $property;
-		}
+		/** @var Property $objProperty */
+		list($strName, $objProperty) = Property::argument($this, $property);
 
 		if($this->hasProperty($strName))
 		{
 			throw new \RuntimeException("Property '{$strName}' already exists in {$this->getName()}.");
 		}
 
-		$objProperty = clone $this->getDataContainer()->getProperty($strName);
+		if($objProperty !== null)
+		{
+			$this->requireSameDataContainer($objProperty);
+			$blnInDataContainer = $objProperty->getParent() instanceof DataContainer;
+
+			if($objProperty->getParent() != $this && !$blnInDataContainer)
+			{
+				$objProperty->getParent()->remove($strName);
+			}
+			elseif($blnInDataContainer)
+			{
+				$objProperty = clone $objProperty;
+			}
+		}
+		else {
+			$objProperty = clone $this->getDataContainer()->getProperty($strName);
+		}
+
 		$objProperty->setParent($this);
 
 		$this->addAtPosition($this->arrProperties, $objProperty, $reference, $intPosition);
 		$this->updateDefinition();
 
-		return $this;
+		return $objProperty;
 	}
 
 
@@ -166,11 +179,11 @@ abstract class PropertyContainer extends Node implements PropertyContainerInterf
 	 */
 	public function removeProperty($property, $blnFromDataContainer=false)
 	{
-		$strName = (string) $property;
+		list($strName, $objProperty) = Property::argument($this, $property);
 
 		if($this->hasProperty($strName))
 		{
-			if($blnFromDataContainer)
+			if($blnFromDataContainer && $this != $this->getDataContainer())
 			{
 				$this->getDataContainer()->removeProperty($strName);
 			}
@@ -191,17 +204,24 @@ abstract class PropertyContainer extends Node implements PropertyContainerInterf
 	 * @param $intPosition
 	 * @return $this
 	 */
-	public function moveProperty($property, $reference=null, $intPosition=PropertyContainer::POS_LAST)
+	public function moveProperty($property, $reference=null, $intPosition=Definition::LAST)
 	{
-		if(is_string($property))
+		/** @var Property $objProperty */
+		list($strName, $objProperty) = Property::argument($this, $property, false);
+
+		$this->requireSameDataContainer($objProperty);
+
+		if($objProperty->getParent() instanceof DataContainer)
 		{
-			$strName = $property;
-			$objProperty = $this->getProperty($strName);
+			if($this != $objProperty->getParent())
+			{
+				$objProperty = clone $objProperty;
+				$objProperty->setParent($this);
+			}
 		}
-		else
+		elseif($this !== $objProperty->getParent())
 		{
-			$objProperty = $property;
-			$strName = $objProperty->getName();
+			$objProperty->getParent()->remove();
 		}
 
 		if($this->hasProperty($strName))

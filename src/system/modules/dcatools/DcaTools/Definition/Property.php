@@ -13,6 +13,8 @@
 
 namespace DcaTools\Definition;
 
+use DcaTools\Definition;
+use DcaTools\Structure\PropertyContainerInterface;
 use DcGeneral\DataDefinition\PropertyInterface;
 
 /**
@@ -39,6 +41,15 @@ class Property extends Node implements PropertyInterface
 		parent::__construct($strName, $objDataContainer, $arrDefinition['fields'][$strName]);
 
 		$this->objParent = $objParent === null ? $objDataContainer : $objParent;
+	}
+
+
+	/**
+	 * Prepare for cloning
+	 */
+	public function __clone()
+	{
+		unset($this->objParent);
 	}
 
 
@@ -371,7 +382,7 @@ class Property extends Node implements PropertyInterface
 	 *
 	 * @return $this
 	 */
-	public function appendTo(PropertyContainer $objContainer, $reference=null, $intPosition=Property::POS_LAST)
+	public function appendTo(PropertyContainer $objContainer, $reference=null, $intPosition=Definition::LAST)
 	{
 		if($this->getParent() != $objContainer)
 		{
@@ -394,7 +405,7 @@ class Property extends Node implements PropertyInterface
 	 */
 	public function appendAfter($reference)
 	{
-		$this->getParent()->moveProperty($this, $reference, static::POS_AFTER);
+		$this->getParent()->moveProperty($this, $reference, Definition::AFTER);
 
 		return $this;
 	}
@@ -409,7 +420,7 @@ class Property extends Node implements PropertyInterface
 	 */
 	public function appendBefore($reference)
 	{
-		$this->getParent()->moveProperty($this, $reference, static::POS_BEFORE);
+		$this->getParent()->moveProperty($this, $reference, Definition::BEFORE);
 
 		return $this;
 	}
@@ -483,6 +494,21 @@ class Property extends Node implements PropertyInterface
 	public function asArray()
 	{
 		return $this->getDefinition();
+	}
+
+
+	/**
+	 * Prepare argument so that an array of name and the object is passed
+	 *
+	 * @param PropertyContainerInterface $objReference
+	 * @param Node|string $node
+	 * @param bool $blnNull return null if property does not exists
+	 *
+	 * @return array[string|Property|null]
+	 */
+	public static function argument(PropertyContainerInterface $objReference, $node, $blnNull=true)
+	{
+		return Node::prepareArgument($objReference, $node, $blnNull, 'Property');
 	}
 
 

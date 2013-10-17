@@ -39,11 +39,15 @@ class SubPalette extends PropertyContainer
 
 	/**
 	 * Remove child from parent
-	 * @return mixed
+	 *
+	 * @return $this
 	 */
 	public function remove()
 	{
 		$this->getDataContainer()->removeSubPalette($this);
+		unset($this->objDataContainer);
+
+		return $this;
 	}
 
 	/**
@@ -107,6 +111,21 @@ class SubPalette extends PropertyContainer
 				$this->addProperty($strProperty);
 			}
 		}
+	}
+
+
+	/**
+	 * Prepare argument so that an array of name and the object is passed
+	 *
+	 * @param DataContainer $objReference
+	 * @param Legend|string $node
+	 * @param bool $blnNull return null if property does not exists
+	 *
+	 * @return array[string|Legend|null]
+	 */
+	public static function argument(DataContainer $objReference, $node, $blnNull=true)
+	{
+		return static::prepareArgument($objReference, $node, $blnNull, 'SubPalette');
 	}
 
 

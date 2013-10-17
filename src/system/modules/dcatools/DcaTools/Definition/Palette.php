@@ -13,6 +13,7 @@
 
 namespace DcaTools\Definition;
 
+use DcaTools\Definition;
 use DcaTools\Structure\PropertyContainerInterface;
 use Symfony\Component\EventDispatcher\Event;
 
@@ -77,23 +78,21 @@ class Palette extends Node implements PropertyContainerInterface
 	/**
 	 * Add Property
 	 *
-	 * @param Property $objProperty
+	 * @param Property|string $property
 	 * @param string $strLegend
 	 * @param Property|string|null $reference
 	 * @param $intPosition
 	 *
-	 * @return $this
+	 * @return Property
 	 */
-	public function addProperty(Property $objProperty, $strLegend='default', $reference=null, $intPosition=Palette::POS_LAST)
+	public function addProperty($property, $strLegend='default', $reference=null, $intPosition=Definition::LAST)
 	{
 		if(!$this->hasLegend($strLegend))
 		{
 			$this->createLegend($strLegend);
 		}
 
-		$this->getLegend($strLegend)->addProperty($objProperty, $reference, $intPosition);
-
-		return $this;
+		return $this->getLegend($strLegend)->addProperty($property, $reference, $intPosition);
 	}
 
 
@@ -202,9 +201,39 @@ class Palette extends Node implements PropertyContainerInterface
 	 *
 	 * @return $this
 	 */
-	public function moveProperty($property, $strLegend='default', $reference=null, $intPosition=PropertyContainer::POS_LAST)
+	public function moveProperty($property, $strLegend='default', $reference=null, $intPosition=Definition::LAST)
 	{
-		$this->getLegend($strLegend)->moveProperty($property, $reference, $intPosition);
+		list($strName, $objProperty) = Property::argument($this, $property);
+
+		if(!$this->hasLegend($strLegend))
+		{
+			$this->createLegend($strLegend);
+		}
+
+		if($objProperty === null)
+		{
+			if($this->hasProperty($strName))
+			{
+				$objProperty = $this->getProperty($strName);
+
+				if($objProperty->getParent() != $this)
+				{
+					$objProperty->getParent()->removeProperty($objProperty);
+					$this->getLegend($strLegend)->addProperty($objProperty);
+				}
+			}
+			else {
+				$objProperty = $this->getDataContainer()->getProperty($this);
+				$this->getLegend($strLegend)->addProperty($objProperty);
+			}
+		}
+		elseif($objProperty->getParent() != $this && !$this->getLegend($strLegend)->hasProperty($strName))
+		{
+			$objProperty->getParent()->removeProperty($objProperty);
+			$this->getLegend($strLegend)->addProperty($objProperty);
+		}
+
+		$this->getLegend($strLegend)->moveProperty($objProperty, $reference, $intPosition);
 
 		return $this;
 	}
@@ -220,6 +249,11 @@ class Palette extends Node implements PropertyContainerInterface
 	 */
 	public function createProperty($strName, $strLegend='default')
 	{
+		if(!$this->hasLegend($strLegend))
+		{
+			$this->createLegend($strLegend);
+		}
+
 		return $this->getLegend($strLegend)->createProperty($strName);
 	}
 
@@ -231,9 +265,9 @@ class Palette extends Node implements PropertyContainerInterface
 	 */
 	public function hasSelectors()
 	{
-		foreach($this->getLegends() as $objLegend)
+		foreach($this->getDataContainer()->getSelectors() as $strName => $objProperty)
 		{
-			if($objLegend->hasSelectors())
+			if($this->hasProperty($strName))
 			{
 				return true;
 			}
@@ -324,7 +358,7 @@ class Palette extends Node implements PropertyContainerInterface
 	 *
 	 * @throws \RuntimeException
 	 */
-	public function createLegend($strName, $reference=null, $intPosition=Palette::POS_LAST)
+	public function createLegend($strName, $reference=null, $intPosition=Definition::LAST)
 	{
 		if($this->hasLegend($strName))
 		{
@@ -369,7 +403,7 @@ class Palette extends Node implements PropertyContainerInterface
 	 * @param $intPosition
 	 * @return $this
 	 */
-	public function moveLegend($objLegend, $reference=null, $intPosition=Palette::POS_LAST)
+	public function moveLegend($objLegend, $reference=null, $intPosition=Definition::LAST)
 	{
 		$objLegend = is_string($objLegend) ? $this->getLegend($objLegend) : $objLegend;
 
@@ -445,7 +479,12 @@ class Palette extends Node implements PropertyContainerInterface
 
 			if($strProperties)
 			{
-				$strExport .= $strProperties . ';';
+				if($strExport != '')
+				{
+					$strExport .= ';';
+				}
+
+				$strExport .= $strProperties;
 			}
 
 		}
@@ -457,15 +496,17 @@ class Palette extends Node implements PropertyContainerInterface
 	/**
 	 * Export to array
 	 *
+	 * @param bool $blnIncludeModifiers
+	 *
 	 * @return array|mixed
 	 */
-	public function asArray()
+	public function asArray($blnIncludeModifiers=false)
 	{
 		$arrExport = array();
 
 		foreach($this->getLegends() as $strLegend => $objLegend)
 		{
-			$arrExport[$strLegend] = $objLegend->asArray();
+			$arrExport[$strLegend] = $objLegend->asArray($blnIncludeModifiers);
 		}
 
 		return $arrExport;
@@ -479,6 +520,7 @@ class Palette extends Node implements PropertyContainerInterface
 	public function remove()
 	{
 		$this->getDataContainer()->removePalette($this);
+		unset($this->objDataContainer);
 
 		return $this;
 	}
@@ -487,30 +529,24 @@ class Palette extends Node implements PropertyContainerInterface
 	/**
 	 * Extend an existing node of the same type
 	 *
-	 * @param Node $objNode
+	 * @param Palette|string $palette
 	 *
 	 * @return $this
 	 *
 	 * @throws \RuntimeException
 	 */
-	public function extend($objNode)
+	public function extend($palette)
 	{
-		if(is_string($objNode))
-		{
-			$objNode = $this->getDataContainer()->getPalette($objNode);
-		}
-		elseif(!$objNode instanceof Palette)
-		{
-			throw new \RuntimeException("Node '{$objNode->getName()}' is not a Palette");
-		}
+		list($strName, $objPalette) = Palette::argument($this->getDataContainer(), $palette);
 
-		foreach($objNode->getLegends() as $strName => $objLegend)
+		/** @var Palette $objPalette */
+		foreach($objPalette->getLegends() as $strName => $objLegend)
 		{
 			$this->arrLegends[$strName] = clone $objLegend;
+			$this->arrLegends[$strName]->setPalette($this);
 		}
 
 		$this->updateDefinition();
-
 		return $this;
 	}
 
@@ -522,6 +558,21 @@ class Palette extends Node implements PropertyContainerInterface
 	public function get($strKey=null)
 	{
 		return $this->definition;
+	}
+
+
+	/**
+	 * Prepare argument so that an array of name and the object is passed
+	 *
+	 * @param DataContainer $objReference
+	 * @param Palette|string $node
+	 * @param bool $blnNull return null if not exists for object
+	 *
+	 * @return array(string, Palette)
+	 */
+	public static function argument(DataContainer $objReference, $node, $blnNull=true)
+	{
+		return static::prepareArgument($objReference, $node, $blnNull, 'Palette');
 	}
 
 

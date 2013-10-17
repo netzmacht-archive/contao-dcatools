@@ -31,6 +31,26 @@ use DcGeneral\Data\ModelInterface;
  */
 class Definition
 {
+	/**
+	 * @var int use for injecting element before other one
+	 */
+	const BEFORE = 1;
+
+	/**
+	 * @var int use for injecting element before after one
+	 */
+	const AFTER  = 2;
+
+	/**
+	 * @var int use for injecting element at first place
+	 */
+	const FIRST  = 4;
+
+	/**
+	 * @var int use for injecting element at last place
+	 */
+	const LAST   = 8;
+
 
 	/**
 	 * Get a data container

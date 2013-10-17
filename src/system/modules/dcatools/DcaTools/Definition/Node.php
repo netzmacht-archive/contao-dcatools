@@ -13,6 +13,7 @@
 
 namespace DcaTools\Definition;
 
+use DcaTools\Definition;
 use DcaTools\Event\EventDispatcher;
 use DcaTools\Structure\ExportInterface;
 use Symfony\Component\EventDispatcher\GenericEvent;
@@ -23,26 +24,6 @@ use Symfony\Component\EventDispatcher\GenericEvent;
  */
 abstract class Node  implements ExportInterface
 {
-	/**
-	 * @var int use for injecting element before other one
-	 */
-	const POS_BEFORE = 1;
-
-	/**
-	 * @var int use for injecting element before after one
-	 */
-	const POS_AFTER  = 2;
-
-	/**
-	 * @var int use for injecting element at first place
-	 */
-	const POS_FIRST  = 4;
-
-	/**
-	 * @var int use for injecting element at last place
-	 */
-	const POS_LAST   = 8;
-
 
 	/**
 	 * Name of element
@@ -139,6 +120,23 @@ abstract class Node  implements ExportInterface
 
 
 	/**
+	 * Require same datacontainer throws an exception if DataContainer is not the same
+	 *
+	 * @param Node $node
+	 *
+	 * @throws \RuntimeException
+	 */
+	protected function requireSameDataContainer(node $node)
+	{
+		if(!$this->hasSameDataContainer($node))
+		{
+			$arrDebug = (debug_backtrace(DEBUG_BACKTRACE_PROVIDE_OBJECT, 2));
+			throw new \RuntimeException("{$arrDebug[1]['class']}::{$arrDebug[1]['method']} not allowed for different DataContainers");
+		}
+	}
+
+
+	/**
 	 * Remove child from parent
 	 * @return mixed
 	 */
@@ -164,23 +162,29 @@ abstract class Node  implements ExportInterface
 	 *
 	 * @throws \RuntimeException
 	 */
-	protected function addAtPosition(array &$arrTarget, Node $objElement, $strReference=null, $intPosition=Node::POS_LAST)
+	protected function addAtPosition(array &$arrTarget, Node $objElement, $strReference=null, $intPosition=Definition::LAST)
 	{
-		if($objElement->getDataContainer() != $this->getDataContainer())
+		$this->requireSameDataContainer($objElement);
+
+		if($strReference === Definition::FIRST || $strReference === Definition::LAST)
 		{
-			throw new \RuntimeException("DataContainers are not identical");
+			$intPosition = $strReference;
 		}
 
-		if($strReference === null || $strReference === static::POS_LAST)
+		if($strReference === null || $intPosition === Definition::LAST)
 		{
 			$arrTarget[$objElement->getName()] = $objElement;
+		}
+		elseif($intPosition === Definition::FIRST)
+		{
+			$arrTarget = array_merge(array($objElement->getName() => $objElement), $arrTarget);
 		}
 		else
 		{
 			$intPos = array_search($strReference, array_keys($arrTarget));
-			($intPosition === static::POS_BEFORE) ?: ++$intPos;
+			($intPosition === Definition::BEFORE) ?: ++$intPos;
 
-			if($intPos == 0 || $strReference === static::POS_FIRST)
+			if($intPos == 0)
 			{
 				$arrTarget = array_merge(array($objElement->getName() => $objElement), $arrTarget);
 			}
@@ -259,6 +263,31 @@ abstract class Node  implements ExportInterface
 	public function __clone()
 	{
 		//unset($this->definition);
+	}
+
+
+	/**
+	 * Prepare argument so that an array of name and the object is passed
+	 *
+	 * @param Node $objReference
+	 * @param Node|string $node
+	 * @param bool $blnNull return null if property does not exists
+	 * @param \Closure $getter
+	 *
+	 * @return array[string|Property|null]
+	 */
+	protected static function prepareArgument(Node $objReference, $node, $blnNull, $strClass)
+	{
+		$node = is_object($node) ? $node->getName() : $node;
+
+		$strMethod = 'has' . $strClass;
+
+		if(($strClass != 'DataContainer') && !call_user_func(array($objReference , 'has' . $strClass), $node) && $blnNull)
+		{
+			return array($node, null);
+		}
+
+		return array($node, call_user_func(array($objReference , 'get' . $strClass), $node));
 	}
 
 

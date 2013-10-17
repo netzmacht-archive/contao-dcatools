@@ -405,7 +405,7 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 
 
 	/**
-	 * @param string $strName
+	 * @param Property|string $strName
 	 *
 	 * @return bool
 	 */
@@ -418,23 +418,35 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 
 
 	/**
-	 * @param string $strName
+	 * @param Property|string $property
 	 * @param bool $blnFromDataContainer
 	 * @return $this
 	 */
-	public function removeProperty($strName, $blnFromDataContainer=true)
+	public function removeProperty($property, $blnFromDataContainer=true)
 	{
-		$strName = is_object($strName) ? $strName->getName() : $strName;
+		list($strName, $objProperty) = Property::argument($this, $property);
 
-		if($this->hasProperty($strName))
+		if($objProperty !== null)
 		{
 			unset($this->arrProperties[$strName]);
 			unset($this->definition['fields'][$strName]);
-		}
 
-		if($blnFromDataContainer)
-		{
-			$this->getDataContainer()->removeProperty($strName);
+			foreach($this->getPalettes() as $strName => $objPalette)
+			{
+				$objPalette->removeProperty($strName);
+			}
+
+			foreach($this->getSubPalettes() as $strName => $objSubPalette)
+			{
+				$objSubPalette->removeProperty($strName);
+			}
+
+			if(in_array($strName, $this->definition['palettes']['__selector__']))
+			{
+				$intKey = array_search($strName, $this->definition['palettes']['__selector__']);
+				unset($this->definition['palettes']['__selector__'][$intKey]);
+				$this->definition['palettes']['__selector__'] = array_values($this->definition['palettes']['__selector__']);
+			}
 		}
 
 		return $this;
@@ -530,23 +542,28 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 
 
 	/**
-	 * @param $strName
+	 * @param string|Palette $palette
 	 *
 	 * @return bool
 	 */
-	public function hasPalette($strName)
+	public function hasPalette($palette)
 	{
+		// can not call Palette::argument() here could get an recursive call
+		$strName = is_object($palette) ? $palette->getName() : $palette;
+
 		return  isset($this->definition['palettes'][$strName]);
 	}
 
 
 	/**
-	 * @param $strName
+	 * @param string|Palette $palette
 	 *
 	 * @return $this
 	 */
-	public function removePalette($strName)
+	public function removePalette($palette)
 	{
+		list($strName, $objPalette) = Palette::argument($this, $palette);
+
 		if($this->hasPalette($strName))
 		{
 			$objPalette = $this->getPalette($strName);
@@ -648,10 +665,10 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 	 */
 	public function removeSubPalette($strName)
 	{
+		list($strName, $objSubPalette) = SubPalette::argument($this, $strName);
+
 		if($this->hasSubPalette($strName))
 		{
-			$objSubPalette = $this->getSubPalette($strName);
-
 			unset($this->arrSubPalettes[$strName]);
 			unset($this->definition['subpalettes'][$strName]);
 		}
@@ -875,7 +892,7 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 	 *
 	 * @return $this
 	 */
-	public function moveOperation(Operation $objOperation, $reference=null, $intPosition=Palette::POS_LAST)
+	public function moveOperation(Operation $objOperation, $reference=null, $intPosition=Definition::LAST)
 	{
 		$strScope = $objOperation->getScope();
 
@@ -949,6 +966,25 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 		}
 
 		return $this;
+	}
+
+
+	/**
+	 * Prepare argument so that an array of name and the object is passed
+	 *
+	 * @param DataContainer $objReference
+	 * @param DataContainer|string $node
+	 *
+	 * @return array(string, DataContainer)
+	 */
+	public static function argument(DataContainer $objReference, $node)
+	{
+		if(is_string($node))
+		{
+			return array($node, static::getInstance($node));
+		}
+
+		return array($node->getName(), $node);
 	}
 
 

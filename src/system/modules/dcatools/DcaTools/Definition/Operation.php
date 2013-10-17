@@ -201,11 +201,9 @@ class Operation extends Node implements OperationInterface
 
 	/**
 	 *
-	 * @param array $arrConfig
-	 *
 	 * @return mixed
 	 */
-	public function asString(array $arrConfig = array('table' => true, 'id' => true))
+	public function asString()
 	{
 		return $this->getName();
 	}

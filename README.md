@@ -1,19 +1,18 @@
 contao-dcatools
 ===============
 
-This Library provides an object oriented API for accessing and manipulating Contao DCA arrays. It also provides useful
-helpers for handling permission and operation stuff.
+This Library provides an object oriented API for getting informations and doing manipulations on Contao DCA Definitions.
+It also provide Components for permission checking.
 
 Features
 ------
 
 * Object oriented API for Contao DCA
+* Get informations and manipulate the DCA on runtime
+* Components for effective permission handling
 * Event based components
-* API for manipulating propertys, palettes, legends, sub palettes and selectors
-* API for operations and global operations
 * Template and event based operation generation
 * Event based permission handling
-* (Auto-)updating the definitions
 
 Requirements
 ------
@@ -32,6 +31,6 @@ Documentation
 ----
 
 * [Basics](https://github.com/netzmacht/contao-dcatools/wiki/Basics)
-* [Palette manipulation](https://github.com/netzmacht/contao-dcatools/wiki/Palette-manipulation)
-* [Operations](https://github.com/netzmacht/contao-dcatools/wiki/Operations)
-* [Permissions](https://github.com/netzmacht/contao-dcatools/wiki/Permissions)
+* [Definitions](https://github.com/netzmacht/contao-dcatools/wiki/Definitions)
+* [Components](https://github.com/netzmacht/contao-dcatools/wiki/Operations)
+* [Permission restricted data access](https://github.com/netzmacht/contao-dcatools/wiki/Permissions)

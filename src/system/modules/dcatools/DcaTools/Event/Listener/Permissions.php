@@ -12,9 +12,9 @@
  */
 
 
-namespace DcaTools\Event;
+namespace DcaTools\Event\Listener;
 
-use Symfony\Component\EventDispatcher\GenericEvent;
+use DcaTools\Event;
 
 /**
  * Class Permissions provides listeners for operations and permission events
@@ -27,12 +27,12 @@ class Permissions
 	/**
 	 * Test if User is an admin.
 	 *
-	 * @param GenericEvent $objEvent
+	 * @param Event\Permission $objEvent
 	 * @param array $arrConfig
 	 *
 	 * @return bool
 	 */
-	public static function isAdmin(GenericEvent $objEvent, array $arrConfig=array())
+	public static function isAdmin(Event\Permission $objEvent, array $arrConfig=array())
 	{
 		if(!\BackendUser::getInstance()->isAdmin)
 		{
@@ -43,7 +43,7 @@ class Permissions
 	}
 
 
-	public static function hasAccess(GenericEvent $objEvent, array $arrConfig)
+	public static function hasAccess(Event\Permission $objEvent, array $arrConfig)
 	{
 		/** @var \BackendUser $objUser */
 		$objUser = \BackendUser::getInstance();
@@ -91,7 +91,7 @@ class Permissions
 	/**
 	 * generic is allowed rule
 	 *
-	 * @param GenericEvent $objEvent
+	 * @param Event\Permission $objEvent
 	 * @param array $arrConfig supports
 	 * 		- ptable string 	optional if want to check isAllowed for another table than data from $arrRow
 	 * 		- property string  	optional column of current row for WHERE id=? statement, default pid
@@ -101,19 +101,19 @@ class Permissions
 	 *
 	 * @return bool
 	 */
-	public static function isAllowed(GenericEvent $objEvent, array $arrConfig)
+	public static function isAllowed(Event\Permission $objEvent, array $arrConfig)
 	{
-		/** @var DcaTools\Definition\DataContainer $objDataContainer */
-		$objDataContainer = $objEvent->getSubject()->getDataContainer();
+		/** @var \DcaTools\Controller $objController */
+		$objController = $objEvent->getSubject()->getDataContainer();
 
 		/** @var \BackendUser $objUser */
 		$objUser = \BackendUser::getInstance();
 
 		$arrRow = array();
 
-		if($objDataContainer->hasModel())
+		if($objController->hasModel())
 		{
-			$arrRow = $objDataContainer->getModel()->getPropertiesAsArray();
+			$arrRow = $objController->getModel()->getPropertiesAsArray();
 		}
 
 		if(!isset($arrConfig['ptable']))
@@ -127,7 +127,7 @@ class Permissions
 			$strPTable = $arrConfig['ptable'];
 		}
 		else {
-			$arrDefinition = $objDataContainer->getDefinition();
+			$arrDefinition = $objController->getDefinition();
 			$strPTable = $arrDefinition['config']['ptable'];
 		}
 

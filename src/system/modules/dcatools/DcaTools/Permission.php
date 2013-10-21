@@ -9,8 +9,6 @@
 
 namespace DcaTools;
 
-use Symfony\Component\EventDispatcher\GenericEvent;
-
 /**
  * Class Permission
  * @package DcaTools
@@ -29,7 +27,7 @@ class Permission
 	 */
 	public static function getAllowedDynamicParents($strTable)
 	{
-		return Component\DataContainer::getInstance($strTable)->getAllowedDynamicParents();
+		return Controller::getInstance($strTable)->getAllowedDynamicParents();
 	}
 
 
@@ -42,7 +40,7 @@ class Permission
 	 */
 	public static function getAllowedIds($strTable, $strParent=null)
 	{
-		return Component\DataContainer::getInstance($strTable)->getAllowedIds($strParent);
+		return Controller::getInstance($strTable)->getAllowedIds($strParent);
 	}
 
 
@@ -57,7 +55,7 @@ class Permission
 	 */
 	public static function getAllowedEntries($strTable, $strParent=null, array $arrFields=array())
 	{
-		return Component\DataContainer::getInstance($strTable)->getAllowedEntries($strParent, $arrFields);
+		return Controller::getInstance($strTable)->getAllowedEntries($strParent, $arrFields);
 	}
 
 }

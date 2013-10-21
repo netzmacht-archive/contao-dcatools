@@ -12,7 +12,7 @@
  */
 
 namespace DcaTools\Event;
-use Symfony\Component\EventDispatcher\GenericEvent;
+
 
 /**
  * Class EventDispatcher
@@ -27,13 +27,13 @@ class EventDispatcher extends \Symfony\Component\EventDispatcher\EventDispatcher
 	 * @param string $strEvent
 	 * @param \Symfony\Component\EventDispatcher\Event|null $objEvent
 	 *
-	 * @return GenericEvent
+	 * @return Event
 	 */
 	public function dispatch($strEvent, \Symfony\Component\EventDispatcher\Event $objEvent=null)
 	{
 		if($objEvent === null)
 		{
-			$objEvent = new GenericEvent($this);
+			$objEvent = new Event($this);
 		}
 
 		return parent::dispatch($strEvent, $objEvent);

@@ -15,8 +15,6 @@ namespace DcaTools\Definition;
 
 use DcaTools\Definition;
 use DcaTools\Structure\PropertyContainerInterface;
-use Symfony\Component\EventDispatcher\Event;
-use Symfony\Component\EventDispatcher\GenericEvent;
 
 
 /**

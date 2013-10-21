@@ -11,17 +11,17 @@
  * @copyright 2013 netzmacht creative David Molineus
  */
 
-namespace DcaTools\Component;
+namespace DcaTools;
 
+use DcaTools\Component\Component;
 use DcaTools\Definition;
-use DcaTools\Structure\PropertyContainerInterface;
-use Symfony\Component\EventDispatcher\GenericEvent;
+use DcaTools\Event;
 
 /**
  * Class DataContainer
  * @package DcaTools\Component
  */
-class DataContainer extends Component
+class Controller extends Component
 {
 	protected static $arrInstances = array();
 
@@ -29,13 +29,13 @@ class DataContainer extends Component
 	/**
 	 * @param $strName
 	 *
-	 * @return DataContainer
+	 * @return Controller
 	 */
 	public static function getInstance($strName)
 	{
 		if(!isset(static::$arrInstances[$strName]))
 		{
-			static::$arrInstances[$strName] = new DataContainer($strName);
+			static::$arrInstances[$strName] = new Controller($strName);
 		}
 
 		return static::$arrInstances[$strName];
@@ -91,12 +91,15 @@ class DataContainer extends Component
 			);
 		}
 
-		$objEvent = new GenericEvent($this, array('error' => $strErrorDefault, 'granted' => true));
+		$objEvent = new Event\Permission($this);
+		$objEvent->setError($strErrorDefault);
+
+		/** @var Event\Permission $objEvent */
 		$objEvent = $this->dispatch('permissions', $objEvent);
 
-		if(!$objEvent->getArgument('granted'))
+		if(!$objEvent->isAccessGranted())
 		{
-			\Controller::log($objEvent->getArgument('error'), 'DataContainer initialize', TL_ERROR);
+			\Controller::log($objEvent->getError(), 'DataContainer initialize', TL_ERROR);
 			\Controller::redirect('contao/main.php?act=error');
 			return;
 		}
@@ -114,7 +117,7 @@ class DataContainer extends Component
 	 */
 	public function getAllowedIds($strParent=null)
 	{
-		$objEvent = new GenericEvent($this);
+		$objEvent = new Event\Event($this);
 		$objEvent['ids'] = array();
 
 		if($strParent !== null)
@@ -143,7 +146,7 @@ class DataContainer extends Component
 			throw new \RuntimeException("DataContainer '{$this->getName()}' does not have dynamic ptables");
 		}
 
-		$obEvent = new GenericEvent($this);
+		$obEvent = new Event\Event($this);
 		$obEvent['ptables'] = array();
 
 		$objEvent = $this->dispatch('getAllowedDynamicParents', $obEvent);
@@ -161,7 +164,7 @@ class DataContainer extends Component
 	 */
 	public function getAllowedEntries($strParent=null, array $arrFields=array())
 	{
-		$objEvent = new GenericEvent($this);
+		$objEvent = new Event\Event($this);
 		$objEvent['entries'] = array();
 		$objEvent['fields'] = $arrFields;
 

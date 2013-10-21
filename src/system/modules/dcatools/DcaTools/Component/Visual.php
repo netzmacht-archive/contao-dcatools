@@ -14,7 +14,7 @@
 namespace DcaTools\Component;
 
 use DcaTools\Definition\Node;
-use Symfony\Component\EventDispatcher\GenericEvent;
+use DcaTools\Event\Event;
 
 abstract class Visual extends Component
 {
@@ -82,9 +82,11 @@ abstract class Visual extends Component
 
 
 	/**
-	 * @return mixed
+	 * Compile visual component
+	 *
+	 * @param Event $objEvent
 	 */
-	abstract protected function compile(GenericEvent $objEvent);
+	abstract protected function compile(Event $objEvent);
 
 
 	/**
@@ -97,21 +99,19 @@ abstract class Visual extends Component
 			return '';
 		}
 
-		$objEvent = new GenericEvent($this);
-		$objEvent->setArgument('render', true);
-
+		$objEvent = new Event($this);
 		$objEvent = $this->dispatch('generate', $objEvent);
 
 		// check if rendering is denied
-		if(!$objEvent->getArgument('render'))
+		if($this->isHidden())
 		{
 			return '';
 		}
 
 		// check for generated component
-		if($objEvent->hasArgument('buffer') && $objEvent->getArgument('buffer') != '')
+		if($objEvent->hasOutput())
 		{
-			return $objEvent->getArgument('buffer');
+			return $objEvent->getOutput();
 		}
 
 		$this->compile($objEvent);

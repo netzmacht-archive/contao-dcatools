@@ -14,9 +14,7 @@
 namespace DcaTools\Definition;
 
 use DcaTools\Definition;
-use DcaTools\Event\EventDispatcher;
 use DcaTools\Structure\ExportInterface;
-use Symfony\Component\EventDispatcher\GenericEvent;
 
 /**
  * Class Node

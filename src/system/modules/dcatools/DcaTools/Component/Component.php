@@ -17,7 +17,6 @@ use DcGeneral\Data\DefaultModel;
 use DcGeneral\Data\ModelInterface;
 use DcaTools\Definition;
 use DcaTools\Event\EventDispatcher;
-use Symfony\Component\EventDispatcher\GenericEvent;
 
 /**
  * Class Component

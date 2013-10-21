@@ -13,9 +13,9 @@
 
 namespace DcaTools\Component;
 
+use DcaTools\Event\Event;
 use DcaTools\Structure\OperationInterface;
 use DcaTools\Definition;
-use Symfony\Component\EventDispatcher\GenericEvent;
 
 /**
  * Class Operation
@@ -91,7 +91,7 @@ class Operation extends Visual implements OperationInterface
 	 * @param $strName
 	 * @param string $strScope
 	 *
-	 * @return Operation[]
+	 * @return Operation
 	 */
 	public static function getInstance($strTable, $strName, $strScope='local')
 	{
@@ -107,11 +107,11 @@ class Operation extends Visual implements OperationInterface
 	/**
 	 * Compile
 	 *
-	 * @param GenericEvent $objEvent
+	 * @param Event $objEvent
 	 *
 	 * @return mixed|void
 	 */
-	protected function compile(GenericEvent $objEvent)
+	protected function compile(Event $objEvent)
 	{
 		if($this->isHidden() || $this->isDisabled())
 		{

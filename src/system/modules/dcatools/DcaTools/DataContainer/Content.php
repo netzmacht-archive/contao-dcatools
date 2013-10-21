@@ -13,7 +13,8 @@
 
 namespace DcaTools\DataContainer;
 
-use Symfony\Component\EventDispatcher\GenericEvent;
+use DcaTools\Event\Event;
+
 
 /**
  * Class Content
@@ -23,10 +24,10 @@ class Content
 {
 
 	/**
-	 * @param GenericEvent $objEvent
+	 * @param Event $objEvent
 	 * @return array
 	 */
-	public static function getAllowedIds(GenericEvent $objEvent)
+	public static function getAllowedIds(Event $objEvent)
 	{
 		$arrDataContainers = array('tl_article', 'tl_news', 'tl_calendar_events');
 
@@ -51,10 +52,10 @@ class Content
 
 
 	/**
-	 * @param GenericEvent $objEvent
+	 * @param Event $objEvent
 	 * @return array
 	 */
-	public static function getAllowedDynamicParents(GenericEvent $objEvent)
+	public static function getAllowedDynamicParents(Event $objEvent)
 	{
 		$arrPtables = array();
 
@@ -83,9 +84,9 @@ class Content
 
 
 	/**
-	 * @param GenericEvent $objEvent
+	 * @param Event $objEvent
 	 */
-	public static function getAllowedEntries(GenericEvent $objEvent)
+	public static function getAllowedEntries(Event $objEvent)
 	{
 		$arrDataContainers  = array('tl_article', 'tl_news', 'tl_calendar_events');
 
@@ -112,11 +113,11 @@ class Content
 
 	/**
 	 * @param $strDataContainer
-	 * @param GenericEvent $objEvent
+	 * @param Event $objEvent
 	 *
 	 * @return array
 	 */
-	protected static function doGetAllowedIds($strDataContainer, GenericEvent $objEvent)
+	protected static function doGetAllowedIds($strDataContainer, Event $objEvent)
 	{
 		$arrPids = array();
 		$arrIds = array();

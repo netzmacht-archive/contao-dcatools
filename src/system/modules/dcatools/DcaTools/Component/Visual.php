@@ -92,14 +92,18 @@ abstract class Visual extends Component
 	/**
 	 * @return string
 	 */
-	public function generate()
+	public function generate(Event $objEvent=null)
 	{
 		if($this->isHidden())
 		{
 			return '';
 		}
 
-		$objEvent = new Event($this);
+		if($objEvent === null)
+		{
+			$objEvent = new Event($this);
+		}
+
 		$objEvent = $this->dispatch('generate', $objEvent);
 
 		// check if rendering is denied

@@ -25,7 +25,7 @@ class Event extends GenericEvent
 	 */
 	public function hasOutput()
 	{
-		return isset($this['output']) && $this['output'] != '';
+		return (isset($this['output']) && $this['output'] != '');
 	}
 
 

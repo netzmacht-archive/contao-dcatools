@@ -136,13 +136,15 @@ class Operation extends Permissions
 
 		if($blnDisable)
 		{
+			/** @var \DcaTools\Component\Operation $objButton */
 			$objButton = $objEvent->getSubject();
 
 			$strIcon = isset($arrConfig['icon']) ? $arrConfig['icon'] : str_replace('.', '_.', $objButton->getIcon());
 			$objButton->setIcon($strIcon);
 			$objButton->disable();
 
-			$objEvent->setArgument('buffer', '');
+			$objEvent->setOutput('');
+			$objEvent->stopPropagation();
 		}
 
 		return true;

@@ -17,8 +17,10 @@ use DcaTools\Controller;
 use DcaTools\Component\Operation;
 use DcaTools\Event\Contao;
 use DcaTools\Event\Event;
+use DcaTools\Event\Permission;
 use DcaTools\Event\Priority;
 use DcaTools\Model\ContaoModel;
+use DcGeneral\Data\DefaultModel;
 
 
 /**
@@ -42,14 +44,14 @@ class Bridge
 		if (strncmp($strMethod, 'operationCallback', 17) === 0)
 		{
 			$strOperation = substr($strMethod, 17);
-			$objOperation = Operation::getInstance($arrArguments[6], $strOperation, 'local');
+			$objOperation = new Operation($arrArguments[6], $strOperation, 'local');
 
 			$objOperation->setModel(array_shift($arrArguments));
 		}
 		elseif (strncmp($strMethod, 'globalOperationCallback', 23) === 0)
 		{
 			$strOperation = substr($strMethod, 23);
-			$objOperation =  Operation::getInstance($arrArguments[5], $strOperation, 'global');
+			$objOperation =  new Operation($arrArguments[5], $strOperation, 'global');
 		}
 
 		if(isset($objOperation))
@@ -60,7 +62,15 @@ class Bridge
 			$objOperation->setIcon($arrArguments[3]);
 			$objOperation->setAttributes($arrArguments[4]);
 
-			return $objOperation->generate();
+			$objEvent = new Permission($objOperation);
+			$objEvent['table'] = $arrArguments[5];
+			$objEvent['rootIds'] = $arrArguments[6];
+			$objEvent['childRecordIds'] = $arrArguments[7];
+			$objEvent['circularReference'] = $arrArguments[8];
+			$objEvent['previous'] = $arrArguments[9];
+			$objEvent['next'] = $arrArguments[10];
+
+			return $objOperation->generate($objEvent);
 		}
 
 		return null;
@@ -81,6 +91,34 @@ class Bridge
 
 
 	/**
+	 * Initialize the DataContainer
+	 *
+	 * @param $dc
+	 */
+	public function callbackInitializeDataContainer($dc)
+	{
+		if(isset($GLOBALS['TL_DCA'][$dc->table]['dcatools']))
+		{
+			$arrConfig =& $GLOBALS['TL_DCA'][$dc->table]['dcatools'];
+
+			$objController = Controller::getInstance($dc->table);
+
+			// initialize and check permissions
+			if(isset($arrConfig['events']))
+			{
+				$objController->initialize();
+
+				$this->registerGenerateChildRecord($objController);
+				$this->registerPasteOperation($objController);
+			}
+
+			$this->registerOperationEvents($dc->table, 'operations');
+			$this->registerOperationEvents($dc->table, 'global_operations');
+		}
+	}
+
+
+	/**
 	 * Callback for child_record_callback
 	 *
 	 * @param $arrRow
@@ -91,8 +129,12 @@ class Bridge
 	{
 		$objController = Controller::getInstance(\Input::get('table'));
 
+		$objModel = new DefaultModel();
+		$objModel->setPropertiesAsArray($arrRow);
+		$objModel->setID($arrRow['id']);
+
 		$objEvent = new Event($objController);
-		$objEvent->setModel(new ContaoModel($arrRow));
+		$objEvent->setModel($objModel);
 
 		$objEvent = $objController->dispatch('generateChildRecord', $objEvent);
 
@@ -125,28 +167,36 @@ class Bridge
 
 
 	/**
-	 * Initialize the DataContainer
+	 * @param $objDc
+	 * @param $arrRow
+	 * @param $strTable
+	 * @param $blnCircularReference
+	 * @param $arrClipboard
+	 * @param $arrChildren
+	 * @param $intPrevious
+	 * @param $intNext
 	 *
-	 * @param $dc
+	 * @return string
 	 */
-	public function callbackInitializeDataContainer($dc)
+	public function callbackPasteOperation($objDc, $arrRow, $strTable, $blnCircularReference, $arrClipboard, $arrChildren, $intPrevious, $intNext)
 	{
-		if(isset($GLOBALS['TL_DCA'][$dc->table]['dcatools']))
-		{
-			$arrConfig =& $GLOBALS['TL_DCA'][$dc->table]['dcatools'];
+		$objModel = new DefaultModel();
+		$objModel->setPropertiesAsArray($arrRow);
+		$objModel->setID($arrRow['id']);
 
-			// initialize and check permissions
-			if(isset($arrConfig['events']))
-			{
-				$this->registerGenerateChildRecord($dc->table);
+		$objOperation = new Operation($objDc->table, 'paste-after');
+		$objOperation->setModel($objModel);
 
-				$objController = Controller::getInstance($dc->table);
-				$objController->initialize();
-			}
+		$objEvent = new Event($objOperation);
+		$objEvent->setArgument('circularReference', $blnCircularReference);
+		$objEvent->setArgument('table', $strTable);
+		$objEvent->setArgument('clipboard', $arrClipboard);
+		$objEvent->setArgument('children', $arrChildren);
+		$objEvent->setArgument('previous', $intPrevious);
+		$objEvent->setArgument('next', $intNext);
 
-			$this->registerOperationEvents($dc->table, 'operations');
-			$this->registerOperationEvents($dc->table, 'global_operations');
-		}
+		// TODO implement this
+		//$strBuffer = $objOperation->generate($objEvent);
 	}
 
 
@@ -177,7 +227,7 @@ class Bridge
 
 			if(isset($arrOperation['button_callback']))
 			{
-				$GLOBALS['TL_DCA'][$strTable]['dcatools'][$strKey][] = array
+				$GLOBALS['TL_DCA'][$strTable]['dcatools'][$strKey][$strOperation][] = array
 				(
 					function($objEvent) use($arrOperation)
 					{
@@ -198,21 +248,20 @@ class Bridge
 	/**
 	 * Register an generate child record if any events are set
 	 *
-	 * @param $strTable
+	 * @param Controller $objController
 	 */
-	protected function registerGenerateChildRecord($strTable)
+	protected function registerGenerateChildRecord(Controller $objController)
 	{
-		$arrConfig =& $GLOBALS['TL_DCA'][$strTable]['dcatools'];
+		$strTable  = $objController->getName();
+		$arrConfig = $objController->getDefinition()->getFromDefinition('dcatools/events');
 
-		if(isset($arrConfig['events']['generateChildRecord']))
+		if(isset($arrConfig['generateChildRecord']))
 		{
 			if(isset($GLOBALS['TL_DCA'][$strTable]['list']['sorting']['child_record_callback']))
 			{
 				$arrCallback = $GLOBALS['TL_DCA'][$strTable]['list']['sorting']['child_record_callback'];
 
-				$arrConfig['events']['generateChildRecord'][] = array
-				(
-					function(Event $objEvent) use($arrCallback)
+				$objController->addListener('generateChildRecord', function(Event $objEvent) use($arrCallback)
 					{
 						Contao::generateChildRecord($objEvent, $arrCallback);
 					},
@@ -222,6 +271,35 @@ class Bridge
 
 			$GLOBALS['TL_DCA'][$strTable]['list']['sorting']['child_record_callback'] = array(
 				'DcaTools\Bridge', 'callbackChildRecord'
+			);
+		}
+	}
+
+
+	/**
+	 * @param Controller $objController
+	 */
+	protected function registerPasteOperation(Controller $objController)
+	{
+		$strTable = $objController->getName();
+		$arrConfig = $objController->getDefinition()->getFromDefinition('dcatools/events');
+
+		if(isset($arrConfig['pasteOperation']))
+		{
+			if(isset($GLOBALS['TL_DCA'][$strTable]['list']['sorting']['paste_button_callback']))
+			{
+				$arrCallback = $GLOBALS['TL_DCA'][$strTable]['list']['sorting']['paste_button_callback'];
+
+				$objController->addListener('pasteOperation', function(Event $objEvent) use($arrCallback)
+					{
+						Contao::generateOperation($objEvent, $arrCallback);
+					},
+					Priority::CALLBACK
+				);
+			}
+
+			$GLOBALS['TL_DCA'][$strTable]['list']['sorting']['paste_button_callback'] = array(
+				'DcaTools\Bridge', 'callbackPasteOperation'
 			);
 		}
 	}

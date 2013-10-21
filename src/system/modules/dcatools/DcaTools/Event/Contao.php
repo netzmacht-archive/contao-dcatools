@@ -27,29 +27,29 @@ class Contao
 		/** @var \DcaTools\Definition\DataContainer $objDataContainer */
 		$objDataContainer = $objOperation->getDefinition()->getDataContainer();
 
+		// $arrRow, $v['href'], $label, $title, $v['icon'], $attributes, $strTable, $arrRootIds, $arrChildRecordIds, $blnCircularReference, $strPrevious, $strNext
 		$strBuffer = $objCallback->{$arrCallback[1]}
-			(
-				$objOperation->hasModel() ? $objOperation->getModel()->getPropertiesAsArray() : array(),
-				$objOperation->getHref(),
-				$objOperation->getLabel(),
-				$objOperation->getTitle(),
-				$objOperation->getIcon(),
-				$objOperation->getAttributes(),
-				$objDataContainer->getName(),
-				null,
-				null,
-				false,
-				null,
-				null,
-				null
-			);
+		(
+			$objOperation->hasModel() ? $objOperation->getModel()->getPropertiesAsArray() : array(),
+			$objOperation->getHref(),
+			$objOperation->getLabel(),
+			$objOperation->getTitle(),
+			$objOperation->getIcon(),
+			$objOperation->getAttributes(),
+			isset($objEvent['table']) ? $objEvent['table'] : $objDataContainer->getName(),
+			isset($objEvent['rootIds']) ? $objEvent['rootIds'] : array(),
+			isset($objEvent['childRecordIds']) ? $objEvent['childRecordIds'] : array(),
+			isset($objEvent['circularReference']) ? $objEvent['circularReference'] : false,
+			isset($objEvent['previous']) ? $objEvent['previous'] : null,
+			isset($objEvent['next']) ? $objEvent['next'] : null
+		);
 
 		if($strBuffer == '')
 		{
 			$objOperation->hide();
 		}
 		else {
-			$objEvent->setArgument('buffer', $strBuffer);
+			$objEvent->setOutput($strBuffer);
 		}
 	}
 
@@ -60,8 +60,10 @@ class Contao
 	 */
 	public static function generateChildRecord(Event $objEvent, array $arrCallback)
 	{
-		$arrRow = $objEvent->getArgument('row');
-		$objEvent['buffer'] = \Controller::importStatic($arrCallback[0])->$arrCallback[1]($arrRow);
+		$arrRow = $objEvent->getModel()->getPropertiesAsArray();
+
+		$strBuffer = \Controller::importStatic($arrCallback[0])->$arrCallback[1]($arrRow);
+		$objEvent->setOutput($strBuffer);
 	}
 
 }

@@ -48,7 +48,14 @@ class Controller extends Component
 	protected function __construct($strName)
 	{
 		parent::__construct(Definition::getDataContainer($strName));
+	}
 
+
+	/**
+	 * Initialize DataContainer
+	 */
+	public function initialize()
+	{
 		$arrConfig = $this->objDefinition->get('dcatools');
 
 		if(isset($arrConfig['events']) && is_array($arrConfig['events']))
@@ -58,14 +65,7 @@ class Controller extends Component
 				$this->addListeners($strName, $arrListeners);
 			}
 		}
-	}
 
-
-	/**
-	 * Initialize DataContainer
-	 */
-	public function initialize()
-	{
 		$this->dispatch('initialize');
 
 		if(\Input::get('act') != '')

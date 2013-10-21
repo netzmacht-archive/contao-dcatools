@@ -25,12 +25,6 @@ class Operation extends Visual implements OperationInterface
 {
 
 	/**
-	 * @var array
-	 */
-	protected static $arrInstances = array();
-
-
-	/**
 	 * Operation Template
 	 * @var string
 	 */
@@ -62,7 +56,7 @@ class Operation extends Visual implements OperationInterface
 	 * @param string $strName
 	 * @param string $strScope
 	 */
-	protected function __construct($strTable, $strName, $strScope='local')
+	public function __construct($strTable, $strName, $strScope='local')
 	{
 		$objDefinition = Definition::getDataContainer($strTable);
 
@@ -76,31 +70,8 @@ class Operation extends Visual implements OperationInterface
 
 		if(is_array($arrEvents))
 		{
-			foreach($arrEvents as $strEvent => $arrListeners)
-			{
-				$this->addListeners($strEvent, $arrListeners);
-			}
+			$this->addListeners('generate', $arrEvents);
 		}
-	}
-
-
-	/**
-	 * Get instance of Operation
-	 *
-	 * @param $strTable
-	 * @param $strName
-	 * @param string $strScope
-	 *
-	 * @return Operation
-	 */
-	public static function getInstance($strTable, $strName, $strScope='local')
-	{
-		if(!isset(static::$arrInstances[$strScope][$strTable][$strName]))
-		{
-			static::$arrInstances[$strScope][$strTable][$strName] = new self($strTable, $strName, $strScope);
-		}
-
-		return static::$arrInstances[$strScope][$strTable][$strName];
 	}
 
 
@@ -208,6 +179,15 @@ class Operation extends Visual implements OperationInterface
 	public function getName()
 	{
 		return $this->get('name');
+	}
+
+
+	/**
+	 * @param $strName
+	 */
+	public function setName($strName)
+	{
+		$this->set('name', $strName);
 	}
 
 

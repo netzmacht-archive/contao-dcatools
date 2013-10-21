@@ -49,7 +49,7 @@ class EventDispatcher extends \Symfony\Component\EventDispatcher\EventDispatcher
 	 * @param callable $listener
 	 * @param int $intPriority
 	 */
-	public function addListener($strName, $listener, $intPriority=0)
+	public function addListener($strName, $listener, $intPriority=Priority::STANDARD)
 	{
 		if (is_array($listener) && count($listener) === 2 && is_int($listener[1]))
 		{

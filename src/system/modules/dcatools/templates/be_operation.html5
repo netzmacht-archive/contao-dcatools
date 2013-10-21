@@ -2,12 +2,8 @@
 	<?php if($this->isDisabled()): ?>
 		<?php echo \Image::getHtml($this->getIcon(), $this->getLabel(), 'class="disabeld"'); ?>
 	<?php else: ?>
-		<a href="<?php echo $this->getHref(); ?>" title="<?php echo $this->getTitle(); ?>" <?php echo $this->getAttributes(); ?>>
-			<?php echo \Image::getHtml($this->getIcon(), $this->getLabel()); ?>
-		</a>
+		<a href="<?php echo $this->getHref(); ?>" title="<?php echo $this->getTitle(); ?>" <?php echo $this->getAttributes(); ?>><?php echo \Image::getHtml($this->getIcon(), $this->getLabel()); ?></a>
 	<?php endif; ?>
 <?php else: ?>
-<a href="<?php echo $this->getHref(); ?>" title="<?php echo $this->getTitle(); ?>" class="<?php echo $this->getIcon(); ?> <?php echo $this->getAttributes(); ?>>
-	<?php echo $this->getLabel(); ?>
-</a>
+<a href="<?php echo $this->getHref(); ?>" title="<?php echo $this->getTitle(); ?>" class="<?php echo $this->getIcon(); ?> <?php echo $this->getAttributes(); ?>><?php echo $this->getLabel(); ?></a>
 <?php endif; ?>

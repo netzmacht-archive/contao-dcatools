@@ -934,6 +934,29 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 
 
 	/**
+	 * @param string $strCallback the name of the callback without _callback suffix
+	 * @param array $arrCallback the Contao style callback
+	 *
+	 * @return $this
+	 */
+	public function registerCallback($strCallback, array $arrCallback)
+	{
+		$arrDefinition =& $this->getDefinition();
+
+		switch($strCallback)
+		{
+			case 'onsubmit':
+			case 'onloadk':
+			case 'oncut':
+				$arrDefinition['config'][$strCallback . '_callback'][] = $arrCallback;
+				break;
+		}
+
+		return $this;
+	}
+
+
+	/**
 	 * @return mixed|void
 	 */
 	public function remove()

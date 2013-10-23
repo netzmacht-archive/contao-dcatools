@@ -38,12 +38,12 @@ class Priority
 	/**
 	 * The standard priority does not have to be set.
 	 */
-	const STANDARD = 0;
+	const STANDARD = 3;
 
 
 	/**
 	 * Use this if your event shall be called after generating the output
 	 */
-	const POST = -1;
+	const POST = 0;
 
 }

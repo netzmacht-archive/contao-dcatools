@@ -14,10 +14,6 @@
 /**
  * Register the namespaces
  */
-ClassLoader::addNamespaces(array
-(
-	'DcaTools',
-));
 
 
 /**

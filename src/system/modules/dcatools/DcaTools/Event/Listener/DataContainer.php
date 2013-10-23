@@ -38,8 +38,7 @@ class DataContainer extends Permissions
 
 		if($blnStop)
 		{
-			$objEvent->setArgument('granted', false);
-			$objEvent->stopPropagation();
+			$objEvent->denyAccess();
 		}
 
 		return false;
@@ -69,8 +68,7 @@ class DataContainer extends Permissions
 
 			if($blnStop)
 			{
-				$objEvent->setArgument('granted', false);
-				$objEvent->stopPropagation();
+				$objEvent->denyAccess();
 			}
 		}
 
@@ -94,8 +92,7 @@ class DataContainer extends Permissions
 
 		if($blnStop)
 		{
-			$objEvent->setArgument('granted', false);
-			$objEvent->stopPropagation();
+			$objEvent->denyAccess();
 		}
 
 		return false;
@@ -118,8 +115,7 @@ class DataContainer extends Permissions
 
 		if($blnStop)
 		{
-			$objEvent->setArgument('granted', false);
-			$objEvent->stopPropagation();
+			$objEvent->denyAccess();
 		}
 
 		return false;
@@ -133,7 +129,7 @@ class DataContainer extends Permissions
 	 *
 	 * @return bool
 	 */
-	protected static function hasGenericPermission(Permission $objEvent, array $arrConfig=array())
+	public static function hasGenericPermission(Permission $objEvent, array $arrConfig=array())
 	{
 		$objEvent->setArgument('error', static::prepareErrorMessage($arrConfig, $objEvent->getArgument('error')));
 		$blnAccess = true;

@@ -35,7 +35,15 @@ class Controller extends Component
 	{
 		if(!isset(static::$arrInstances[$strName]))
 		{
-			static::$arrInstances[$strName] = new Controller($strName);
+			if(isset($GLOBALS['TL_DCA'][$strName]['dcatools']['controller']))
+			{
+				$strController = $GLOBALS['TL_DCA'][$strName]['dcatools']['controller'];
+			}
+			else {
+				$strController = '\DcaTools\Controller';
+			}
+
+			static::$arrInstances[$strName] = new $strController($strName);
 		}
 
 		return static::$arrInstances[$strName];
@@ -43,7 +51,7 @@ class Controller extends Component
 
 
 	/**
-	 * @param Definition\Node $strName
+	 * @param string $strName
 	 */
 	protected function __construct($strName)
 	{

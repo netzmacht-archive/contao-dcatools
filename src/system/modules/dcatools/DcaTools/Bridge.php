@@ -100,8 +100,9 @@ class Bridge
 		if(isset($GLOBALS['TL_DCA'][$dc->table]['dcatools']))
 		{
 			$arrConfig =& $GLOBALS['TL_DCA'][$dc->table]['dcatools'];
+			$strController = isset($arrConfig['controller']) ? $arrConfig['controller'] : null;
 
-			$objController = Controller::getInstance($dc->table);
+			$objController = Controller::getInstance($dc->table, $strController);
 
 			// initialize and check permissions
 			if(isset($arrConfig['events']))

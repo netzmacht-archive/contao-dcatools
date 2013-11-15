@@ -1,9 +1,11 @@
 <?php
 
-namespace DcaTools\Model;
+namespace DcaTools\Data;
 
 
-class Filter
+use DcGeneral\Data\DriverInterface;
+
+class FilterBuilder
 {
 
 	/**
@@ -124,6 +126,19 @@ class Filter
 	public function getFilter()
 	{
 		return $this->filters;
+	}
+
+
+	/**
+	 * @param DriverInterface $driver
+	 * @return \DcGeneral\Data\ConfigInterface
+	 */
+	public function getConfig(DriverInterface $driver)
+	{
+		$config = $driver->getEmptyConfig();
+		$config->setFilter($this->getFilter());
+
+		return $config;
 	}
 
 

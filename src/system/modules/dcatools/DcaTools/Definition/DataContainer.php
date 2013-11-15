@@ -27,7 +27,7 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 {
 
 	/**
-	 * @var Operation[]
+	 * @var array
 	 */
 	protected $arrOperations = array();
 
@@ -288,8 +288,6 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 			throw new \RuntimeException("Node '{$objNode->getName()}' is not a DataContainer");
 		}
 
-		$arrSelectors = $objNode->getSelectors();
-
 		// extend Properties and make sure that and Properties are cloned
 		foreach($objNode->getProperties() as $strProperty => $objProperty)
 		{
@@ -470,7 +468,7 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 
 
 	/**
-	 * @return |Palette[]
+	 * @return Palette[]
 	 */
 	public function getPalettes()
 	{
@@ -562,12 +560,10 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 	 */
 	public function removePalette($palette)
 	{
-		list($strName, $objPalette) = Palette::argument($this, $palette);
+		list($strName) = Palette::argument($this, $palette);
 
 		if($this->hasPalette($strName))
 		{
-			$objPalette = $this->getPalette($strName);
-
 			unset($this->arrPalettes[$strName]);
 			unset($this->definition['palettes'][$strName]);
 		}
@@ -592,7 +588,8 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 			throw new \RuntimeException("SubPalette {$strName} already exists in DataContainer {$this->getName()}");
 		}
 
-		$this->definition['palettes'][$strName] = array();
+		$this->definition['subpalettes'][$strName] = '';
+		$this->definition['palettes']['__selector__'][] = $strName;
 
 		$objSubPalette = new SubPalette($strName, $this);
 		$this->arrSubPalettes[$strName] = $objSubPalette;
@@ -621,15 +618,16 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 	/**
 	 * Get a SubPalette
 	 *
-	 * @param $strName
+	 * @param $subpalette
 	 *
 	 * @return SubPalette
 	 *
 	 * @throws \RuntimeException if SubPalette does not exist
 	 */
-	public function getSubPalette($strName)
+	public function getSubPalette($subpalette)
 	{
-		$strName = is_object($strName) ? $strName->getName() : $strName;
+		/** @var SubPalette $subpalette */
+		$strName = is_object($subpalette) ? $subpalette->getName() : $subpalette;
 
 		if(!isset($this->arrSubPalettes[$strName]))
 		{
@@ -646,13 +644,14 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 
 
 	/**
-	 * @param $strName
+	 * @param $subpalette
 	 *
 	 * @return bool
 	 */
-	public function hasSubPalette($strName)
+	public function hasSubPalette($subpalette)
 	{
-		$strName = is_object($strName) ? $strName->getName() : $strName;
+		/** @var SubPalette $subpalette */
+		$strName = is_object($subpalette) ? $subpalette->getName() : $subpalette;
 
 		return isset($this->definition['subpalettes'][$strName]);
 	}
@@ -665,7 +664,7 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 	 */
 	public function removeSubPalette($strName)
 	{
-		list($strName, $objSubPalette) = SubPalette::argument($this, $strName);
+		list($strName) = SubPalette::argument($this, $strName);
 
 		if($this->hasSubPalette($strName))
 		{
@@ -792,7 +791,7 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 			$this->getOperation($strOperation, $strScope);
 		}
 
-		return new $this->arrOperations[$strScope];
+		return $this->arrOperations[$strScope];
 	}
 
 
@@ -802,7 +801,7 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 	 * @param $strName
 	 * @param string $strScope
 	 *
-	 * @return mixed
+	 * @return \DcaTools\Definition\Operation
 	 *
 	 * @throws \RuntimeException
 	 */
@@ -923,11 +922,15 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 			$operation = $operation->getName();
 		}
 
-		if(isset($this->arrOperations[$strScope][$operation]))
+		$strKey = $strScope == 'global' ? 'global_' : '';
+		$strKey .= 'operations';
+
+		if(isset($this->arrOperations['list'][$strScope][$operation]))
 		{
 			unset($this->arrOperations[$strScope][$operation]);
-			unset($this->definition[$strScope][$operation]);
 		}
+
+		unset($this->definition['list'][$strKey][$operation]);
 
 		return $this;
 	}
@@ -946,9 +949,23 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 		switch($strCallback)
 		{
 			case 'onsubmit':
-			case 'onloadk':
+			case 'oncreate':
+			case 'onload':
 			case 'oncut':
+			case 'oncopy':
+			case 'ondelete':
 				$arrDefinition['config'][$strCallback . '_callback'][] = $arrCallback;
+				break;
+
+			case 'header':
+			case 'child_record':
+			case 'group':
+				$arrDefinition['list']['sorting'][$strCallback . '_callback'] = $arrCallback;
+				break;
+
+			case 'label':
+				var_dump($arrCallback);
+				$arrDefinition['list']['label'][$strCallback . '_callback'] = $arrCallback;
 				break;
 		}
 
@@ -1019,12 +1036,36 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 	 */
 	public function get($strKey)
 	{
-		if(isset($this->definition[$strKey]))
+		return $this->getFromDefinition($strKey);
+	}
+
+
+	/**
+	 * @param $strKey
+	 * @param $value
+	 *
+	 * @return $this
+	 */
+	public function set($strKey, $value)
+	{
+		$arrChunks = explode('/', $strKey);
+		$definition =& $this->definition;
+
+		$key = array_pop($arrChunks);
+
+		foreach($arrChunks as $chunk)
 		{
-			return $this->definition[$strKey];
+			if(!isset($definition[$chunk]))
+			{
+				$definition[$chunk] = array();
+			}
+
+			$definition = &$definition[$chunk];
 		}
 
-		return null;
+		$definition[$key ? $key : count($definition)] = $value;
+
+		return $this;
 	}
 
 }

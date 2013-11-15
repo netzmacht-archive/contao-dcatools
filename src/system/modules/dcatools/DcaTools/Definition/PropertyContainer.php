@@ -177,7 +177,7 @@ abstract class PropertyContainer extends Node implements PropertyContainerInterf
 	 */
 	public function removeProperty($property, $blnFromDataContainer=false)
 	{
-		list($strName, $objProperty) = Property::argument($this, $property);
+		list($strName) = Property::argument($this, $property);
 
 		if($this->hasProperty($strName))
 		{
@@ -217,7 +217,7 @@ abstract class PropertyContainer extends Node implements PropertyContainerInterf
 				$objProperty->setParent($this);
 			}
 		}
-		elseif($this !== $objProperty->getParent())
+		elseif($objProperty->getParent() !== null && $this !== $objProperty->getParent())
 		{
 			$objProperty->getParent()->remove();
 		}

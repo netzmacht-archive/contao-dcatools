@@ -55,10 +55,14 @@ class Operation extends Node implements OperationInterface
 
 	/**
 	 * @param string $strAttributes
+	 *
+	 * @return $this
 	 */
 	public function setAttributes($strAttributes)
 	{
 		$this->set('attributes', $strAttributes);
+
+		return $this;
 	}
 
 
@@ -73,10 +77,14 @@ class Operation extends Node implements OperationInterface
 
 	/**
 	 * @param string $strHref
+	 *
+	 * @return $this
 	 */
 	public function setHref($strHref)
 	{
 		$this->set('href', $strHref);
+
+		return $this;
 	}
 
 
@@ -91,10 +99,14 @@ class Operation extends Node implements OperationInterface
 
 	/**
 	 * @param string $strIcon
+	 *
+	 * @return $this
 	 */
 	public function setIcon($strIcon)
 	{
 		$this->set('icon', $strIcon);
+
+		return $this;
 	}
 
 
@@ -104,15 +116,33 @@ class Operation extends Node implements OperationInterface
 	public function getIcon()
 	{
 		return $this->get('icon');
+
 	}
 
 
 	/**
 	 * @param array $arrLabel
+	 *
+	 * @return $this
 	 */
-	public function setLabel(array $arrLabel)
+	public function setLabel(array $arrLabel=null)
 	{
 		$this->set('label', $arrLabel);
+
+		return $this;
+	}
+
+
+	/**
+	 * @param array $arrLabel
+	 *
+	 * @return $this
+	 */
+	public function setLabelByRef(array &$arrLabel=null)
+	{
+		$this->definition['label'] =& $arrLabel;
+
+		return $this;
 	}
 
 

@@ -74,7 +74,7 @@ abstract class Node  implements ExportInterface
 	/**
 	 * Get Name
 	 *
-	 * @return mixed
+	 * @return string
 	 */
 	public function getName()
 	{
@@ -198,7 +198,7 @@ abstract class Node  implements ExportInterface
 
 	/**
 	 * @param $strKey
-	 * @return null
+	 * @return mixed
 	 */
 	public function getFromDefinition($strKey)
 	{
@@ -212,7 +212,7 @@ abstract class Node  implements ExportInterface
 
 		while (($chunk = array_shift($chunks)) !== null)
 		{
-			if (!array_key_exists($chunk, $arrDca))
+			if ($chunk == '' || !is_array($arrDca) || !array_key_exists($chunk, $arrDca))
 			{
 				return null;
 			}
@@ -270,15 +270,13 @@ abstract class Node  implements ExportInterface
 	 * @param Node $objReference
 	 * @param Node|string $node
 	 * @param bool $blnNull return null if property does not exists
-	 * @param \Closure $getter
+	 * @param $strClass
 	 *
 	 * @return array[string|Property|null]
 	 */
 	protected static function prepareArgument(Node $objReference, $node, $blnNull, $strClass)
 	{
 		$node = is_object($node) ? $node->getName() : $node;
-
-		$strMethod = 'has' . $strClass;
 
 		if(($strClass != 'DataContainer') && !call_user_func(array($objReference , 'has' . $strClass), $node) && $blnNull)
 		{

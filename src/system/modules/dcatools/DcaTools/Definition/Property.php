@@ -239,6 +239,15 @@ class Property extends Node implements PropertyInterface
 
 
 	/**
+	 * @return bool
+	 */
+	public function isEditable()
+	{
+		return (bool) $this->get('inputType');
+	}
+
+
+	/**
 	 * @param $blnValue
 	 *
 	 * @return $this
@@ -301,6 +310,34 @@ class Property extends Node implements PropertyInterface
 		$this->objParent = $objParent;
 
 		return $this;
+	}
+
+
+	/**
+	 * @param $name
+	 * @param $callback
+	 */
+	public function registerCallback($name, $callback)
+	{
+		switch($name)
+		{
+			case 'load':
+			case 'save':
+				$name .= '_callback';
+				$this->definition[$name][] = $callback;
+				break;
+
+			case 'inputField':
+				$name = 'input_field';
+
+				// no break
+
+			case 'options':
+			case 'input_field':
+				$name .= '_callback';
+				$this->definition[$name] = $callback;
+				break;
+		}
 	}
 
 
@@ -378,13 +415,17 @@ class Property extends Node implements PropertyInterface
 	 *
 	 * @param PropertyContainer $objContainer
 	 * @param null $reference
-	 * @param null $intPosition
+	 * @param null|int $intPosition
 	 *
 	 * @return $this
 	 */
 	public function appendTo(PropertyContainer $objContainer, $reference=null, $intPosition=Definition::LAST)
 	{
-		if($this->getParent() != $objContainer)
+		if($this->getParent() == $this->getDataContainer() && $objContainer != $this->getDataContainer())
+		{
+			return $objContainer->addProperty($this->getName(), $reference, $intPosition);
+		}
+		elseif($this->getParent() != $objContainer)
 		{
 			$this->getParent()->removeProperty($this);
 			$this->objParent = $objContainer;

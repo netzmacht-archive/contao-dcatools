@@ -6,7 +6,7 @@
  * Time: 08:19
  */
 
-namespace DcaTool\Data;
+namespace DcaTools\Data;
 
 
 interface DriverManagerInterface

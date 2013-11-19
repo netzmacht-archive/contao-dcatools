@@ -13,8 +13,7 @@
 
 namespace DcaTools\Component;
 
-use DcaTools\Definition\Node;
-use DcaTools\Event\Event;
+use DcaTools\Event\GenerateEvent;
 
 abstract class Visual extends Component
 {
@@ -38,6 +37,12 @@ abstract class Visual extends Component
 	 * @var bool
 	 */
 	protected $blnHidden;
+
+
+	/**
+	 * @var
+	 */
+	protected $eventName;
 
 
 	/**
@@ -84,15 +89,16 @@ abstract class Visual extends Component
 	/**
 	 * Compile visual component
 	 *
-	 * @param Event $objEvent
+	 * @param GenerateEvent $objEvent
 	 */
-	abstract protected function compile(Event $objEvent);
+	abstract protected function compile(GenerateEvent $objEvent);
 
 
 	/**
+	 * @param GenerateEvent $objEvent
 	 * @return string
 	 */
-	public function generate(Event $objEvent=null)
+	public function generate(GenerateEvent $objEvent=null)
 	{
 		if($this->isHidden())
 		{
@@ -101,10 +107,10 @@ abstract class Visual extends Component
 
 		if($objEvent === null)
 		{
-			$objEvent = new Event($this);
+			$objEvent = new GenerateEvent($this);
 		}
 
-		$objEvent = $this->dispatch('generate', $objEvent);
+		$this->objDispatcher->dispatch($this->eventName, $objEvent);
 
 		// check if rendering is denied
 		if($this->isHidden())

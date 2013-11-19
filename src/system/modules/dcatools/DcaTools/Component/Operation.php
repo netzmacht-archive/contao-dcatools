@@ -13,7 +13,8 @@
 
 namespace DcaTools\Component;
 
-use DcaTools\Event\Event;
+use Contao\RequestToken;
+use DcaTools\Event\GenerateEvent;
 use DcaTools\Structure\OperationInterface;
 use DcaTools\Definition;
 
@@ -60,7 +61,9 @@ class Operation extends Visual implements OperationInterface
 	{
 		$objDefinition = Definition::getDataContainer($strTable);
 
-		parent::__construct($objDefinition);
+		$this->eventName = sprintf('dcatools.%s.%soperations.%s', $strTable, $strScope == 'global' ? 'global_' : '', $strName);
+
+		parent::__construct($objDefinition, $GLOBALS['container']['event-dispatcher']);
 
 		$arrEvents = $objDefinition->getFromDefinition(sprintf(
 			'dcatools/%s/%s',
@@ -70,7 +73,7 @@ class Operation extends Visual implements OperationInterface
 
 		if(is_array($arrEvents))
 		{
-			$this->addListeners('generate', $arrEvents);
+			\DcaTools\Event\Helper::addListeners($this->objDispatcher, 'generate', $arrEvents);
 		}
 	}
 
@@ -78,11 +81,11 @@ class Operation extends Visual implements OperationInterface
 	/**
 	 * Compile
 	 *
-	 * @param Event $objEvent
+	 * @param GenerateEvent $objEvent
 	 *
 	 * @return mixed|void
 	 */
-	protected function compile(Event $objEvent)
+	protected function compile(GenerateEvent $objEvent)
 	{
 		if($this->isHidden() || $this->isDisabled())
 		{
@@ -123,14 +126,23 @@ class Operation extends Visual implements OperationInterface
 				// table argument can be disabled
 				if(!$objEvent->hasArgument('table') || $objEvent->getArgument('table') !== false)
 				{
-					$arrArguments['table'] = $this->objDefinition->getDataContainer()->getName();
+					$arrArguments['table'] = $objEvent->hasArgument('table')
+						? $objEvent->getArgument('table')
+						: $this->objDefinition->getDataContainer()->getName();
 				}
 
 				// id argument can be disabled
 				if(!$objEvent->hasArgument('id') || $objEvent->getArgument('id') !== false)
 				{
-					$arrArguments['id'] = $this->objModel->getId();
+					$arrArguments['id'] = $objEvent->hasArgument('id')
+						? $objEvent->getArgument('id')
+						: ($this->objModel
+							? $this->objModel->getId()
+							: \Input::get('id')
+						);
 				}
+
+				$arrArguments['rt'] = RequestToken::get();
 
 				$this->appendHrefArguments($arrArguments);
 				$this->setHref(\Controller::addToUrl($this->getHref()));

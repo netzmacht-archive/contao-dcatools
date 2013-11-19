@@ -16,13 +16,13 @@ namespace DcaTools\Component;
 use DcGeneral\Data\DefaultModel;
 use DcGeneral\Data\ModelInterface;
 use DcaTools\Definition;
-use DcaTools\Event\EventDispatcher;
+use Symfony\Component\EventDispatcher\EventDispatcher;
 
 /**
  * Class Component
  * @package DcaTools\Component
  */
-abstract class Component extends EventDispatcher
+abstract class Component
 {
 
 	/**
@@ -38,13 +38,21 @@ abstract class Component extends EventDispatcher
 
 
 	/**
+	 * @var
+	 */
+	protected $objDispatcher;
+
+
+	/**
 	 * Constructor
 	 *
 	 * @param $objDefinition
+	 * @param EventDisPatcher $objDispatcher
 	 */
-	protected function __construct(Definition\Node $objDefinition)
+	protected function __construct(Definition\Node $objDefinition, EventDispatcher $objDispatcher)
 	{
 		$this->objDefinition = $objDefinition;
+		$this->objDispatcher = $objDispatcher;
 	}
 
 
@@ -58,19 +66,35 @@ abstract class Component extends EventDispatcher
 
 	/**
 	 * @param $objModel
+	 * @param string|null $table
+	 *
+	 * @throws \RuntimeException
+	 *
+	 * @return $this
 	 */
-	public function setModel($objModel)
+	public function setModel($objModel, $table=null)
 	{
 		if($objModel instanceof \Model\Collection || $objModel instanceof \Model || $objModel instanceof \Database\Result)
 		{
 			/** @var \Model|\Model\Collection|\Database\Result $objModel */
 			$this->objModel = new DefaultModel();
 			$this->objModel->setPropertiesAsArray($objModel->row());
+
+			if($objModel instanceof \Database\Result)
+			{
+				$this->objModel->setProviderName($table);
+			}
+			else {
+				$this->objModel->setProviderName($objModel->getTable());
+			}
 		}
 		elseif(is_array($objModel))
 		{
 			$this->objModel = new DefaultModel();
 			$this->objModel->setPropertiesAsArray($objModel);
+			$this->objModel->setID($objModel['id']);
+
+			$this->objModel->setProviderName($table);
 		}
 		elseif($objModel instanceof ModelInterface)
 		{
@@ -103,7 +127,7 @@ abstract class Component extends EventDispatcher
 
 
 	/**
-	 * @return mixed
+	 * @return string
 	 */
 	public function getName()
 	{

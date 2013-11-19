@@ -964,7 +964,6 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 				break;
 
 			case 'label':
-				var_dump($arrCallback);
 				$arrDefinition['list']['label'][$strCallback . '_callback'] = $arrCallback;
 				break;
 		}

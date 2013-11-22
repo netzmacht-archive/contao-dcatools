@@ -542,8 +542,21 @@ class Palette extends Node implements PropertyContainerInterface
 		/** @var Palette $objPalette */
 		foreach($objPalette->getLegends() as $strName => $objLegend)
 		{
-			$this->arrLegends[$strName] = clone $objLegend;
-			$this->arrLegends[$strName]->setPalette($this);
+			if(!$this->hasLegend($strName))
+			{
+				$this->createLegend($strName);
+			}
+
+			$legend = $this->getLegend($strName);
+
+			/** @var Property $property */
+			foreach($objLegend as $property)
+			{
+				if(!$legend->hasProperty($property))
+				{
+					$legend->addProperty($property);
+				}
+			}
 		}
 
 		$this->updateDefinition();

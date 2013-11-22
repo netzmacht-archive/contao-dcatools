@@ -32,6 +32,11 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 	protected $arrOperations = array();
 
 	/**
+	 * @var array
+	 */
+	protected $arrGlobalOperations = array();
+
+	/**
 	 * @var Palette[]
 	 */
 	protected $arrPalettes = array();
@@ -777,21 +782,17 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 	/**
 	 * Get all operations
 	 *
-	 * @param string $strScope global for global operations else local one will be loaded
-	 *
 	 * @return Operation[]
 	 */
-	public function getOperations($strScope='local')
+	public function getOperations()
 	{
-		$strConfig = ($strScope == 'global') ? 'global_operations' : 'operations';
-
-		// add operation callback for every operation
-		foreach($this->definition['list'][$strConfig] as $strOperation => $arrDefinition)
+		// make sure that operations are loaded
+		foreach($this->definition['list']['operations'] as $strOperation => $arrDefinition)
 		{
-			$this->getOperation($strOperation, $strScope);
+			$this->getOperation($strOperation);
 		}
 
-		return $this->arrOperations[$strScope];
+		return $this->arrOperations;
 	}
 
 
@@ -799,23 +800,22 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 	 * Get an operation
 	 *
 	 * @param $strName
-	 * @param string $strScope
 	 *
 	 * @return \DcaTools\Definition\Operation
 	 *
 	 * @throws \RuntimeException
 	 */
-	public function getOperation($strName, $strScope='local')
+	public function getOperation($strName)
 	{
-		if($this->hasOperation($strName, $strScope))
+		if($this->hasOperation($strName))
 		{
-			if(!isset($this->arrOperations[$strScope][$strName]))
+			if(!isset($this->arrOperations[$strName]))
 			{
-				$objOperation = new Operation($strName, $strScope, $this);
-				$this->arrOperations[$strScope][$strName] = $objOperation;
+				$objOperation = new Operation($strName, $this);
+				$this->arrOperations[$strName] = $objOperation;
 			}
 
-			return $this->arrOperations[$strScope][$strName];
+			return $this->arrOperations[$strName];
 		}
 
 		throw new \RuntimeException("Operation '$strName' does not exist.");
@@ -825,14 +825,11 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 	/**
 	 * Retrieve the names of all defined properties.
 	 *
-	 * @param string $strScope
-	 *
 	 * @return string[]
 	 */
-	public function getOperationNames($strScope='local')
+	public function getOperationNames()
 	{
-		$strFrom = ($strScope == 'global' ?  'list/global_operations' : 'list/operations');
-		return array_keys($this->getFromDefinition($strFrom));
+		return array_keys($this->getFromDefinition('list/operations'));
 	}
 
 
@@ -840,24 +837,22 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 	 * Create a new operation
 	 *
 	 * @param $strName
-	 * @param string $strScope
 	 *
 	 * @return Operation
 	 *
 	 * @throws \RuntimeException
 	 */
-	public function createOperation($strName, $strScope='local')
+	public function createOperation($strName)
 	{
-		if(isset($this->arrOperations[$strScope][$strName]))
+		if(isset($this->arrOperations[$strName]))
 		{
 			throw new \RuntimeException("Operation '$strName' already exists");
 		}
 
-		$strFrom = ($strScope == 'global' ?  'global_operations' : 'operations');
-		$this->definition['list'][$strFrom][$strName] = array();
+		$this->definition['list']['operations'][$strName] = array();
 
-		$objOperation = new Operation($strName, $strScope, $this);
-		$this->arrOperations[$strScope][$strName] = $objOperation;
+		$objOperation = new Operation($strName, $this);
+		$this->arrOperations[$strName] = $objOperation;
 
 		return $objOperation;
 	}
@@ -867,20 +862,12 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 	 * Test if operation exists
 	 *
 	 * @param $strName
-	 * @param string $strScope
 	 *
 	 * @return bool
 	 */
-	public function hasOperation($strName, $strScope='local')
+	public function hasOperation($strName)
 	{
-		$strConfig = $strScope == 'global' ? 'global_operations' : 'operations';
-
-		if($strName == 'all' && $strScope == 'global')
-		{
-			return true;
-		}
-
-		return isset($this->definition['list'][$strConfig][$strName]);
+		return isset($this->definition['list']['operations'][$strName]);
 	}
 
 
@@ -893,14 +880,12 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 	 */
 	public function moveOperation(Operation $objOperation, $reference=null, $intPosition=Definition::LAST)
 	{
-		$strScope = $objOperation->getScope();
-
-		if($this->hasOperation($objOperation, $strScope))
+		if($this->hasOperation($objOperation))
 		{
-			unset($this->arrOperations[$strScope][$objOperation->getName()]);
+			unset($this->arrOperations[$objOperation->getName()]);
 		}
 
-		$this->addAtPosition($this->arrOperations[$strScope], $objOperation, $reference, $intPosition);
+		$this->addAtPosition($this->arrOperations, $objOperation, $reference, $intPosition);
 
 		return $this;
 	}
@@ -910,27 +895,159 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 	 * Remove operation from DataContainer
 	 *
 	 * @param string|Operation $operation
-	 * @param string $strScope
 	 *
 	 * @return $this
 	 */
-	public function removeOperation($operation, $strScope='local')
+	public function removeOperation($operation)
 	{
 		if(is_object($operation))
 		{
-			$strScope = $operation->getScope();
 			$operation = $operation->getName();
 		}
 
-		$strKey = $strScope == 'global' ? 'global_' : '';
-		$strKey .= 'operations';
-
-		if(isset($this->arrOperations['list'][$strScope][$operation]))
+		if(isset($this->arrOperations[$operation]))
 		{
-			unset($this->arrOperations[$strScope][$operation]);
+			unset($this->arrOperations[$operation]);
 		}
 
-		unset($this->definition['list'][$strKey][$operation]);
+		unset($this->definition['list']['operations'][$operation]);
+
+		return $this;
+	}
+
+
+	/**
+	 * Get all global operations
+	 *
+	 * @return Operation[]
+	 */
+	public function getGlobalOperations()
+	{
+		// make sure that operations are loaded
+		foreach($this->definition['list']['global_operations'] as $strOperation => $arrDefinition)
+		{
+			$this->getGlobalOperation($strOperation);
+		}
+
+		return $this->arrGlobalOperations;
+	}
+
+
+	/**
+	 * Get an global operation
+	 *
+	 * @param $strName
+	 *
+	 * @return \DcaTools\Definition\Operation
+	 *
+	 * @throws \RuntimeException
+	 */
+	public function getGlobalOperation($strName)
+	{
+		if($this->hasOperation($strName))
+		{
+			if(!isset($this->arrGlobalOperations[$strName]))
+			{
+				$objOperation = new GlobalOperation($strName, $this);
+				$this->arrGlobalOperations[$strName] = $objOperation;
+			}
+
+			return $this->arrGlobalOperations[$strName];
+		}
+
+		throw new \RuntimeException("Operation '$strName' does not exist.");
+	}
+
+
+	/**
+	 * Retrieve the names of all defined properties.
+	 *
+	 * @return string[]
+	 */
+	public function getGlobalOperationNames()
+	{
+		return array_keys($this->getFromDefinition('list/global_operations'));
+	}
+
+
+	/**
+	 * Create a new operation
+	 *
+	 * @param $strName
+	 *
+	 * @return Operation
+	 *
+	 * @throws \RuntimeException
+	 */
+	public function createGlobalOperation($strName)
+	{
+		if(isset($this->arrGlobalOperations[$strName]))
+		{
+			throw new \RuntimeException("Operation '$strName' already exists");
+		}
+
+		$this->definition['list']['global_operations'][$strName] = array();
+
+		$objOperation = new GlobalOperation($strName, $this);
+		$this->arrGlobalOperations[$strName] = $objOperation;
+
+		return $objOperation;
+	}
+
+
+	/**
+	 * Test if operation exists
+	 *
+	 * @param $strName
+	 *
+	 * @return bool
+	 */
+	public function hasGlobalOperation($strName)
+	{
+		return isset($this->definition['list']['global_operations'][$strName]);
+	}
+
+
+	/**
+	 * @param GlobalOperation $objOperation
+	 * @param null $reference
+	 * @param $intPosition
+	 *
+	 * @return $this
+	 */
+	public function moveGlobalOperation(GlobalOperation $objOperation, $reference=null, $intPosition=Definition::LAST)
+	{
+		if($this->hasGlobalOperation($objOperation))
+		{
+			unset($this->arrGlobalOperations[$objOperation->getName()]);
+		}
+
+		$this->addAtPosition($this->arrGlobalOperations, $objOperation, $reference, $intPosition);
+
+		return $this;
+	}
+
+
+	/**
+	 * Remove operation from DataContainer
+	 *
+	 * @param string|Operation $operation
+	 *
+	 * @return $this
+	 */
+	public function removeGlobalOperation($operation)
+	{
+		if(is_object($operation))
+		{
+			$operation = $operation->getName();
+		}
+
+		if(isset($this->arrGlobalOperations[$operation]))
+		{
+			unset($this->arrGlobalOperations[$operation]);
+		}
+
+		unset($this->definition['list']['global_operations'][$operation]);
 
 		return $this;
 	}

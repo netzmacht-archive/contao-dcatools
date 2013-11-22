@@ -27,7 +27,7 @@ use DcaTools\Definition;
  *
  * @package DcaTools\Operation
  */
-class Operation extends AbstractOperation
+class GlobalOperation extends AbstractOperation
 {
 
 	/**
@@ -39,7 +39,7 @@ class Operation extends AbstractOperation
 	{
 		$definition =& $objDataContainer->getDefinition();
 
-		parent::__construct($strName, $objDataContainer, $definition['list']['operations'][$strName]);
+		parent::__construct($strName, $objDataContainer, $definition['list']['global_operations'][$strName]);
 	}
 
 
@@ -54,7 +54,7 @@ class Operation extends AbstractOperation
 	 */
 	public static function argument(DataContainer $objReference, $node, $blnNull=true)
 	{
-		return static::prepareArgument($objReference, $node, $blnNull, 'Operation');
+		return static::prepareArgument($objReference, $node, $blnNull, 'GlobalOperation');
 	}
 
 }

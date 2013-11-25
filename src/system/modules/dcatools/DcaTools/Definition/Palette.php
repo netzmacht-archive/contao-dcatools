@@ -15,7 +15,6 @@ namespace DcaTools\Definition;
 
 use DcaTools\Definition;
 use DcaTools\Structure\PropertyContainerInterface;
-use Symfony\Component\EventDispatcher\Event;
 
 
 /**
@@ -227,6 +226,7 @@ class Palette extends Node implements PropertyContainerInterface
 				$this->getLegend($strLegend)->addProperty($objProperty);
 			}
 		}
+		/** @var \DcaTools\Definition\Property $objProperty */
 		elseif($objProperty->getParent() != $this && !$this->getLegend($strLegend)->hasProperty($strName))
 		{
 			$objProperty->getParent()->removeProperty($objProperty);
@@ -350,7 +350,7 @@ class Palette extends Node implements PropertyContainerInterface
 	/**
 	 * add existing legend to palette
 	 *
-	 * @param string $objLegend
+	 * @param string $strName
 	 * @param string|Legend|null $reference
 	 * @param int $intPosition
 	 *
@@ -387,7 +387,6 @@ class Palette extends Node implements PropertyContainerInterface
 
 		if($this->hasLegend($strName))
 		{
-			$objLegend = $this->arrLegends[$strName];
 			unset($this->arrLegends[$strName]);
 
 			$this->updateDefinition();

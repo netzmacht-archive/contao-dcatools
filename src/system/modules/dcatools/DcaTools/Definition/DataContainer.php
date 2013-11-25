@@ -944,7 +944,7 @@ class DataContainer extends PropertyContainer implements ContainerInterface
 	 */
 	public function getGlobalOperation($strName)
 	{
-		if($this->hasOperation($strName))
+		if($this->hasGlobalOperation($strName))
 		{
 			if(!isset($this->arrGlobalOperations[$strName]))
 			{

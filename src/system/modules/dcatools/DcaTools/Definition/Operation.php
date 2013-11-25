@@ -44,6 +44,19 @@ class Operation extends AbstractOperation
 
 
 	/**
+	 * Remove child from parent
+	 *
+	 * @return $this
+	 */
+	public function remove()
+	{
+		$this->getDataContainer()->removeOperation($this);
+
+		return $this;
+	}
+
+
+	/**
 	 * Prepare argument so that an array of name and the object is passed
 	 *
 	 * @param DataContainer $objReference

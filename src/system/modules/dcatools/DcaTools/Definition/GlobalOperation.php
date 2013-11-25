@@ -44,6 +44,19 @@ class GlobalOperation extends AbstractOperation
 
 
 	/**
+	 * Remove child from parent
+	 *
+	 * @return $this
+	 */
+	public function remove()
+	{
+		$this->getDataContainer()->removeGlobalOperation($this);
+
+		return $this;
+	}
+
+
+	/**
 	 * Prepare argument so that an array of name and the object is passed
 	 *
 	 * @param DataContainer $objReference

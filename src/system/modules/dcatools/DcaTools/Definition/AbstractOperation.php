@@ -145,6 +145,17 @@ abstract class AbstractOperation extends Node implements OperationInterface
 
 
 	/**
+	 * Register a callback (Contao 3.2 supports callable as well)
+	 *
+	 * @param array|callable $callback
+	 */
+	public function registerCallback($callback)
+	{
+		$this->definition['button_callback'] = $callback;
+	}
+
+
+	/**
 	 * Fetch some arbitrary information.
 	 *
 	 * @param $strKey
@@ -171,19 +182,6 @@ abstract class AbstractOperation extends Node implements OperationInterface
 	public function set($strKey, $value)
 	{
 		$this->definition[$strKey] = $value;
-	}
-
-
-	/**
-	 * Remove child from parent
-	 *
-	 * @return $this
-	 */
-	public function remove()
-	{
-		$this->getDataContainer()->removeOperation($this);
-
-		return $this;
 	}
 
 

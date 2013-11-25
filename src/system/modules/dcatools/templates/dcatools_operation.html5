@@ -1,0 +1,10 @@
+<?php if($this->disabled): ?>
+	<?php echo \Image::getHtml($this->icon, $this->label, 'class="disabeld"'); ?>
+<?php else: ?>
+	<a href="<?php echo $this->href; ?>" title="<?php echo $this->title; ?>" <?php echo $this->attributes; ?>><?php echo \Image::getHtml($this->icon, $this->label); ?></a>
+<?php endif; ?>
+
+
+<?php /* else: ?>
+<a href="<?php echo $this->getHref(); ?>" title="<?php echo $this->getTitle(); ?>" class="<?php echo $this->getIcon(); ?> <?php echo $this->getAttributes(); ?>><?php echo $this->getLabel(); ?></a>
+<?php endif; */ ?>

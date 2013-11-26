@@ -19,6 +19,7 @@ use DcaTools\Helper\Formatter;
 use DcaTools\Listener\ContaoListener;
 use DcaTools\Event\GetDynamicParentEvent;
 use DcaTools\Event\RestrictedDataAccessEvent;
+use DcGeneral\Data\ModelInterface;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 
 
@@ -101,15 +102,17 @@ class DcaTools
 
 	/**
 	 * Initialize DataContainer
+	 *
+	 * @param ModelInterface $model
 	 */
-	public function initialize()
+	public function initialize(ModelInterface $model)
 	{
 		if(!$this->initialized)
 		{
 			$this->initializeEventListeners();
 
 			$this->triggerInitializeEvent();
-			$this->triggerCheckPermissionEvent();
+			$this->triggerCheckPermissionEvent($model);
 
 			$this->initialized = true;
 		}
@@ -147,10 +150,12 @@ class DcaTools
 
 	/**
 	 * Trigger check permission event
+	 *
+	 * @param ModelInterface $model
 	 */
-	protected function triggerCheckPermissionEvent()
+	protected function triggerCheckPermissionEvent(ModelInterface $model)
 	{
-		$event     = new CheckPermissionEvent($this);
+		$event     = new CheckPermissionEvent($this, $model);
 		$eventName = sprintf('dcatools.%s.check-permission', $this->definition->getName());
 
 		$this->dispatcher->dispatch($eventName, $event);

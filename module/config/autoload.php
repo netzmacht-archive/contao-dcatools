@@ -10,6 +10,13 @@
  * @license http://www.gnu.org/licenses/lgpl-3.0.html LGPL
  */
 
+// only call namepsaceloader for debugging
+/*
+if(!strpos(__DIR__, 'composer'))
+{
+	NamespaceClassLoader::add('DcaTools', 'system/modules/dcatools');
+} */
+
 
 /**
  * Register the templates

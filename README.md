@@ -148,7 +148,7 @@ public function callbackOnSubmit($dc)
 Formatting labels and values used can be quit difficult because Contao does not provide an access to the formatting
 methods. DcaTolls fills the gap here.
 
-```
+```phph
 <?php
 
 $formatter = Formatter::create('tl_example');
@@ -164,6 +164,7 @@ echo $formatter->getPropertyValue('options');
 // access to language array. With trailing slash the global array will be access otherwise the sub array of the data container
 echo $formatter->translate('/MSC/yes');
 echo $formatter->translate('title_legend');
+```
 
 Requirements
 ------

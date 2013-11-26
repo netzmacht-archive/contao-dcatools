@@ -13,31 +13,32 @@
 
 namespace DcaTools\Listener;
 
-use DcaTools\Event\PermissionEvent;
+use DcaTools\Event\CheckPermissionEvent;
+use DcaTools\Helper\Permissions;
 
 /**
  * Class DataContainerListeners
  * @package DcaTools\Event
  */
-class DataContainerListener extends PermissionsListener
+class DataContainerListener
 {
 
 	/**
-	 * @param PermissionEvent $objEvent
+	 * @param CheckPermissionEvent $objEvent
 	 * @param array $arrConfig
 	 * @param bool $blnStop
 	 *
 	 * @return bool|void
 	 */
-	public static function hasAccess(PermissionEvent $objEvent, array $arrConfig=array(), $blnStop=true)
+	public static function hasAccess(CheckPermissionEvent $objEvent, array $arrConfig=array(), $blnStop=true)
 	{
-		if(!static::hasGenericPermission($objEvent, $arrConfig) || parent::checkAccess($objEvent->getSubject()->getName(), $arrConfig))
-		{
+		$tableName = $objEvent->getDcaTools()->getDefinition()->getName();
+
+		if(!static::hasGenericPermission($objEvent, $arrConfig) || Permissions::hasAccess($tableName, $arrConfig)) {
 			return true;
 		}
 
-		if($blnStop)
-		{
+		if($blnStop) {
 			$objEvent->denyAccess();
 		}
 
@@ -46,28 +47,24 @@ class DataContainerListener extends PermissionsListener
 
 
 	/**
-	 * @param PermissionEvent $objEvent
+	 * @param CheckPermissionEvent $objEvent
 	 * @param array $arrConfig
 	 * @param bool $blnStop
 	 *
 	 * @return bool|void
 	 */
-	public static function isAllowed(PermissionEvent $objEvent, array $arrConfig=array(), $blnStop=true)
+	public static function isAllowed(CheckPermissionEvent $objEvent, array $arrConfig=array(), $blnStop=true)
 	{
-		if(static::hasGenericPermission($objEvent, $arrConfig))
-		{
-			if(!isset($arrConfig['value']))
-			{
+		if(static::hasGenericPermission($objEvent, $arrConfig)) {
+			if(!isset($arrConfig['value'])) {
 				$arrConfig['value'] = \Input::get('id');
 			}
 
-			if(parent::isAllowed($objEvent, $arrConfig))
-			{
+			if(Permissions::isAllowed($objEvent->getModel(), $arrConfig)) {
 				return true;
 			}
 
-			if($blnStop)
-			{
+			if($blnStop) {
 				$objEvent->denyAccess();
 			}
 		}
@@ -77,21 +74,19 @@ class DataContainerListener extends PermissionsListener
 
 
 	/**
-	 * @param PermissionEvent $objEvent
+	 * @param CheckPermissionEvent $objEvent
 	 * @param array $arrConfig
 	 * @param bool $blnStop
 	 *
 	 * @return bool|void
 	 */
-	public static function isAdmin(PermissionEvent $objEvent, array $arrConfig=array(), $blnStop=true)
+	public static function isAdmin(CheckPermissionEvent $objEvent, array $arrConfig=array(), $blnStop=true)
 	{
-		if(!static::hasGenericPermission($objEvent, $arrConfig) || parent::isAdmin($objEvent, $arrConfig))
-		{
+		if(!static::hasGenericPermission($objEvent, $arrConfig) || Permissions::isAdmin()) {
 			return true;
 		}
 
-		if($blnStop)
-		{
+		if($blnStop) {
 			$objEvent->denyAccess();
 		}
 
@@ -100,21 +95,19 @@ class DataContainerListener extends PermissionsListener
 
 
 	/**
-	 * @param PermissionEvent $objEvent
+	 * @param CheckPermissionEvent $objEvent
 	 * @param array $arrConfig
 	 * @param bool $blnStop
 	 *
 	 * @return bool|void
 	 */
-	public static function forbidden(PermissionEvent $objEvent, array $arrConfig=array(), $blnStop=true)
+	public static function forbidden(CheckPermissionEvent $objEvent, array $arrConfig=array(), $blnStop=true)
 	{
-		if(!static::hasGenericPermission($objEvent, $arrConfig))
-		{
+		if(!static::hasGenericPermission($objEvent, $arrConfig)) {
 			return true;
 		}
 
-		if($blnStop)
-		{
+		if($blnStop) {
 			$objEvent->denyAccess();
 		}
 
@@ -124,64 +117,53 @@ class DataContainerListener extends PermissionsListener
 
 
 	/**
-	 * @param PermissionEvent $objEvent
+	 * @param CheckPermissionEvent $objEvent
 	 * @param array $arrConfig
 	 *
 	 * @return bool
 	 */
-	public static function hasGenericPermission(PermissionEvent $objEvent, array $arrConfig=array())
+	public static function hasGenericPermission(CheckPermissionEvent $objEvent, array $arrConfig=array())
 	{
-		$objEvent->setArgument('error', static::prepareErrorMessage($arrConfig, $objEvent->getArgument('error')));
+		$objEvent->addError(Permissions::prepareErrorMessage($arrConfig, $arrConfig['error']));
 		$blnAccess = true;
 
-		if(isset($arrConfig['act']))
-		{
-			if($arrConfig['act'] == '*' && \Input::get('act') != '')
-			{
+		if(isset($arrConfig['act'])) {
+			if($arrConfig['act'] == '*' && \Input::get('act') != '') {
 				return true;
 			}
 
-			if(!is_array($arrConfig['act']))
-			{
+			if(!is_array($arrConfig['act'])) {
 				$arrConfig['act'] = array($arrConfig['act']);
 			}
 
-			if($arrConfig['act'][0] == '*')
-			{
-				if(\Input::get('act') != '*' && !in_array(\Input::get('act'), $arrConfig['act']))
-				{
+			if($arrConfig['act'][0] == '*') {
+				if(\Input::get('act') != '*' && !in_array(\Input::get('act'), $arrConfig['act'])) {
 					return true;
 				}
 			}
-			elseif(in_array(\Input::get('act'), $arrConfig['act']))
-			{
+			elseif(in_array(\Input::get('act'), $arrConfig['act'])) {
 				return true;
 			}
 
 			$blnAccess = false;
 		}
 
-		if(isset($arrConfig['key']))
-		{
-			if($arrConfig['key'] == '*' && \Input::get('act') != '')
-			{
+		if(isset($arrConfig['key'])) {
+			if($arrConfig['key'] == '*' && \Input::get('act') != '') {
 				return true;
 			}
 
-			if(!is_array($arrConfig['key']))
-			{
+			if(!is_array($arrConfig['key'])) {
 				$arrConfig['key'] = array($arrConfig['key']);
 			}
 
-			if($arrConfig['key'][0] == '*')
-			{
+			if($arrConfig['key'][0] == '*') {
 				if(\Input::get('key') != '*' && !in_array(\Input::get('key'), $arrConfig['key']))
 				{
 					return true;
 				}
 			}
-			elseif(in_array(\Input::get('key'), $arrConfig['key']))
-			{
+			elseif(in_array(\Input::get('key'), $arrConfig['key'])) {
 				return true;
 			}
 

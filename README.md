@@ -113,7 +113,6 @@ public function callbackOnSubmit($dc)
 	$model->setProperty('title', 'New title');
 	$driver->save($model);
 }
-}
 ```
 
 ### Config builder ###

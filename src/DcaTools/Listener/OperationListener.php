@@ -12,7 +12,9 @@
 
 namespace DcaTools\Listener;
 
+use DcaTools\DcaTools;
 use DcaTools\Event;
+use DcaTools\Helper\Permissions;
 
 
 /**
@@ -20,30 +22,27 @@ use DcaTools\Event;
  *
  * @package DcaTools\Event
  */
-class OperationListener extends PermissionsListener
+class OperationListener
 {
 
 	/**
 	 * Test if User is an admin.
 	 *
-	 * @param Event\PermissionEvent $objEvent
+	 * @param Event\GenerateEvent $objEvent
 	 * @param array $arrConfig
 	 * @param bool $blnStop if true event will be stopped
 	 *
 	 * @return bool
 	 */
-	public static function isAdmin(Event\PermissionEvent $objEvent, array $arrConfig=array(), $blnStop=true)
+	public static function isAdmin(Event\GenerateEvent $objEvent, array $arrConfig=array(), $blnStop=true)
 	{
-		if(parent::isAdmin($objEvent, $arrConfig, $blnStop))
-		{
+		if(Permissions::isAdmin()) {
 			return true;
 		}
 
-		if($blnStop)
-		{
-			$objEvent->setArgument('buffer', '');
+		if($blnStop) {
 			$objEvent->stopPropagation();
-			$objEvent->getSubject()->hide();
+			$objEvent->getView()->isVisible(false);
 		}
 
 		return false;
@@ -59,13 +58,13 @@ class OperationListener extends PermissionsListener
 	 */
 	public static function hasAccess(Event\GenerateEvent $objEvent, array $arrConfig=array(), $blnStop=true)
 	{
-		if(parent::checkAccess($objEvent->getController()->getDefinition()->getName(), $arrConfig))
-		{
+		$tableName = $objEvent->getController()->getDefinition()->getName();
+
+		if(Permissions::hasAccess($tableName, $arrConfig)) {
 			return true;
 		}
 
-		if($blnStop)
-		{
+		if($blnStop) {
 			$objEvent->stopPropagation();
 		}
 
@@ -76,11 +75,11 @@ class OperationListener extends PermissionsListener
 	/**
 	 * rule checks if user is allowed to run action
 	 *
-	 * @param Event\PermissionEvent $objEvent
+	 * @param Event\GenerateEvent $objEvent
 	 * @param array $arrConfig option data row of operation buttons
 	 * 		- table string 		optional if want to check for another table
 	 * 		- closed bool 		optional if want to check if table is closed
-	 * 		- ptable string 	optioinal if want to check isAllowed for another table than data from $arrRow
+	 * 		- ptable string 	optional if want to check isAllowed for another table than data from $arrRow
 	 * 		- property string  	optional column of current row for WHERE id=? statement, default pid
 	 * 		- where string		optional customized where, default id=?
 	 * 		- value string		optional value if not want to check against a value of arrRow, default $arrRow[$pid]
@@ -89,24 +88,16 @@ class OperationListener extends PermissionsListener
 	 *
 	 * @return bool true if rule is passed
 	 */
-	public static function isAllowed(Event\PermissionEvent $objEvent, array $arrConfig=array(), $blnStop=true)
+	public static function isAllowed(Event\GenerateEvent $objEvent, array $arrConfig=array(), $blnStop=true)
 	{
-		/** @var \DcaTools\Definition\DataContainer $objDataContainer */
-		$objDataContainer = $objEvent->getSubject()->getDataContainer();
-		
-		$strTable = (isset($arrConfig['table'])) ? $arrConfig['table'] : $objDataContainer->getName();
+		$strTable = (isset($arrConfig['table'])) ? $arrConfig['table'] : $objEvent->getModel()->getProviderName();
 
 		if(!isset($arrConfig['closed']) || !$GLOBALS['TL_DCA'][$strTable]['config']['closed'])
 		{
-			if(\BackendUser::getInstance()->isAdmin || parent::isAllowed($objEvent, $arrConfig))
+			if(Permissions::isAdmin() || Permissions::isAllowed($objEvent->getModel(), $arrConfig))
 			{
 				return true;
 			}
-		}
-
-		if($blnStop)
-		{
-			$objEvent->denyAccess();
 		}
 
 		return false;
@@ -278,10 +269,9 @@ class OperationListener extends PermissionsListener
 		if (!$objUser->isAdmin && !$objUser->hasAccess($strTable . '::' . $strProperty, 'alexf'))
 		{
 			$strError = 'Not enough permissions to toggle state of item ID "'.$intId.'"';
-			$strError = static::prepareErrorMessage($arrConfig, $strError);
+			$strError = Permissions::prepareErrorMessage($arrConfig, $strError);
 
-			\Controller::log($strError, get_called_class() . ' toggleState', TL_ERROR);
-			\Controller::redirect('contao/main.php?act=error');
+			DcaTools::error($strError);
 		}
 
 		$objVersions = new \Versions($strTable, $intId);

@@ -13,6 +13,7 @@
 namespace DcaTools\Event;
 
 use DcaTools\DcaTools;
+use DcGeneral\Data\ModelInterface;
 
 /**
  * Class CheckPermissionEvent
@@ -31,13 +32,29 @@ class CheckPermissionEvent extends DcaToolsEvent
 	 */
 	protected $granted = true;
 
+	/**
+	 * @var \DcGeneral\Data\ModelInterface
+	 */
+	protected $model;
+
 
 	/**
 	 * @param DcaTools $controller
+	 * @param ModelInterface $model
 	 */
-	public function __construct(DcaTools $controller)
+	public function __construct(DcaTools $controller, ModelInterface $model)
 	{
 		parent::__construct($controller);
+		$this->model = $model;
+	}
+
+
+	/**
+	 * @return ModelInterface
+	 */
+	public function getModel()
+	{
+		return $this->model;
 	}
 
 

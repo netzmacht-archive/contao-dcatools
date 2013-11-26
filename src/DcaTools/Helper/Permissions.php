@@ -11,42 +11,35 @@
  */
 
 
-namespace DcaTools\Listener;
+namespace DcaTools\Helper;
 
 use DcaTools\Definition;
 use DcaTools\Event;
+use DcGeneral\Data\ModelInterface;
 
 /**
  * Class Permissions provides listeners for operations and permission events
  *
  * @package DcaTools\Event
  */
-class PermissionsListener
+class Permissions
 {
 
 	/**
 	 * Test if User is an admin.
 	 *
-	 * @param Event\PermissionEvent $objEvent
-	 * @param array $arrConfig
-	 *
 	 * @return bool
 	 */
-	public static function isAdmin(Event\PermissionEvent $objEvent, array $arrConfig=array())
+	public static function isAdmin()
 	{
-		if(!\BackendUser::getInstance()->isAdmin)
-		{
-			return false;
-		}
-
-		return true;
+		return \BackendUser::getInstance()->isAdmin;
 	}
 
 
 	/**
 	 * generic is allowed rule
 	 *
-	 * @param Event\PermissionEvent $objEvent
+	 * @param ModelInterface $model
 	 * @param array $arrConfig supports
 	 * 		- ptable string 	optional if want to check isAllowed for another table than data from $arrRow
 	 * 		- property string  	optional column of current row for WHERE id=? statement, default pid
@@ -56,34 +49,23 @@ class PermissionsListener
 	 *
 	 * @return bool
 	 */
-	public static function isAllowed(Event\PermissionEvent $objEvent, array $arrConfig)
+	public static function isAllowed(ModelInterface $model, array $arrConfig)
 	{
-		/** @var \DcaTools\Controller $objController */
-		$objController = $objEvent->getSubject()->getDataContainer();
-
 		/** @var \BackendUser $objUser */
 		$objUser = \BackendUser::getInstance();
+		$arrRow  = $model->getPropertiesAsArray();
 
-		$arrRow = array();
 
-		if($objController->hasModel())
-		{
-			$arrRow = $objController->getModel()->getPropertiesAsArray();
-		}
-
-		if(!isset($arrConfig['ptable']))
-		{
+		if(!isset($arrConfig['ptable'])) {
 			return $objUser->isAllowed($arrConfig['operation'], $arrRow);
 		}
 
-
-		if(isset($arrConfig['ptable']) && $arrConfig['ptable'] !== true)
-		{
+		if(isset($arrConfig['ptable']) && $arrConfig['ptable'] !== true) {
 			$strPTable = $arrConfig['ptable'];
 		}
 		else {
-			$arrDefinition = $objController->getDefinition();
-			$strPTable = $arrDefinition['config']['ptable'];
+			$arrDefinition = Definition::getDataContainer($model->getProviderName());
+			$strPTable     = $arrDefinition['config']['ptable'];
 		}
 
 		$strPId   = isset($arrConfig['pid']) ? $arrConfig['pid'] : 'pid';
@@ -99,6 +81,53 @@ class PermissionsListener
 
 
 	/**
+	 * @param $tableName
+	 * @param array $arrConfig
+	 * @return bool
+	 */
+	public static function hasAccess($tableName, array $arrConfig)
+	{
+		/** @var \BackendUser $objUser */
+		$objUser = \BackendUser::getInstance();
+
+		if($objUser->isAdmin) {
+			return true;
+		}
+
+		// Has access to an module
+		if(isset($arrConfig['module'])) {
+			return $objUser->hasAccess($arrConfig['module'], 'modules');
+		}
+
+		// Get table
+		if($arrConfig['ptable']) {
+			$definition = Definition::getDataContainer($tableName);
+			$tableName  = $definition->get('config/ptable');
+		}
+		else {
+			$tableName  = isset($arrConfig['table']) ? $arrConfig['table'] : $tableName;
+		}
+
+		// Check access for an action
+		if(isset($arrConfig['permission']) && isset($arrConfig['action'])) {
+			if($arrConfig['action'] == 'alexf') {
+				$arrConfig['action'] = $tableName . '::' . $arrConfig['action'];
+			}
+
+			return $objUser->hasAccess($arrConfig['action'], $arrConfig['permission']);
+		}
+		elseif(isset($arrConfig['alexf'])) {
+			return $objUser->hasAccess($tableName . '::' . $arrConfig['alexf'], 'alexf');
+		}
+		elseif(isset($arrConfig['fop'])) {
+			return $objUser->hasAccess($arrConfig['fop'], 'fop');
+		}
+
+		return false;
+	}
+
+
+	/**
 	 * prepare a error message will try to replace wildcards in an error message
 	 *
 	 * @param array $arrConfig, supportet error and params
@@ -106,7 +135,7 @@ class PermissionsListener
 	 *
 	 * @return string
 	 */
-	protected static function prepareErrorMessage(array $arrConfig, $strError)
+	public static function prepareErrorMessage(array $arrConfig, $strError)
 	{
 		if(isset($arrConfig['error']))
 		{
@@ -129,56 +158,6 @@ class PermissionsListener
 		}
 
 		return $strError;
-	}
-
-
-	protected static function checkAccess($tableName, array $arrConfig)
-	{
-		/** @var \BackendUser $objUser */
-		$objUser = \BackendUser::getInstance();
-
-		if($objUser->isAdmin)
-		{
-			return true;
-		}
-
-		// Has access to an module
-		if(isset($arrConfig['module']))
-		{
-			return $objUser->hasAccess($arrConfig['module'], 'modules');
-		}
-
-		// Get table
-		if($arrConfig['ptable'])
-		{
-			$definition = Definition::getDataContainer($tableName);
-			$tableName  = $definition->get('config/ptable');
-		}
-		else
-		{
-			$tableName  = isset($arrConfig['table']) ? $arrConfig['table'] : $tableName;
-		}
-
-		// Check access for an action
-		if(isset($arrConfig['permission']) && isset($arrConfig['action']))
-		{
-			if($arrConfig['action'] == 'alexf')
-			{
-				$arrConfig['action'] = $tableName . '::' . $arrConfig['action'];
-			}
-
-			return $objUser->hasAccess($arrConfig['action'], $arrConfig['permission']);
-		}
-		elseif(isset($arrConfig['alexf']))
-		{
-			return $objUser->hasAccess($tableName . '::' . $arrConfig['alexf'], 'alexf');
-		}
-		elseif(isset($arrConfig['fop']))
-		{
-			return $objUser->hasAccess($arrConfig['fop'], 'fop');
-		}
-
-		return false;
 	}
 
 }

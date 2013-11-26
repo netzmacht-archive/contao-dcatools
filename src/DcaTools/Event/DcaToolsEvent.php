@@ -13,14 +13,14 @@
 namespace DcaTools\Event;
 
 use DcaTools\DcaTools;
-use Symfony\Component\EventDispatcher\GenericEvent;
+use DcGeneral\Data\ModelInterface;
 
 
 /**
  * Class ControllerEvent
  * @package DcaTools\Event
  */
-class DcaToolsEvent extends GenericEvent
+class DcaToolsEvent
 {
 
 	/**

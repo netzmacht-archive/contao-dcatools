@@ -1,5 +1,5 @@
 contao-dcatools
-###############
+==============
 
 This library is a toolkit for working in the data container context of Contao.
 
@@ -156,7 +156,7 @@ $formatter = Formatter::create('tl_example');
 // getting the label will return the name instead of the label if label is not set
 echo $formatter->getOperationLabel('edit');
 echo $formatter->getPropertyLabel('title');
-echo $formatter->getGlobalOperation('all', 'Alle bearbeiten'); // pass a default value
+echo $formatter->getGlobalOperationLabel('all', 'Alle bearbeiten'); // pass a default value
 
 // format and/or translate the value
 echo $formatter->getPropertyValue('options');

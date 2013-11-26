@@ -9,20 +9,20 @@
 
 namespace DcaTools\Event;
 
+use Symfony\Component\EventDispatcher\GenericEvent;
 
-class Permission extends Event
+class PermissionEvent extends GenericEvent
 {
+	protected $blnGranted = true;
+
+	protected $arrErrors;
 
 	/**
-	 * @param null $objSubject
 	 * @param array $arrArguments
 	 */
-	public function __construct($objSubject = null, array $arrArguments = array())
+	public function __construct($subject, array $arrArguments = array())
 	{
-		parent::__construct($objSubject, $arrArguments);
-
-		$this['granted'] = true;
-		$this['error'] = '';
+		parent::__construct($subject, $arrArguments);
 	}
 
 
@@ -31,7 +31,7 @@ class Permission extends Event
 	 */
 	public function isAccessGranted()
 	{
-		return $this['granted'];
+		return $this->blnGranted;
 	}
 
 
@@ -40,7 +40,7 @@ class Permission extends Event
 	 */
 	public function denyAccess()
 	{
-		$this['granted'] = false;
+		$this->blnGranted = false;
 		$this->stopPropagation();
 	}
 
@@ -48,18 +48,18 @@ class Permission extends Event
 	/**
 	 * @return mixed
 	 */
-	public function getError()
+	public function getErrors()
 	{
-		return $this['error'];
+		return $this->arrErrors;
 	}
 
 
 	/**
 	 * @param $strMessage
 	 */
-	public function setError($strMessage)
+	public function addError($strMessage)
 	{
-		$this['error'] = $strMessage;
+		$this->arrErrors[] = $strMessage;
 	}
 
 }

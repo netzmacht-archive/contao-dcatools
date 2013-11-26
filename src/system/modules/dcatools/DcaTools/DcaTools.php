@@ -1,13 +1,12 @@
 <?php
 
 /**
- * Contao Open Source CMS
- *
- * Copyright (C) 2005-2013 Leo Feyer
+ * DcaTools - Toolkit for data containers in Contao
+ * Copyright (C) 2013 David Molineus
  *
  * @package   netzmacht-dcatools
- * @author    netzmacht creative David Molineus
- * @license   LGPL/3.0
+ * @author    David Molineus <molineus@netzmacht.de>
+ * @license   LGPL-3.0+
  * @copyright 2013 netzmacht creative David Molineus
  */
 
@@ -15,19 +14,30 @@ namespace DcaTools;
 
 use DcaTools\Definition;
 use DcaTools\Event\CheckPermissionEvent;
-use DcaTools\Event\Contao;
-use DcaTools\Event\ControllerEvent;
+use DcaTools\Event\DcaToolsEvent;
+use DcaTools\Helper\Formatter;
+use DcaTools\Listener\ContaoListener;
 use DcaTools\Event\GetDynamicParentEvent;
-use DcaTools\Event\Priority;
 use DcaTools\Event\RestrictedDataAccessEvent;
 use Symfony\Component\EventDispatcher\EventDispatcher;
+
 
 /**
  * Class DataContainer
  * @package DcaTools\Component
  */
-class Controller
+class DcaTools
 {
+
+	/**
+	 * event priorities
+	 */
+	const PRIORITY_HIGH  = 1;
+
+	const PRIORITY_NORMAL  = 0;
+
+	const PRIORITY_LOW     = -1;
+
 
 	/**
 	 * @var array
@@ -42,45 +52,50 @@ class Controller
 	/**
 	 * @var array
 	 */
-	protected static $arrInstances = array();
+	protected static $instances = array();
 
 	/**
 	 * @var \DcaTools\Definition\DataContainer
 	 */
-	protected $objDefinition;
+	protected $definition;
 
 	/**
 	 * @var \Symfony\Component\EventDispatcher\EventDispatcherInterface
 	 */
-	protected $objDispatcher;
+	protected $dispatcher;
+
+	/**
+	 * @var bool
+	 */
+	protected $initialized;
 
 
 	/**
-	 * @param $strName
+	 * @param $name
 	 *
-	 * @return Controller
+	 * @return DcaTools
 	 */
-	public static function getInstance($strName)
+	public static function getInstance($name)
 	{
 		global $container;
 
-		if(!isset(static::$arrInstances[$strName]))
+		if(!isset(static::$instances[$name]))
 		{
-			static::$arrInstances[$strName] = new static($strName, $container['event-dispatcher']);
+			static::$instances[$name] = new static($name, $container['event-dispatcher']);
 		}
 
-		return static::$arrInstances[$strName];
+		return static::$instances[$name];
 	}
 
 
 	/**
-	 * @param string $strName
-	 * @param $objDispatcher
+	 * @param string $name
+	 * @param $dispatcher
 	 */
-	protected function __construct($strName, $objDispatcher)
+	protected function __construct($name, $dispatcher)
 	{
-		$this->objDefinition = Definition::getDataContainer($strName);
-		$this->objDispatcher = $objDispatcher;
+		$this->definition = Definition::getDataContainer($name);
+		$this->dispatcher = $dispatcher;
 	}
 
 
@@ -89,10 +104,15 @@ class Controller
 	 */
 	public function initialize()
 	{
-		$this->triggerInitializeEvent();
-		$this->triggerCheckPermissionEvent();
+		if(!$this->initialized)
+		{
+			$this->initializeEventListeners();
 
-		$this->initializeEventListeners();
+			$this->triggerInitializeEvent();
+			$this->triggerCheckPermissionEvent();
+
+			$this->initialized = true;
+		}
 	}
 
 
@@ -101,7 +121,16 @@ class Controller
 	 */
 	public function getDefinition()
 	{
-		return $this->objDefinition;
+		return $this->definition;
+	}
+
+
+	/**
+	 * @return Formatter
+	 */
+	public function getFormatter()
+	{
+		return Formatter::create($this->definition->getName());
 	}
 
 
@@ -110,9 +139,9 @@ class Controller
 	 */
 	protected function triggerInitializeEvent()
 	{
-		$event     = new ControllerEvent($this);
-		$eventName = sprintf('dcatools.%s.initialize', $this->objDefinition->getName());
-		$this->objDispatcher->dispatch($eventName, $event);
+		$event     = new DcaToolsEvent($this);
+		$eventName = sprintf('dcatools.%s.initialize', $this->definition->getName());
+		$this->dispatcher->dispatch($eventName, $event);
 	}
 
 
@@ -122,9 +151,9 @@ class Controller
 	protected function triggerCheckPermissionEvent()
 	{
 		$event     = new CheckPermissionEvent($this);
-		$eventName = sprintf('dcatools.%s.check-permission', $this->objDefinition->getName());
+		$eventName = sprintf('dcatools.%s.check-permission', $this->definition->getName());
 
-		$this->objDispatcher->dispatch($eventName, $event);
+		$this->dispatcher->dispatch($eventName, $event);
 
 		if(!$event->isAccessGranted())
 		{
@@ -139,38 +168,38 @@ class Controller
 	 */
 	protected function initializeEventListeners()
 	{
-		$this->initializeOperationListeners();
-		$this->initializeGlobalOperationListeners();
-	}
+		foreach($this->definition->get('dcatools') as $event => $listeners) {
+			foreach($listeners as $listener) {
+				$config   = null;
+				$priority = 0;
 
+				// detect config
+				if(is_array($listener) && count($listener) == 2 && is_array($listener[1])) {
+					list($listener, $config) = $listener;
+				}
 
-	/**
-	 * Initialize events for all registered operations events
-	 */
-	protected function initializeOperationListeners()
-	{
-		foreach($this->objDefinition->getOperationNames() as $operation)
-		{
-			$eventName = sprintf('dcatools.%s.global_operations.%s', $this->objDefinition->getName(), $operation);
-			if(isset($GLOBALS['TL_EVENTS'][$eventName]))
-			{
-				$this->enableOperationEvents($operation);
-			}
-		}
-	}
+				// detect priority
+				if(is_array($listener) && count($listener) === 2 && is_int($listener[1])) {
+					list($listener, $priority) = $listener;
+				}
 
+				// create configurable listener
+				if($config) {
+					$listener = Helper\EventListener::createConfigurableListener($listener, $config, $priority);
+				}
 
-	/**
-	 * initialize events for all global operations events
-	 */
-	protected function initializeGlobalOperationListeners()
-	{
-		foreach($this->objDefinition->getGlobalOperationNames() as $operation)
-		{
-			$eventName = sprintf('dcatools.%s.global_operations.%s', $this->objDefinition->getName(), $operation);
-			if(isset($GLOBALS['TL_EVENTS'][$eventName]))
-			{
-				$this->enableGlobalOperationEvents($operation);
+				$this->dispatcher->addListener($event, $listener);
+				$chunks = explode(',', $event);
+
+				if(isset($chunks[2])) {
+					if($chunks[2] == 'operation') {
+						$this->enableOperationEvents($chunks[3]);
+					}
+
+					if($chunks[2] == 'global_operation') {
+						$this->enableGlobalOperationEvents($chunks[3]);
+					}
+				}
 			}
 		}
 	}
@@ -189,7 +218,7 @@ class Controller
 	public function getAllowedIds($strParent=null)
 	{
 		$objEvent = new RestrictedDataAccessEvent($this, $strParent);
-		$this->objDispatcher->dispatch('getAllowedIds', $objEvent);
+		$this->dispatcher->dispatch('getAllowedIds', $objEvent);
 
 		return $objEvent->getEntries();
 	}
@@ -206,13 +235,13 @@ class Controller
 	 */
 	public function getAllowedDynamicParents()
 	{
-		if(!$this->objDefinition->getFromDefinition('config/dynamicPtable'))
+		if(!$this->definition->getFromDefinition('config/dynamicPtable'))
 		{
-			throw new \RuntimeException("DataContainer '{$this->objDefinition->getName()}' does not have dynamic ptables");
+			throw new \RuntimeException("DataContainer '{$this->definition->getName()}' does not have dynamic ptables");
 		}
 
 		$objEvent = new RestrictedDataAccessEvent($this);
-		$this->objDispatcher->dispatch('dcatools.tl_content.getAllowedDynamicParents', $objEvent);
+		$this->dispatcher->dispatch('dcatools.tl_content.getAllowedDynamicParents', $objEvent);
 
 		return $objEvent->getEntries();
 	}
@@ -229,7 +258,7 @@ class Controller
 	public function getAllowedEntries($strParent=null, array $arrFields=array())
 	{
 		$objEvent = new RestrictedDataAccessEvent($this, $strParent, $arrFields);
-		$this->objDispatcher->dispatch('getAllowedEntries', $objEvent);
+		$this->dispatcher->dispatch('getAllowedEntries', $objEvent);
 
 		return $objEvent->getEntries();
 	}
@@ -244,17 +273,17 @@ class Controller
 	 */
 	public function getParentName($module=null)
 	{
-		if($this->objDefinition->get('config/dynamicPtable'))
+		if($this->definition->get('config/dynamicPtable'))
 		{
-			$eventName = sprintf('dcatools.%s.getDynamicParent', $this->$this->objDefinition->getName());
+			$eventName = sprintf('dcatools.%s.getDynamicParent', $this->$this->definition->getName());
 			$event = new GetDynamicParentEvent($this, $module);
 
-			$this->objDispatcher->dispatch($eventName, $event);
+			$this->dispatcher->dispatch($eventName, $event);
 			return $event->getParentName();
 		}
-		elseif($this->objDefinition->get('config/ptable'))
+		elseif($this->definition->get('config/ptable'))
 		{
-			return $this->objDefinition->get('config/ptable');
+			return $this->definition->get('config/ptable');
 		}
 
 		return false;
@@ -266,7 +295,7 @@ class Controller
 	 */
 	public function getEventDispatcher()
 	{
-		return $this->objDispatcher;
+		return $this->dispatcher;
 	}
 
 
@@ -279,8 +308,8 @@ class Controller
 	{
 		$this->enableOperationEvents($operation);
 
-		$eventName = sprintf('dcatools.%s.operation.%s', $this->objDefinition->getName(), $operation);
-		$this->objDispatcher->addListener($eventName, $listener, $priority);
+		$eventName = sprintf('dcatools.%s.operation.%s', $this->definition->getName(), $operation);
+		$this->dispatcher->addListener($eventName, $listener, $priority);
 	}
 
 
@@ -293,8 +322,8 @@ class Controller
 	{
 		$this->enableGlobalOperationEvents($operation);
 
-		$eventName = sprintf('dcatools.%s.global_operation.%s', $this->objDefinition->getName(), $operation);
-		$this->objDispatcher->addListener($eventName, $listener, $priority);
+		$eventName = sprintf('dcatools.%s.global_operation.%s', $this->definition->getName(), $operation);
+		$this->dispatcher->addListener($eventName, $listener, $priority);
 	}
 
 
@@ -305,7 +334,7 @@ class Controller
 	{
 		if(!isset($this->enabledOperations[$operation]))
 		{
-			$config = $this->objDefinition->get('list/operations/' . $operation);
+			$config = $this->definition->get('list/operations/' . $operation);
 
 			$this->enabledOperations[$operation] = true;
 
@@ -315,13 +344,13 @@ class Controller
 					'dcatools.operation.' . $operation,
 					function($objEvent) use($config)
 					{
-						Contao::generateOperation($objEvent, $config['button_callback']);
+						ContaoListener::generateOperation($objEvent, $config['button_callback']);
 					},
-					Priority::CALLBACK
+					static::PRIORITY_LOW
 				);
 			}
 
-			$this->objDefinition->set(sprintf('list/operations/%s/button_callback', $operation), array
+			$this->definition->set(sprintf('list/operations/%s/button_callback', $operation), array
 			(
 				'DcaTools\Bridge', 'operationCallback' . $operation
 			));
@@ -336,7 +365,7 @@ class Controller
 	{
 		if(!isset($this->enabledGlobalOperations[$operation]))
 		{
-			$config = $this->objDefinition->get('list/global_operations/' . $operation);
+			$config = $this->definition->get('list/global_operations/' . $operation);
 
 			$this->enabledGlobalOperations[$operation] = true;
 
@@ -346,13 +375,13 @@ class Controller
 					'dcatools.operation.' . $operation,
 					function($objEvent) use($config)
 					{
-						Contao::generateOperation($objEvent, $config['button_callback']);
+						ContaoListener::generateOperation($objEvent, $config['button_callback']);
 					},
-					Priority::CALLBACK
+					static::PRIORITY_LOW
 				);
 			}
 
-			$this->objDefinition->set(sprintf('list/global_operations/%s/button_callback', $operation), array
+			$this->definition->set(sprintf('list/global_operations/%s/button_callback', $operation), array
 			(
 				'DcaTools\Bridge', 'globalOperationCallback' . $operation
 			));
@@ -391,7 +420,7 @@ class Controller
 				'User "%s" has not enough permission to run action "%s" for DataContainer "%s"',
 				\BackendUser::getInstance()->username,
 				\Input::get('act'),
-				$this->objDefinition->getName()
+				$this->definition->getName()
 			);
 
 			if(\Input::get('id') != '')

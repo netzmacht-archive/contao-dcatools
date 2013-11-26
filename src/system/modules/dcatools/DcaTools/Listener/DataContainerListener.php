@@ -11,27 +11,27 @@
  * @copyright 2013 netzmacht creative David Molineus
  */
 
-namespace DcaTools\Event\Listener;
+namespace DcaTools\Listener;
 
-use DcaTools\Event\Permission;
+use DcaTools\Event\PermissionEvent;
 
 /**
  * Class DataContainerListeners
  * @package DcaTools\Event
  */
-class DataContainer extends Permissions
+class DataContainerListener extends PermissionsListener
 {
 
 	/**
-	 * @param Permission $objEvent
+	 * @param PermissionEvent $objEvent
 	 * @param array $arrConfig
 	 * @param bool $blnStop
 	 *
 	 * @return bool|void
 	 */
-	public static function hasAccess(Permission $objEvent, array $arrConfig=array(), $blnStop=true)
+	public static function hasAccess(PermissionEvent $objEvent, array $arrConfig=array(), $blnStop=true)
 	{
-		if(!static::hasGenericPermission($objEvent, $arrConfig) || parent::hasAccess($objEvent, $arrConfig))
+		if(!static::hasGenericPermission($objEvent, $arrConfig) || parent::checkAccess($objEvent->getSubject()->getName(), $arrConfig))
 		{
 			return true;
 		}
@@ -46,13 +46,13 @@ class DataContainer extends Permissions
 
 
 	/**
-	 * @param Permission $objEvent
+	 * @param PermissionEvent $objEvent
 	 * @param array $arrConfig
 	 * @param bool $blnStop
 	 *
 	 * @return bool|void
 	 */
-	public static function isAllowed(Permission $objEvent, array $arrConfig=array(), $blnStop=true)
+	public static function isAllowed(PermissionEvent $objEvent, array $arrConfig=array(), $blnStop=true)
 	{
 		if(static::hasGenericPermission($objEvent, $arrConfig))
 		{
@@ -77,13 +77,13 @@ class DataContainer extends Permissions
 
 
 	/**
-	 * @param Permission $objEvent
+	 * @param PermissionEvent $objEvent
 	 * @param array $arrConfig
 	 * @param bool $blnStop
 	 *
 	 * @return bool|void
 	 */
-	public static function isAdmin(Permission $objEvent, array $arrConfig=array(), $blnStop=true)
+	public static function isAdmin(PermissionEvent $objEvent, array $arrConfig=array(), $blnStop=true)
 	{
 		if(!static::hasGenericPermission($objEvent, $arrConfig) || parent::isAdmin($objEvent, $arrConfig))
 		{
@@ -100,13 +100,13 @@ class DataContainer extends Permissions
 
 
 	/**
-	 * @param Permission $objEvent
+	 * @param PermissionEvent $objEvent
 	 * @param array $arrConfig
 	 * @param bool $blnStop
 	 *
 	 * @return bool|void
 	 */
-	public static function forbidden(Permission $objEvent, array $arrConfig=array(), $blnStop=true)
+	public static function forbidden(PermissionEvent $objEvent, array $arrConfig=array(), $blnStop=true)
 	{
 		if(!static::hasGenericPermission($objEvent, $arrConfig))
 		{
@@ -124,12 +124,12 @@ class DataContainer extends Permissions
 
 
 	/**
-	 * @param Permission $objEvent
+	 * @param PermissionEvent $objEvent
 	 * @param array $arrConfig
 	 *
 	 * @return bool
 	 */
-	public static function hasGenericPermission(Permission $objEvent, array $arrConfig=array())
+	public static function hasGenericPermission(PermissionEvent $objEvent, array $arrConfig=array())
 	{
 		$objEvent->setArgument('error', static::prepareErrorMessage($arrConfig, $objEvent->getArgument('error')));
 		$blnAccess = true;

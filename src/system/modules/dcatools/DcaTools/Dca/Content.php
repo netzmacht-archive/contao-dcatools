@@ -1,19 +1,19 @@
 <?php
 
 /**
- * Contao Open Source CMS
- *
- * Copyright (C) 2005-2013 Leo Feyer
+ * DcaTools - Toolkit for data containers in Contao
+ * Copyright (C) 2013 David Molineus
  *
  * @package   netzmacht-dcatools
- * @author    netzmacht creative David Molineus
- * @license   LGPL/3.0
+ * @author    David Molineus <molineus@netzmacht.de>
+ * @license   LGPL-3.0+
  * @copyright 2013 netzmacht creative David Molineus
  */
 
-namespace DcaTools\DataContainer;
+namespace DcaTools\Dca;
 
-use DcaTools\Event\Event;
+use DcaTools\Event\GetDynamicParentEvent;
+use DcaTools\Event\RestrictedDataAccessEvent;
 
 
 /**
@@ -24,25 +24,22 @@ class Content
 {
 
 	/**
-	 * @param Event $objEvent
+	 * @param RestrictedDataAccessEvent $objEvent
 	 * @return array
 	 */
-	public static function getAllowedIds(Event $objEvent)
+	public static function getAllowedIds(RestrictedDataAccessEvent $objEvent)
 	{
 		$arrDataContainers = array('tl_article', 'tl_news', 'tl_calendar_events');
 
-		if($objEvent->hasArgument('parentDataContainer'))
-		{
+		if($objEvent->hasArgument('parentDataContainer')) {
 			$strDataContainer = $objEvent['parentDataContainer'];
 
-			if(in_array($strDataContainer, $arrDataContainers))
-			{
+			if(in_array($strDataContainer, $arrDataContainers)) {
 				static::doGetAllowedIds($strDataContainer, $objEvent);
 			}
 		}
 		else {
-			foreach($arrDataContainers as $strDataContainer)
-			{
+			foreach($arrDataContainers as $strDataContainer) {
 				static::doGetAllowedIds($strDataContainer, $objEvent);
 			}
 		}
@@ -52,41 +49,34 @@ class Content
 
 
 	/**
-	 * @param Event $objEvent
+	 * @param RestrictedDataAccessEvent $objEvent
 	 * @return array
 	 */
-	public static function getAllowedDynamicParents(Event $objEvent)
+	public static function getAllowedDynamicParents(RestrictedDataAccessEvent $objEvent)
 	{
-		$arrPtables = array();
-
 		/** @var \BackendUser $objUser */
 		$objUser = \BackendUser::getInstance();
 
-		if($objUser->hasAccess('article', 'modules'))
-		{
-			$arrPtables[] = 'tl_article';
+		if($objUser->hasAccess('article', 'modules')) {
+			$objEvent->addEntry('tl_article');
 		}
 
-		if($objUser->hasAccess('news', 'modules'))
-		{
-			$arrPtables[] = 'tl_news';
+		if($objUser->hasAccess('news', 'modules')) {
+			$objEvent->addEntry('tl_news');
 		}
 
-		if($objUser->hasAccess('calendar', 'modules'))
-		{
-			$arrPtables[] = 'tl_calendar_events';
+		if($objUser->hasAccess('calendar', 'modules')) {
+			$objEvent->addEntry('tl_calendar_events');
 		}
 
-		$objEvent['ptables'] = array_merge($objEvent['ptables'], $arrPtables);
-
-		return $arrPtables;
+		return $objEvent->getEntries();
 	}
 
 
 	/**
-	 * @param Event $objEvent
+	 * @param RestrictedDataAccessEvent $objEvent
 	 */
-	public static function getAllowedEntries(Event $objEvent)
+	public static function getAllowedEntries(RestrictedDataAccessEvent $objEvent)
 	{
 		$arrDataContainers  = array('tl_article', 'tl_news', 'tl_calendar_events');
 
@@ -113,11 +103,11 @@ class Content
 
 	/**
 	 * @param $strDataContainer
-	 * @param Event $objEvent
+	 * @param RestrictedDataAccessEvent $objEvent
 	 *
 	 * @return array
 	 */
-	protected static function doGetAllowedIds($strDataContainer, Event $objEvent)
+	protected static function doGetAllowedIds($strDataContainer, RestrictedDataAccessEvent $objEvent)
 	{
 		$arrPids = array();
 		$arrIds = array();
@@ -185,7 +175,7 @@ class Content
 	public static function getAllowedEntriesFor($strParent, $objEvent)
 	{
 		$strFields = '';
-		$strQuery = "SELECT
+		$strQuery  = "SELECT
 				c.id, c.pid, c.type, (CASE c.type
 					WHEN 'module' THEN m.name
 					WHEN 'form' THEN f.title
@@ -199,27 +189,23 @@ class Content
 				WHERE %s
 				ORDER BY c.sorting";
 
-		if($strParent == 'tl_article')
-		{
+		if($strParent == 'tl_article') {
 			$strWhere = "(c.ptable='tl_article' OR c.ptable='')";
 		}
 		else {
 			$strWhere = "c.ptable='{$strParent}'";
 		}
 
-		if(!\BackendUser::getInstance()->isAdmin)
-		{
+		if(!\BackendUser::getInstance()->isAdmin) {
 			$arrIds = static::getAllowedIds($objEvent);
 			$strWhere .= " AND c.id IN(" . implode(',', array_map('intval', array_unique($arrIds))) . '") ';
 		}
 
-		if(isset($objEvent['id']))
-		{
+		if(isset($objEvent['id'])) {
 			$strWhere .= ' AND c.id!=?';
 		}
 
-		if(isset($objEvent['fields']) && !empty($objEvent['fields']))
-		{
+		if(isset($objEvent['fields']) && !empty($objEvent['fields'])) {
 			$strFields = ', ' . implode(', ', $objEvent['fields']);
 		}
 
@@ -228,12 +214,38 @@ class Content
 			->prepare(sprintf($strQuery, $strFields, $strParent, $strWhere))
 			->execute(isset($objEvent['id']) ? $objEvent['id'] : null);
 
-		while($objResult->next())
-		{
+		while($objResult->next()) {
 			$arrEntries[$strParent][$objResult->pid][] = $objResult->row();
 		}
 
 		$objEvent['entries'] = array_merge($objEvent['entries'], $arrEntries);
 		return $arrEntries;
 	}
+
+
+	/**
+	 * @param GetDynamicParentEvent $event
+	 */
+	public static function getParentName(GetDynamicParentEvent $event)
+	{
+		switch($event->getModuleName()) {
+			case 'article':
+				$event->setParentName('tl_article');
+				break;
+
+			case 'news':
+				$event->setParentName('tl_news');
+				break;
+
+			case 'calendar':
+				$event->setParentName('tl_calendar_events');
+				break;
+
+			default:
+				return;
+		}
+
+		$event->stopPropagation();
+	}
+
 }

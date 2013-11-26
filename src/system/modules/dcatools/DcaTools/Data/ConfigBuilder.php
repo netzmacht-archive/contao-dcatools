@@ -1,5 +1,15 @@
 <?php
 
+/**
+ * DcaTools - Toolkit for data containers in Contao
+ * Copyright (C) 2013 David Molineus
+ *
+ * @package   netzmacht-dcatools
+ * @author    David Molineus <molineus@netzmacht.de>
+ * @license   LGPL-3.0+
+ * @copyright 2013 netzmacht creative David Molineus
+ */
+
 namespace DcaTools\Data;
 
 use DcGeneral\Data\DCGE;
@@ -25,25 +35,20 @@ class ConfigBuilder
 	 */
 	protected $config;
 
-
 	/**
 	 * @var array
 	 */
 	protected $filters = array();
-
 
 	/**
 	 * @var array
 	 */
 	protected $sorting = array();
 
-
 	/**
 	 * @var array
 	 */
 	protected $fields = array();
-
-
 
 
 	/**
@@ -105,8 +110,7 @@ class ConfigBuilder
 	 */
 	public function ids(array $ids)
 	{
-		foreach($ids as $id)
-		{
+		foreach($ids as $id) {
 			$this->id($id);
 		}
 
@@ -141,25 +145,12 @@ class ConfigBuilder
 	 */
 	public function fields()
 	{
-		foreach(func_get_args() as $field)
-		{
+		foreach(func_get_args() as $field) {
 			$this->field($field);
 		}
 
 		return $this;
 	}
-
-
-	/**
-	 * @param array $fields
-	 * @return $this
-	 */
-	public function setFields(array $fields)
-	{
-		$this->fields = $fields;
-		return $this;
-	}
-
 
 	/**
 	 * @param $column
@@ -312,8 +303,7 @@ class ConfigBuilder
 	{
 		$filter['operation'] = $operation;
 
-		if($property !== null)
-		{
+		if($property !== null) {
 			$filter['property']  = $property;
 		}
 
@@ -330,18 +320,15 @@ class ConfigBuilder
 	 */
 	public function getConfig()
 	{
-		if(count($this->filters))
-		{
+		if(count($this->filters)) {
 			$this->config->setFilter($this->filters);
 		}
 
-		if(count($this->sorting))
-		{
+		if(count($this->sorting)) {
 			$this->config->setSorting($this->sorting);
 		}
 
-		if(count($this->fields))
-		{
+		if(count($this->fields)) {
 			$this->config->setFields($this->fields);
 		}
 
@@ -359,7 +346,7 @@ class ConfigBuilder
 
 
 	/**
-	 * @return array|\DcGeneral\Data\CollectionInterface
+	 * @return \DcGeneral\Data\CollectionInterface|\DcGeneral\Data\ModelInterface[]
 	 */
 	public function fetchAll()
 	{
@@ -373,16 +360,13 @@ class ConfigBuilder
 	 */
 	public function delete()
 	{
-		if($this->config->getId())
-		{
+		if($this->config->getId()) {
 			$this->driver->delete($this->getConfig());
 		}
-		else
-		{
+		else {
 			$this->idOnly(true);
 
-			foreach($this->fetchAll() as $item)
-			{
+			foreach($this->fetchAll() as $item) {
 				$this->driver->delete($item);
 			}
 		}

@@ -1,21 +1,22 @@
 <?php
 
 /**
- * Contao Open Source CMS
- *
- * Copyright (C) 2005-2013 Leo Feyer
+ * DcaTools - Toolkit for data containers in Contao
+ * Copyright (C) 2013 David Molineus
  *
  * @package   netzmacht-dcatools
- * @author    netzmacht creative David Molineus
- * @license   LGPL/3.0
+ * @author    David Molineus <molineus@netzmacht.de>
+ * @license   LGPL-3.0+
  * @copyright 2013 netzmacht creative David Molineus
  */
+
 
 namespace DcaTools;
 
 use DcaTools\Component\Operation;
 use DcaTools\Component\GlobalOperation;
 use DcaTools\Data\ModelFactory;
+use DcGeneral\DC_General;
 
 
 /**
@@ -25,7 +26,41 @@ use DcaTools\Data\ModelFactory;
  */
 class Bridge
 {
-	protected static $enabledOperationEvents = array();
+
+	/**
+	 * @param $name
+	 */
+	public function hookLoadDataContainer($name)
+	{
+		if(isset($GLOBALS['TL_DCA'][$name]['dcatools'])) {
+			$controller = $controller = Controller::getInstance($name);
+			$definition = $controller->getDefinition();
+
+			if($definition->get('config/dataContainer') == 'General') {
+				$definition->registerCallback('onload', array('\DcaTools\Bridge', 'callbackDcGeneralOnLoad'));
+			}
+
+			$controller->initialize();
+		}
+	}
+
+
+	/**
+	 * Do not use built compatibility driver manager, use DC_General instead
+	 *
+	 * @param DC_General $dc
+	 */
+	public function callbackDcGeneralOnLoad(DC_General $dc)
+	{
+		/** @var \Pimple $container */
+		global $container;
+
+		// no need for own driver manager, use Dc_General
+		$GLOBALS['container']['dcatools.driver-manager'] = $container->share(function() use($dc) {
+			return $dc;
+		});
+	}
+
 
 	/**
 	 * Use magic stuff for generating operations
@@ -37,8 +72,7 @@ class Bridge
 	 */
 	public function __call($method, $arguments)
 	{
-		if (strncmp($method, 'operationCallback', 17) === 0)
-		{
+		if (strncmp($method, 'operationCallback', 17) === 0) {
 			$operationName = substr($method, 17);
 
 			$definition = Definition::getOperation($arguments[6], $operationName);
@@ -67,8 +101,7 @@ class Bridge
 
 			return $controller->generate();
 		}
-		elseif (strncmp($method, 'globalOperationCallback', 23) === 0)
-		{
+		elseif (strncmp($method, 'globalOperationCallback', 23) === 0) {
 			$operationName = substr($method, 23);
 
 			$definition = Definition::getGlobalOperation($arguments[5], $operationName);
@@ -95,68 +128,6 @@ class Bridge
 		}
 
 		return null;
-	}
-
-
-	/**
-	 * Register button_callback if events are set
-	 *
-	 * @param string $strTable
-	 */
-	protected function registerOperationEvents($strTable)
-	{
-		if(!isset($GLOBALS['TL_EVENTS']))
-		{
-			return;
-		}
-
-		/** @var \DcaTools\Definition\DataContainer $definition */
-		$controller = Controller::getInstance($strTable);
-		$definition = $controller->getDefinition();
-
-		foreach($definition->getOperationNames() as $operationName)
-		{
-			$eventName = sprintf('dcatools.%s.operation.%s', $strTable, $operationName);
-			if(isset($GLOBALS['TL_EVENTS'][$eventName]))
-			{
-				$controller->enableOperationEvents($operationName);
-			}
-		}
-	}
-
-	/**
-	 * Register button_callback if events are set
-	 *
-	 * @param string $strTable
-	 */
-	protected function registerGlobalOperationEvents($strTable)
-	{
-		if(!isset($GLOBALS['TL_EVENTS']))
-		{
-			return;
-		}
-
-		/** @var \DcaTools\Definition\DataContainer $definition */
-		$controller = Controller::getInstance($strTable);
-		$definition = $controller->getDefinition();
-
-		foreach($definition->getOperationNames() as $operationName)
-		{
-			$eventName = sprintf('dcatools.%s.global_operation.%s', $strTable, $operationName);
-			if(isset($GLOBALS['TL_EVENTS'][$eventName]))
-			{
-				$controller->enableGlobalOperationEvents($operationName);
-			}
-		}
-	}
-
-	/**
-	 * @param $name
-	 */
-	public function hookLoadDataContainer($name)
-	{
-		$controller = $controller = Controller::getInstance($name);
-		$controller->initialize();
 	}
 
 }

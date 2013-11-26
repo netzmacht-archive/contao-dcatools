@@ -1,19 +1,19 @@
 <?php
 
 /**
- * Contao Open Source CMS
- *
- * Copyright (C) 2005-2013 Leo Feyer
+ * DcaTools - Toolkit for data containers in Contao
+ * Copyright (C) 2013 David Molineus
  *
  * @package   netzmacht-dcatools
- * @author    netzmacht creative David Molineus
- * @license   LGPL/3.0
+ * @author    David Molineus <molineus@netzmacht.de>
+ * @license   LGPL-3.0+
  * @copyright 2013 netzmacht creative David Molineus
  */
 
 
-namespace DcaTools\Event\Listener;
+namespace DcaTools\Listener;
 
+use DcaTools\Definition;
 use DcaTools\Event;
 
 /**
@@ -21,18 +21,18 @@ use DcaTools\Event;
  *
  * @package DcaTools\Event
  */
-class Permissions
+class PermissionsListener
 {
 
 	/**
 	 * Test if User is an admin.
 	 *
-	 * @param Event\Permission $objEvent
+	 * @param Event\PermissionEvent $objEvent
 	 * @param array $arrConfig
 	 *
 	 * @return bool
 	 */
-	public static function isAdmin(Event\Permission $objEvent, array $arrConfig=array())
+	public static function isAdmin(Event\PermissionEvent $objEvent, array $arrConfig=array())
 	{
 		if(!\BackendUser::getInstance()->isAdmin)
 		{
@@ -43,55 +43,10 @@ class Permissions
 	}
 
 
-	public static function hasAccess(Event\Permission $objEvent, array $arrConfig)
-	{
-		/** @var \BackendUser $objUser */
-		$objUser = \BackendUser::getInstance();
-
-		// Has access to an module
-		if(isset($arrConfig['module']))
-		{
-			return $objUser->hasAccess($arrConfig['module'], 'modules');
-		}
-
-		// Get table
-		if($arrConfig['ptable'])
-		{
-			$arrDefinition = $objEvent->getSubject()->getDataContainer()->getDefinition();
-			$strTable = $arrDefinition['config']['ptable'];
-		}
-		else
-		{
-			$strTable = isset($arrConfig['table']) ? $arrConfig['table'] : $objEvent->getSubject()->getDataContainer()->getName();
-		}
-
-		// Check access for an action
-		if(isset($arrConfig['permission']) && isset($arrConfig['action']))
-		{
-			if($arrConfig['action'] == 'alexf')
-			{
-				$arrConfig['action'] = $strTable . '::' . $arrConfig['action'];
-			}
-
-			return $objUser->hasAccess($arrConfig['action'], $arrConfig['permission']);
-		}
-		elseif(isset($arrConfig['alexf']))
-		{
-			return $objUser->hasAccess($strTable . '::' . $arrConfig['alexf'], 'alexf');
-		}
-		elseif(isset($arrConfig['fop']))
-		{
-			return $objUser->hasAccess($arrConfig['fop'], 'fop');
-		}
-
-		return false;
-	}
-
-
 	/**
 	 * generic is allowed rule
 	 *
-	 * @param Event\Permission $objEvent
+	 * @param Event\PermissionEvent $objEvent
 	 * @param array $arrConfig supports
 	 * 		- ptable string 	optional if want to check isAllowed for another table than data from $arrRow
 	 * 		- property string  	optional column of current row for WHERE id=? statement, default pid
@@ -101,7 +56,7 @@ class Permissions
 	 *
 	 * @return bool
 	 */
-	public static function isAllowed(Event\Permission $objEvent, array $arrConfig)
+	public static function isAllowed(Event\PermissionEvent $objEvent, array $arrConfig)
 	{
 		/** @var \DcaTools\Controller $objController */
 		$objController = $objEvent->getSubject()->getDataContainer();
@@ -174,6 +129,56 @@ class Permissions
 		}
 
 		return $strError;
+	}
+
+
+	protected static function checkAccess($tableName, array $arrConfig)
+	{
+		/** @var \BackendUser $objUser */
+		$objUser = \BackendUser::getInstance();
+
+		if($objUser->isAdmin)
+		{
+			return true;
+		}
+
+		// Has access to an module
+		if(isset($arrConfig['module']))
+		{
+			return $objUser->hasAccess($arrConfig['module'], 'modules');
+		}
+
+		// Get table
+		if($arrConfig['ptable'])
+		{
+			$definition = Definition::getDataContainer($tableName);
+			$tableName  = $definition->get('config/ptable');
+		}
+		else
+		{
+			$tableName  = isset($arrConfig['table']) ? $arrConfig['table'] : $tableName;
+		}
+
+		// Check access for an action
+		if(isset($arrConfig['permission']) && isset($arrConfig['action']))
+		{
+			if($arrConfig['action'] == 'alexf')
+			{
+				$arrConfig['action'] = $tableName . '::' . $arrConfig['action'];
+			}
+
+			return $objUser->hasAccess($arrConfig['action'], $arrConfig['permission']);
+		}
+		elseif(isset($arrConfig['alexf']))
+		{
+			return $objUser->hasAccess($tableName . '::' . $arrConfig['alexf'], 'alexf');
+		}
+		elseif(isset($arrConfig['fop']))
+		{
+			return $objUser->hasAccess($arrConfig['fop'], 'fop');
+		}
+
+		return false;
 	}
 
 }

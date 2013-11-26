@@ -1,18 +1,16 @@
 <?php
 
 /**
- * Contao Open Source CMS
- *
- * Copyright (C) 2005-2013 Leo Feyer
+ * DcaTools - Toolkit for data containers in Contao
+ * Copyright (C) 2013 David Molineus
  *
  * @package   netzmacht-dcatools
- * @author    netzmacht creative David Molineus
- * @license   LGPL/3.0
+ * @author    David Molineus <molineus@netzmacht.de>
+ * @license   LGPL-3.0+
  * @copyright 2013 netzmacht creative David Molineus
  */
 
 namespace DcaTools;
-
 
 use DcaTools\Definition\DataContainer;
 use DcaTools\Definition\Palette;
@@ -21,6 +19,7 @@ use DcaTools\Definition\Legend;
 use DcaTools\Iterator\ActivePalette;
 use DcaTools\Iterator\ActivePropertyContainer;
 use DcaTools\Structure\PropertyContainerInterface;
+use DcGeneral\Contao\BackendBindings;
 use DcGeneral\Data\ModelInterface;
 
 
@@ -62,9 +61,11 @@ class Definition
 	 */
 	public static function getDataContainer($strName)
 	{
-		if(!isset($GLOBALS['TL_DCA'][$strName]))
-		{
-			throw new \RuntimeException("DataContainer {$strName} does not exist or is not loaded.");
+		BackendBindings::loadDataContainer($strName);
+		BackendBindings::loadLanguageFile($strName);
+
+		if(!isset($GLOBALS['TL_DCA'][$strName])) {
+			throw new \RuntimeException("DataContainer {$strName} does not exist.");
 		}
 
 		return DataContainer::getInstance($strName);
@@ -76,13 +77,26 @@ class Definition
 	 *
 	 * @param $strTable
 	 * @param $strName
-	 * @param $strScope
 	 *
 	 * @return Definition\Operation
 	 */
-	public static function getOperation($strTable, $strName, $strScope='local')
+	public static function getOperation($strTable, $strName)
 	{
-		return static::getDataContainer($strTable)->getOperation($strName, $strScope);
+		return static::getDataContainer($strTable)->getOperation($strName);
+	}
+
+
+	/**
+	 * Get Operation of a DataContainer shortcut
+	 *
+	 * @param $strTable
+	 * @param $strName
+	 *
+	 * @return Definition\Operation
+	 */
+	public static function getGlobalOperation($strTable, $strName)
+	{
+		return static::getDataContainer($strTable)->getGlobalOperation($strName);
 	}
 
 
@@ -140,8 +154,7 @@ class Definition
 	 */
 	public static function getActivePropertiesFor(PropertyContainerInterface $objContainer, ModelInterface $objModel, $blnRecursive=false)
 	{
-		if($objContainer instanceof Palette)
-		{
+		if($objContainer instanceof Palette) {
 			return new \RecursiveIteratorIterator(new ActivePalette($objContainer, $objModel, $blnRecursive));
 		}
 
@@ -177,8 +190,7 @@ class Definition
 		$objIterator = static::getActivePropertiesFor($objContainer, $objModel, $blnRecursive);
 		$arrProperties = array();
 
-		foreach($objIterator as $strName => $objProperty)
-		{
+		foreach($objIterator as $strName => $objProperty) {
 			$arrProperties[] = $strName;
 		}
 
@@ -202,14 +214,11 @@ class Definition
 		$arrPalette = array();
 
 		/** @var Legend $objLegend */
-		foreach($objIterator as $strLegend => $objLegend)
-		{
-			if($objIterator->hasChildren())
-			{
+		foreach($objIterator as $strLegend => $objLegend) {
+			if($objIterator->hasChildren()) {
 				$arrPalette[$strLegend] = static::getActivePropertiesAsArrayFor($objLegend, $objModel, $blnRecursive);
 
-				if($blnIncludeModifiers)
-				{
+				if($blnIncludeModifiers) {
 					$arrModifiers = array_map(
 						function($item) {
 							return ':' . $item;
@@ -239,10 +248,8 @@ class Definition
 		$objIterator = static::getActivePropertiesFor($objContainer, $objModel);
 		$strProperties = array();
 
-		foreach($objIterator as $strName => $objProperty)
-		{
-			if($strProperties != '')
-			{
+		foreach($objIterator as $strName => $objProperty) {
+			if($strProperties != '') {
 				$strProperties .= ',';
 			}
 
@@ -268,20 +275,16 @@ class Definition
 		$strPalette = '';
 
 		/** @var Legend $objLegend */
-		foreach($objIterator as $strLegend => $objLegend)
-		{
-			if($objIterator->hasChildren())
-			{
+		foreach($objIterator as $strLegend => $objLegend) {
+			if($objIterator->hasChildren()) {
 				$strModifier = '';
 
-				if($blnIncludeModifiers)
-				{
+				if($blnIncludeModifiers) {
 					$strModifier = implode(':', $objLegend->getModifiers());
 					$strModifier = $strModifier == '' ? '' : (':'. $strModifier);
 				}
 
-				if($strPalette != '')
-				{
+				if($strPalette != '') {
 					$strPalette .= ';';
 				}
 
@@ -310,12 +313,10 @@ class Definition
 	{
 		$arrSubPalettes = array();
 
-		foreach($objPalette->getSelectors() as $objProperty)
-		{
+		foreach($objPalette->getSelectors() as $objProperty) {
 			$objSubPalette = static::getActivePropertySubPalette($objProperty, $objModel);
 
-			if($objSubPalette !== null)
-			{
+			if($objSubPalette !== null) {
 				$arrSubPalettes[$objSubPalette->getName()] = $objSubPalette;
 			}
 		}
@@ -337,8 +338,7 @@ class Definition
 		$objProperty->getDataContainer();
 		$varValue = $objModel->getProperty($objProperty->getName());
 
-		if($objProperty->hasSubPalette($varValue))
-		{
+		if($objProperty->hasSubPalette($varValue)) {
 			return $objProperty->getSubPalette($varValue);
 		}
 

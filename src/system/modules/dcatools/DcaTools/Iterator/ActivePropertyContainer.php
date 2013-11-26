@@ -1,10 +1,13 @@
 <?php
+
 /**
- * Created by JetBrains PhpStorm.
- * User: david
- * Date: 16.10.13
- * Time: 07:16
- * To change this template use File | Settings | File Templates.
+ * DcaTools - Toolkit for data containers in Contao
+ * Copyright (C) 2013 David Molineus
+ *
+ * @package   netzmacht-dcatools
+ * @author    David Molineus <molineus@netzmacht.de>
+ * @license   LGPL-3.0+
+ * @copyright 2013 netzmacht creative David Molineus
  */
 
 namespace DcaTools\Iterator;

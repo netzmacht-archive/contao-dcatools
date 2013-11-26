@@ -1,5 +1,15 @@
 <?php
 
+/**
+ * DcaTools - Toolkit for data containers in Contao
+ * Copyright (C) 2013 David Molineus
+ *
+ * @package   netzmacht-dcatools
+ * @author    David Molineus <molineus@netzmacht.de>
+ * @license   LGPL-3.0+
+ * @copyright 2013 netzmacht creative David Molineus
+ */
+
 namespace DcaTools\Event;
 
 use DcaTools\Component\ControllerInterface;
@@ -46,7 +56,7 @@ class GenerateEvent extends Event
 	/**
 	 * Get current model
 	 *
-	 * @var \DcGeneral\Data\ModelInterface
+	 * @return \DcGeneral\Data\ModelInterface
 	 */
 	public function getModel()
 	{
@@ -57,7 +67,7 @@ class GenerateEvent extends Event
 	/**
 	 * Shortcut to get the view
 	 *
-	 * @var \DcaTools\Component\ViewInterface
+	 * @return \DcaTools\Component\ViewInterface
 	 */
 	public function getView()
 	{

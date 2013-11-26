@@ -1,7 +1,7 @@
 <?php
 
 /**
- * DcaTools - Toolset for datacontainers in Contao
+ * DcaTools - Toolkit for data containers in Contao
  * Copyright (C) 2013 David Molineus
  *
  * @package   netzmacht-dcatools
@@ -12,14 +12,13 @@
 
 namespace DcaTools\Event;
 
-use DcaTools\Controller;
-use Symfony\Component\EventDispatcher\Event;
+use DcaTools\DcaTools;
 
 /**
  * Class GetDynamicParentEvent
  * @package DcaTools\Event
  */
-class GetDynamicParentEvent extends Event
+class GetDynamicParentEvent extends DcaToolsEvent
 {
 
 	/**
@@ -28,7 +27,7 @@ class GetDynamicParentEvent extends Event
 	protected $moduleName;
 
 	/**
-	 * @var \DcaTools\Controller
+	 * @var \DcaTools\DcaTools
 	 */
 	protected $controller;
 
@@ -39,22 +38,14 @@ class GetDynamicParentEvent extends Event
 
 
 	/**
-	 * @param Controller $controller
+	 * @param DcaTools $controller
 	 * @param $moduleName
 	 */
-	public function __construct(Controller $controller, $moduleName)
+	public function __construct(DcaTools $controller, $moduleName)
 	{
-		$this->controller = $controller;
+		parent::__construct($controller);
+
 		$this->moduleName = $moduleName;
-	}
-
-
-	/**
-	 * @return \DcaTools\Controller
-	 */
-	public function getController()
-	{
-		return $this->controller;
 	}
 
 

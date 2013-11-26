@@ -1,23 +1,43 @@
 <?php
 
+/**
+ * DcaTools - Toolkit for data containers in Contao
+ * Copyright (C) 2013 David Molineus
+ *
+ * @package   netzmacht-dcatools
+ * @author    David Molineus <molineus@netzmacht.de>
+ * @license   LGPL-3.0+
+ * @copyright 2013 netzmacht creative David Molineus
+ */
+
 namespace DcaTools\Data;
 
+use DcGeneral\Data\ModelInterface;
 use DcGeneral\DC_General;
 
+/**
+ * Class ModelFactory is used for converting Contao style models and DC General models
+ * @package DcaTools\Data
+ */
 class ModelFactory
 {
 
-
+	/**
+	 * Create a model by given table name, id and row
+	 *
+	 * @param $tableName
+	 * @param $id
+	 * @param null $row
+	 * @return \DcGeneral\Data\ModelInterface
+	 */
 	public static function create($tableName, $id, $row=null)
 	{
 		/** @var \DcaTools\Data\DriverManagerInterface $manager */
 		$manager = $GLOBALS['container']['dcatools.driver-manager'];
 		$driver  = $manager->getDataProvider($tableName);
 
-		if($row)
-		{
-			if(is_object($row))
-			{
+		if($row) {
+			if(is_object($row)) {
 				$row = $row->row();
 			}
 
@@ -33,14 +53,18 @@ class ModelFactory
 	}
 
 
+	/**
+	 * Create a row by passing the DC
+	 *
+	 * @param $dc
+	 * @return \DcGeneral\Data\ModelInterface
+	 */
 	public static function byDc($dc)
 	{
-		if($dc instanceof DC_General)
-		{
+		if($dc instanceof DC_General) {
 			$model = $dc->getEnvironment()->getCurrentModel();
 
-			if($model && $model->hasProperties())
-			{
+			if($model && $model->hasProperties()) {
 				return $model;
 			}
 			else {
@@ -52,10 +76,51 @@ class ModelFactory
 	}
 
 
+	/**
+	 * Create a mobel by passing a Contao model
+	 *
+	 * @param \Model $model
+	 * @return \DcGeneral\Data\ModelInterface
+	 */
 	public static function byContaoModel(\Model $model)
 	{
 		return static::create($model->getTable(), $model->{$model->getPk()}, $model->row());
 	}
 
 
-} 
+	/**
+	 * Create a model by passing an result set
+	 * @param $tableName
+	 * @param $result
+	 * @param $idColumn
+	 * @return \DcGeneral\Data\ModelInterface
+	 */
+	public static function byResult($tableName, $result, $idColumn='id')
+	{
+		return static::create($tableName, $result->$idColumn, $result);
+	}
+
+
+	/**
+	 * Create legacy model
+	 *
+	 * @param ModelInterface $model
+	 * @return \Model
+	 * @throws
+	 */
+	public static function createLegacy(ModelInterface $model)
+	{
+		$class = \Model::getClassFromTable($model->getProviderName());
+
+		if(!class_exists($class)) {
+			throw new \RuntimeException(sprintf('No model class found for "%s"', $model->getProviderName()));
+		}
+
+		/** @var \Model $legacy */
+		$legacy = new $class;
+		$legacy->setRow($model->getPropertiesAsArray());
+
+		return $legacy;
+	}
+
+}

@@ -132,6 +132,8 @@ public function callbackOnSubmit($dc)
 
     $builder = \DcaTools\Data\ConfigBuilder::create($driver)
     	->fields('id', 'title', 'category')
+    	->filterEquals('pid', 2)
+    	->filterGreaterThen('tstamp', strtotime('yesterday'))
     	->sorting('category', \DcGeneral\DCGE::MODEL_SORTING_DESC)
     	->sorting('title');
 

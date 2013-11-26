@@ -1,5 +1,5 @@
 contao-dcatools
-===============
+###############
 
 This library is a toolkit for working in the data container context of Contao.
 
@@ -10,7 +10,7 @@ DC_Drivers and the upcoming Dc_General.
 Features
 ------
 
-=== Definition ===
+### Definition ###
 
 The definition API following the currently (2013/11/26) published interfaces and naming conventions of the DC_General. So
 there is no yet another API. But it also allows to easily change and modify the definition.
@@ -24,7 +24,7 @@ $definition->getPalette('default')->addProperty('foo');
 $definition->getProperty('bar')->appendTo($definition->getPalette('default'), 'foo', Definition::BEFORE);
 ```
 
-=== Events ===
+### Events ###
 
 DcaTools uses the Event [Dispatcher](https://github.com/contao-community-alliance/event-dispatcher) for event handling.
 At the moment there is event support added for permission checking and operation rendering
@@ -45,7 +45,7 @@ $GLOBALS['TL_DCA']['tl_example']['dcatools']['dcatools.tl_example.check-permissi
 );
 ```
 
-==== Event names ====
+#### Event names ####
 
  * `dcatools.tl_example.initialize` called when DcaTools instance is initializd for the datacontainer
  * `dcatools.tl_example.check-permission` is called after initialisation
@@ -53,7 +53,7 @@ $GLOBALS['TL_DCA']['tl_example']['dcatools']['dcatools.tl_example.check-permissi
  * `dcatools.tl_example.global_operation.name` called when a global operation is rendered
 
 
-==== Operation events ===
+#### Operation events ###
 
 Operations are rendered following the MCV pattern. Then a operation is rendered the event is dispatched so you can
 apply your own logic. Former Contao callbacks are triggered as well. By default they get called after other events. You
@@ -74,12 +74,12 @@ function(\DcaTools\Event\GenerateEvent $event)
 }
 ```
 
-=== Dc General ===
+### Dc General ###
 
 For making the work in the context of DC_General and the legacy DC drivers easier DcaTools provides some helpers to use
 the same data structure no matter which DC you use.
 
-==== Model Factory ====
+#### Model Factory ####
 ```php
 <?php
 
@@ -94,7 +94,7 @@ public function callbackOnSubmit($dc)
 }
 ```
 
-=== Driver manager ===
+### Driver manager ###
 
 Using the driver architecture of the DC_General makes you independent of the used data structure. If you want to develop
 something which is independent of the data structure it is the best to use the drivers. In the context of the DC_Table
@@ -116,7 +116,7 @@ public function callbackOnSubmit($dc)
 }
 ```
 
-=== Config builder ===
+### Config builder ###
 
 If you use the driver architecture to achieve data structure independency then you often have to create filters for the
 dc general. There is a ConfigBuilder shipped with, which simplifies it:
@@ -141,7 +141,7 @@ public function callbackOnSubmit($dc)
 }
 ```
 
-=== Formatter ===
+### Formatter ###
 
 Formatting labels and values used can be quit difficult because Contao does not provide an access to the formatting
 methods. DcaTolls fills the gap here.

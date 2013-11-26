@@ -148,7 +148,7 @@ public function callbackOnSubmit($dc)
 Formatting labels and values used can be quit difficult because Contao does not provide an access to the formatting
 methods. DcaTolls fills the gap here.
 
-```phph
+```php
 <?php
 
 $formatter = Formatter::create('tl_example');

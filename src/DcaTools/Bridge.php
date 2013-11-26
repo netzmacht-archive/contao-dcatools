@@ -33,15 +33,25 @@ class Bridge
 	public function hookLoadDataContainer($name)
 	{
 		if(isset($GLOBALS['TL_DCA'][$name]['dcatools'])) {
-			$controller = $controller = Controller::getInstance($name);
-			$definition = $controller->getDefinition();
+			$definition = Definition::getDataContainer($name);
+			$definition->registerCallback('onload', array('\DcaTools\Bridge', 'callbackInitialize'));
 
 			if($definition->get('config/dataContainer') == 'General') {
 				$definition->registerCallback('onload', array('\DcaTools\Bridge', 'callbackDcGeneralOnLoad'));
 			}
-
-			$controller->initialize();
 		}
+	}
+
+
+	/**
+	 * @param $dc
+	 */
+	public function callbackInitialize($dc)
+	{
+		$table = get_class($dc) == 'DcGeneral\DC_General' ? $dc->getTable() : $dc->table;
+
+		$controller = $controller = DcaTools::getInstance($table);
+		$controller->initialize();
 	}
 
 

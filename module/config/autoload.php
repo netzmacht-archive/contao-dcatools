@@ -11,11 +11,7 @@
  */
 
 // only call namepsaceloader for debugging
-/*
-if(!strpos(__DIR__, 'composer'))
-{
-	NamespaceClassLoader::add('DcaTools', 'system/modules/dcatools');
-} */
+//NamespaceClassLoader::add('DcaTools', 'system/modules/dcatools');
 
 
 /**

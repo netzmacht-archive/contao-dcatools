@@ -372,4 +372,13 @@ class ConfigBuilder
 		}
 	}
 
+
+	/**
+	 * @return int
+	 */
+	public function getCount()
+	{
+		return $this->driver->getCount($this->getConfig());
+	}
+
 }

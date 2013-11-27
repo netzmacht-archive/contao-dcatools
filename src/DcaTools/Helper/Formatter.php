@@ -70,6 +70,10 @@ class Formatter
 	 */
 	public function getPropertyLabel($name, $default=null)
 	{
+		if($name == 'tstamp') {
+			$default = $this->translate('/MSC/tstamp');
+		}
+
 		return $this->getLabel('fields/' . $name, $default ?: $name);
 	}
 
@@ -99,10 +103,14 @@ class Formatter
 	/**
 	 * @param $strProperty
 	 * @param $value
-	 * @return array
+	 * @return string
 	 */
 	public function getPropertyValue($strProperty, $value)
 	{
+		if(!$this->definition->hasProperty($strProperty)) {
+			return '';
+		}
+
 		$definition = $this->definition->getProperty($strProperty);
 		$value      = deserialize($value);
 
@@ -150,14 +158,7 @@ class Formatter
 			$value = date($GLOBALS['TL_CONFIG']['datimFormat'], $value);
 		}
 
-		// Add the sorting field
-		if ($value != '')
-		{
-			$key = $this->getOperationLabel($strProperty);
-			return array($key => $value);
-		}
-
-		return array();
+		return $value;
 	}
 
 

@@ -13,6 +13,7 @@
 namespace DcaTools\Listener;
 
 use DcaTools\DcaTools;
+use DcaTools\Definition;
 use DcaTools\Event;
 use DcaTools\Helper\Permissions;
 
@@ -58,7 +59,7 @@ class OperationListener
 	 */
 	public static function hasAccess(Event\GenerateEvent $objEvent, array $arrConfig=array(), $blnStop=true)
 	{
-		$tableName = $objEvent->getController()->getDefinition()->getName();
+		$tableName = $objEvent->getModel()->getProviderName();
 
 		if(Permissions::hasAccess($tableName, $arrConfig)) {
 			return true;
@@ -98,6 +99,10 @@ class OperationListener
 			{
 				return true;
 			}
+
+			if($blnStop) {
+				$objEvent->stopPropagation();
+			}
 		}
 
 		return false;
@@ -127,7 +132,7 @@ class OperationListener
 		if($blnDisable)
 		{
 			/** @var \DcaTools\Component\Operation\View $view */
-			$view = $objEvent->getController()->getView();
+			$view = $objEvent->getView();
 
 			if(isset($arrConfig['icon']))
 			{
@@ -169,10 +174,10 @@ class OperationListener
 	public static function referer(Event\GenerateEvent $objEvent, array $arrConfig=array(), $blnStop=true)
 	{
 		/** @var \DcaTools\Component\Operation\View $view */
-		$view = $objEvent->getController()->getView();
+		$view = $objEvent->getView();
 		$view->setHref(\Controller::getReferer(true));
 		$objEvent->setOutput('');
-		$objEvent->getController()->setConfigAttribute('plain', true);
+		$objEvent->setConfigAttribute('plain', true);
 
 		return true;
 	}
@@ -201,7 +206,7 @@ class OperationListener
 		$objView = $objEvent->getView();
 
 		/** @var \DcaTools\Definition\DataContainer $objController */
-		$objDataContainer = $objEvent->getController()->getDefinition()->getDataContainer();
+		$objDataContainer = Definition::getDataContainer($objEvent->getModel()->getProviderName());
 
 		$arrRow = $objEvent->getModel()->getPropertiesAsArray();
 
@@ -224,7 +229,7 @@ class OperationListener
 		$strHref .= '&amp;id='.$arrRow['pid'].'&amp;tid='.$arrRow['id'].'&amp;state='.($blnVisible ? 1 : '');
 
 		$objView->setHref($strHref);
-		$objEvent->getController()->setConfigAttribute('id', false);
+		$objEvent->setConfigAttribute('id', false);
 
 		if ($blnVisible)
 		{
@@ -251,8 +256,8 @@ class OperationListener
 		\Input::setGet('act', 'toggle');
 
 		// trigger permission checking
-		$name = $objEvent->getController()->getDefinition()->getName();
-		$objEvent->getController()->getEventDispatcher()->dispatch(sprintf('dcatools.%s.check-permission', $name));
+		$name = $objEvent->getModel()->getProviderName();
+		$objEvent->getDispatcher()->dispatch(sprintf('dcatools.%s.check-permission', $name));
 
 		/** @var \BackendUser $objUser */
 		$objUser = \BackendUser::getInstance();
@@ -283,7 +288,7 @@ class OperationListener
 			foreach ($GLOBALS['TL_DCA'][$strTable]['propertys'][$strProperty]['save_callback'] as $callback)
 			{
 				$objCallback = new $callback[0];
-				$blnVisible = $objCallback->$callback[1]($blnVisible, $objEvent->getController());
+				$blnVisible = $objCallback->$callback[1]($blnVisible, $objEvent);
 			}
 		}
 

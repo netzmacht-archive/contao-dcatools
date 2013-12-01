@@ -33,7 +33,7 @@ class Controller extends \DcaTools\Component\Operation\Controller
 			$this->getDefinition()->getName()
 		);
 
-		$event = new GenerateEvent($this);
+		$event = new GenerateEvent($this->model, $this->view, $this->config);
 		return array($eventName, $event);
 	}
 

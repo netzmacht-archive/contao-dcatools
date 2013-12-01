@@ -40,7 +40,7 @@ class Controller extends AbstractController
 			$this->getDefinition()->getName()
 		);
 
-		$event = new GenerateEvent($this);
+		$event = new GenerateEvent($this->model, $this->view, $this->config);
 		return array($eventName, $event);
 	}
 

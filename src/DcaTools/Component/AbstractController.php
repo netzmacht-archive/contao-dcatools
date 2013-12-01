@@ -168,6 +168,7 @@ abstract class AbstractController implements ControllerInterface
 		/** @var \DcaTools\Event\GenerateEvent $event */
 		list($eventName, $event) = $this->createGenerateEvent();
 		$this->dispatcher->dispatch($eventName, $event);
+		$this->config = $event->getConfig();
 
 		if($this->view->isVisible())
 		{

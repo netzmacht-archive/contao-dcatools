@@ -13,6 +13,8 @@
 namespace DcaTools\Event;
 
 use DcaTools\Component\ControllerInterface;
+use DcaTools\Component\ViewInterface;
+use DcGeneral\Data\ModelInterface;
 use Symfony\Component\EventDispatcher\Event;
 
 
@@ -26,8 +28,17 @@ class GenerateEvent extends Event
 	/**
 	 * @var ControllerInterface
 	 */
-	protected $controller;
+	protected $config;
 
+	/**
+	 * @var \DcaTools\Component\ViewInterface
+	 */
+	protected $view;
+
+	/**
+	 * @var \DcGeneral\Data\ModelInterface
+	 */
+	protected $model;
 
 	/**
 	 * @var string
@@ -36,20 +47,15 @@ class GenerateEvent extends Event
 
 
 	/**
-	 * @param ControllerInterface $controller
+	 * @param ModelInterface $model
+	 * @param ViewInterface $view
+	 * @param array $config
 	 */
-	public function __construct(ControllerInterface $controller)
+	public function __construct(ModelInterface $model, ViewInterface $view, array $config=array())
 	{
-		$this->controller = $controller;
-	}
-
-
-	/**
-	 * @return ControllerInterface
-	 */
-	public function getController()
-	{
-		return $this->controller;
+		$this->model  = $model;
+		$this->view   = $view;
+		$this->config = $config;
 	}
 
 
@@ -60,7 +66,7 @@ class GenerateEvent extends Event
 	 */
 	public function getModel()
 	{
-		return $this->controller->getModel();
+		return $this->model;
 	}
 
 
@@ -71,7 +77,7 @@ class GenerateEvent extends Event
 	 */
 	public function getView()
 	{
-		return $this->controller->getView();
+		return $this->view;
 	}
 
 
@@ -90,6 +96,51 @@ class GenerateEvent extends Event
 	public function getOutput()
 	{
 		return $this->output;
+	}
+
+
+	/**
+	 * @param $name
+	 * @param $value
+	 */
+	public function setConfigAttribute($name, $value)
+	{
+		$this->config[$name] = $value;
+	}
+
+
+	/**
+	 * @param $name
+	 * @param $default=null
+	 * @return mixed
+	 */
+	public function getConfigAttribute($name, $default=null)
+	{
+		if(isset($this->config[$name]))
+		{
+			return $this->config[$name];
+		}
+
+		return $default;
+	}
+
+
+	/**
+	 * @param array $config
+	 * @return mixed|void
+	 */
+	public function setConfig(array $config)
+	{
+		$this->config = array_merge($this->config, $config);
+	}
+
+
+	/**
+	 * @return array
+	 */
+	public function getConfig()
+	{
+		return $this->config;
 	}
 
 }

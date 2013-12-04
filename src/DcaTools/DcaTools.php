@@ -178,23 +178,31 @@ class DcaTools
 				$config   = null;
 				$priority = 0;
 
-				// detect config
-				if(is_array($listener) && count($listener) == 2 && is_array($listener[1])) {
-					list($listener, $config) = $listener;
-				}
-
-				// detect priority
-				if(is_array($listener) && count($listener) === 2 && is_int($listener[1])) {
-					list($listener, $priority) = $listener;
+				// detect config and priority
+				if(is_array($listener)) {
+					// listener, config and priority given
+					if(count($listener) == 3 && is_array($listener[1])) {
+						list($listener, $config, $priority) = $listener;
+					}
+					elseif(count($listener) == 2) {
+						// listener and config given
+						if(is_array($listener[1])) {
+							list($listener, $config) = $listener;
+						}
+						// listener and priority given
+						elseif(is_callable($listener[0]) && is_int($listener[1])) {
+							list($listener, $priority) = $listener;
+						}
+					}
 				}
 
 				// create configurable listener
 				if($config) {
-					$listener = Helper\EventListener::createConfigurableListener($listener, $config, $priority);
+					$listener = Helper\EventListener::createConfigurableListener($listener, $config);
 				}
 
-				$this->dispatcher->addListener($event, $listener);
-				$chunks = explode(',', $event);
+				$this->dispatcher->addListener($event, $listener, $priority);
+				$chunks = explode('.', $event);
 
 				if(isset($chunks[2])) {
 					if($chunks[2] == 'operation') {
@@ -345,10 +353,8 @@ class DcaTools
 
 			if(isset($config['button_callback']))
 			{
-				$this->getEventDispatcher()->addListener(
-					'dcatools.operation.' . $operation,
-					function($objEvent) use($config)
-					{
+				$this->addOperationListener($operation,
+					function ($objEvent) use($config) {
 						ContaoListener::generateOperation($objEvent, $config['button_callback']);
 					},
 					static::PRIORITY_LOW
@@ -376,10 +382,7 @@ class DcaTools
 
 			if(isset($config['button_callback']))
 			{
-				$this->getEventDispatcher()->addListener(
-					'dcatools.operation.' . $operation,
-					function($objEvent) use($config)
-					{
+				$this->addGlobalOperationListener($operation, function ($objEvent) use($config) {
 						ContaoListener::generateOperation($objEvent, $config['button_callback']);
 					},
 					static::PRIORITY_LOW

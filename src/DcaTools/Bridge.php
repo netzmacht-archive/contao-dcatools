@@ -49,7 +49,7 @@ class Bridge
 	public function callbackInitialize($dc)
 	{
 		$table = get_class($dc) == 'DcGeneral\DC_General' ? $dc->getTable() : $dc->table;
-		$model = ModelFactory::byDc($dc);
+		$model = ModelFactory::byDc($dc, true);
 
 		$controller = $controller = DcaTools::getInstance($table);
 		$controller->initialize($model);

@@ -323,17 +323,22 @@ class Property extends Node implements PropertyInterface
 			case 'load':
 			case 'save':
 				$name .= '_callback';
+				// no break
+
+			case 'xlabel':
 				$this->definition[$name][] = $callback;
 				break;
 
 			case 'inputField':
 				$name = 'input_field';
-
 				// no break
 
 			case 'options':
 			case 'input_field':
 				$name .= '_callback';
+				// no break
+
+			case 'wizard':
 				$this->definition[$name] = $callback;
 				break;
 		}

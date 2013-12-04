@@ -66,7 +66,7 @@ class View implements ViewInterface
 	 */
 	public function setHref($href)
 	{
-		$this->template->href = $href;
+		$this->template->href = specialchars($href);
 	}
 
 
@@ -84,7 +84,7 @@ class View implements ViewInterface
 	 */
 	public function setLabel($label)
 	{
-		$this->template->label = $label;
+		$this->template->label = specialchars($label);
 	}
 
 
@@ -111,7 +111,7 @@ class View implements ViewInterface
 	 */
 	public function setTitle($title)
 	{
-		$this->template->title = $title;
+		$this->template->title = specialchars($title);
 	}
 
 
@@ -138,7 +138,7 @@ class View implements ViewInterface
 	 */
 	public function setIcon($icon)
 	{
-		$this->template->icon = $icon;
+		$this->template->icon = specialchars($icon);
 	}
 
 
@@ -174,7 +174,7 @@ class View implements ViewInterface
 	 */
 	public function setDisabled($disabled)
 	{
-		$this->template->disabled = $disabled;
+		$this->template->disabled = (bool) $disabled;
 	}
 
 

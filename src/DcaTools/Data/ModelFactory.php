@@ -28,15 +28,16 @@ class ModelFactory
 	 * @param $tableName
 	 * @param $id
 	 * @param null $row
+	 * @param bool $empty
 	 * @return \DcGeneral\Data\ModelInterface
 	 */
-	public static function create($tableName, $id, $row=null)
+	public static function create($tableName, $id, $row=null, $empty=false)
 	{
 		/** @var \DcaTools\Data\DriverManagerInterface $manager */
 		$manager = $GLOBALS['container']['dcatools.driver-manager'];
 		$driver  = $manager->getDataProvider($tableName);
 
-		if($row) {
+		if($row !== null) {
 			if(is_object($row)) {
 				$row = $row->row();
 			}
@@ -49,6 +50,10 @@ class ModelFactory
 			$model = ConfigBuilder::create($driver)->setId($id)->fetch();
 		}
 
+		if(!$model && $empty) {
+			$model = $driver->getEmptyModel();
+		}
+
 		return $model;
 	}
 
@@ -57,9 +62,11 @@ class ModelFactory
 	 * Create a row by passing the DC
 	 *
 	 * @param $dc
+	 * @param bool $empty
+	 *
 	 * @return \DcGeneral\Data\ModelInterface
 	 */
-	public static function byDc($dc)
+	public static function byDc($dc, $empty=false)
 	{
 		if($dc instanceof DC_General) {
 			$model = $dc->getEnvironment()->getCurrentModel();
@@ -68,11 +75,14 @@ class ModelFactory
 				return $model;
 			}
 			else {
-				return static::create($dc->getName(), $dc->getId());
+				$model = static::create($dc->getName(), $dc->getId(), $empty);
 			}
 		}
+		else {
+			$model = static::create($dc->table, $dc->id, $dc->activeRecord, $empty);
+		}
 
-		return static::create($dc->table, $dc->id, $dc->activeRecord);
+		return $model;
 	}
 
 

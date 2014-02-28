@@ -12,6 +12,7 @@
 
 namespace DcaTools\Listener;
 
+use DcaTools\Definition;
 use DcaTools\Event\GenerateEvent;
 
 
@@ -27,27 +28,23 @@ class ContaoListener
 		$objCallback = new $arrCallback[0]();
 
 		/** @var \DcaTools\Component\Operation\View $objView */
-		$controller = $objEvent->getController();
-		$objView    = $controller->getView();
-
-		/** @var \DcaTools\Definition\DataContainer $objDataContainer */
-		$objDataContainer = $controller->getDefinition()->getDataContainer();
+		$objView    = $objEvent->getView();
 
 		// $arrRow, $v['href'], $label, $title, $v['icon'], $attributes, $strTable, $arrRootIds, $arrChildRecordIds, $blnCircularReference, $strPrevious, $strNext
 		$strBuffer = $objCallback->{$arrCallback[1]}
 		(
-			$objEvent->getController()->getModel() ? $objEvent->getController()->getModel()->getPropertiesAsArray() : array(),
+			$objEvent->getModel() ? $objEvent->getModel()->getPropertiesAsArray() : array(),
 			$objView->getHref(),
 			$objView->getLabel(),
 			$objView->getTitle(),
 			$objView->getIcon(),
 			$objView->getAttributes(),
-			$controller->getConfigAttribute('table', $objDataContainer->getName()),
-			$controller->getConfigAttribute('rootIds', array()),
-			$controller->getConfigAttribute('childRecordIds', array()),
-			$controller->getConfigAttribute('circularReference', false),
-			$controller->getConfigAttribute('previous'),
-			$controller->getConfigAttribute('next')
+			$objEvent->getConfigAttribute('table', $objEvent->getModel() ? $objEvent->getModel()->getProviderName() : null),
+			$objEvent->getConfigAttribute('rootIds', array()),
+			$objEvent->getConfigAttribute('childRecordIds', array()),
+			$objEvent->getConfigAttribute('circularReference', false),
+			$objEvent->getConfigAttribute('previous'),
+			$objEvent->getConfigAttribute('next')
 		);
 
 		if($strBuffer == '') {

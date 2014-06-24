@@ -9,8 +9,8 @@
 
 require_once dirname(__FILE__) . '/bootstrap.php';
 
-use DcaTools\Definition\DataContainer;
-use DcaTools\Definition;
+use deprecated\DcaTools\Definition\DataContainer;
+use deprecated\DcaTools\Definition;
 
 $GLOBALS['TL_DCA']['tl_test'] = array();
 

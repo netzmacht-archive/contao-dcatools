@@ -7,7 +7,7 @@
  * To change this template use File | Settings | File Templates.
  */
 
-use DcaTools\Definition;
+use deprecated\DcaTools\Definition;
 
 class SubPaletteTest extends PHPUnit_Framework_TestCase
 {

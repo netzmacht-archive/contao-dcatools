@@ -10,9 +10,16 @@
  * @copyright 2013 netzmacht creative David Molineus
  */
 
-/**
- * driver manager
- */
-$GLOBALS['container']['dcatools.driver-manager'] = $GLOBALS['container']->share(function() {
-	return new \deprecated\DcaTools\Data\DriverManager();
-});
+namespace deprecated\DcaTools\Data;
+
+
+interface DriverManagerInterface
+{
+
+	/**
+	 * @param $name
+	 * @return \DcGeneral\Data\DriverInterface
+	 */
+	public function getDataProvider($name);
+
+} 

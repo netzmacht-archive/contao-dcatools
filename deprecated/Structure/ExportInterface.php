@@ -10,9 +10,24 @@
  * @copyright 2013 netzmacht creative David Molineus
  */
 
+namespace deprecated\DcaTools\Structure;
+
 /**
- * driver manager
+ * Class Exportable
+ * @package DcaTools\Node
  */
-$GLOBALS['container']['dcatools.driver-manager'] = $GLOBALS['container']->share(function() {
-	return new \deprecated\DcaTools\Data\DriverManager();
-});
+interface ExportInterface
+{
+
+	/**
+	 * @return mixed
+	 */
+	public function asString();
+
+
+	/**
+	 * @return mixed
+	 */
+	public function asArray();
+
+}

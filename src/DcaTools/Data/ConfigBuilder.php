@@ -10,10 +10,12 @@
  * @copyright 2013 netzmacht creative David Molineus
  */
 
-namespace deprecated\DcaTools\Data;
+namespace DcaTools\Data;
 
-use DcGeneral\Data\DCGE;
-use DcGeneral\Data\DriverInterface;
+use ContaoCommunityAlliance\DcGeneral\Data\ConfigInterface;
+use ContaoCommunityAlliance\DcGeneral\Data\DCGE;
+use ContaoCommunityAlliance\DcGeneral\Data\DataProviderInterface;
+use ContaoCommunityAlliance\DcGeneral\EnvironmentInterface;
 
 
 /**
@@ -26,12 +28,12 @@ class ConfigBuilder
 {
 
 	/**
-	 * @var \DcGeneral\Data\DriverInterface
+	 * @var DataProviderInterface
 	 */
-	protected $driver;
+	protected $provider;
 
 	/**
-	 * @var \DcGeneral\Data\ConfigInterface
+	 * @var ConfigInterface
 	 */
 	protected $config;
 
@@ -52,24 +54,29 @@ class ConfigBuilder
 
 
 	/**
-	 * @param DriverInterface $driver
+	 * @param DataProviderInterface $dataProvider
 	 */
-	public function __construct(DriverInterface $driver)
+	public function __construct(DataProviderInterface $dataProvider)
 	{
-		$this->driver = $driver;
-		$this->config = $driver->getEmptyConfig();
+		$this->provider = $dataProvider;
+		$this->config   = $dataProvider->getEmptyConfig();
 	}
 
 
 	/**
 	 * Create instance
 	 *
-	 * @param DriverInterface $driver
+	 * @param DataProviderInterface|EnvironmentInterface $environmentOrDataProvider
+	 * @param string|null $source
 	 * @return static
 	 */
-	public static function create(DriverInterface $driver)
+	public static function create($environmentOrDataProvider, $source=null)
 	{
-		return new static($driver);
+		if($environmentOrDataProvider instanceof EnvironmentInterface) {
+			$environmentOrDataProvider = $environmentOrDataProvider->getDataProvider($source);
+		}
+
+		return new static($environmentOrDataProvider);
 	}
 
 
@@ -316,7 +323,7 @@ class ConfigBuilder
 	/**
 	 * Get the config object
 	 *
-	 * @return \DcGeneral\Data\ConfigInterface
+	 * @return ConfigInterface
 	 */
 	public function getConfig()
 	{
@@ -341,7 +348,7 @@ class ConfigBuilder
 	 */
 	public function fetch()
 	{
-		return $this->driver->fetch($this->getConfig());
+		return $this->provider->fetch($this->getConfig());
 	}
 
 
@@ -350,7 +357,7 @@ class ConfigBuilder
 	 */
 	public function fetchAll()
 	{
-		return $this->driver->fetchAll($this->getConfig());
+		return $this->provider->fetchAll($this->getConfig());
 	}
 
 
@@ -361,13 +368,13 @@ class ConfigBuilder
 	public function delete()
 	{
 		if($this->config->getId()) {
-			$this->driver->delete($this->getConfig());
+			$this->provider->delete($this->getConfig());
 		}
 		else {
 			$this->idOnly(true);
 
 			foreach($this->fetchAll() as $item) {
-				$this->driver->delete($item);
+				$this->provider->delete($item);
 			}
 		}
 	}
@@ -378,7 +385,7 @@ class ConfigBuilder
 	 */
 	public function getCount()
 	{
-		return $this->driver->getCount($this->getConfig());
+		return $this->provider->getCount($this->getConfig());
 	}
 
 }

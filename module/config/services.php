@@ -9,10 +9,20 @@
  * @license   LGPL-3.0+
  * @copyright 2013 netzmacht creative David Molineus
  */
+use ContaoCommunityAlliance\Translator\Contao\LangArrayTranslator;
+use ContaoCommunityAlliance\Translator\TranslatorChain;
 
 /**
  * driver manager
  */
-$GLOBALS['container']['dcatools.driver-manager'] = $GLOBALS['container']->share(function() {
-	return new \deprecated\DcaTools\Data\DriverManager();
+
+/** @var \Pimple $container */
+$container = $GLOBALS['container'];
+
+
+$container['dcatools.translator'] = $container->share(function(\Pimple $c) {
+	$translator = new TranslatorChain();
+	$translator->add(new LangArrayTranslator($c['event-dispatcher']));
+
+	return $translator;
 });

@@ -12,6 +12,7 @@
 
 namespace deprecated\DcaTools\Data;
 
+use DcaTools\Data\ConfigBuilder;
 use DcGeneral\Data\ModelInterface;
 use DcGeneral\DC_General;
 

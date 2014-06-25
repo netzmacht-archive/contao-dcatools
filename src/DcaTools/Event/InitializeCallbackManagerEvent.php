@@ -12,45 +12,63 @@
 namespace DcaTools\Event;
 
 
-use DcaTools\Dca\Callback\CallbackManager;
 use Symfony\Component\EventDispatcher\Event;
+
 
 class InitializeCallbackManagerEvent extends Event
 {
 	const NAME = 'dcatools.initialize-callback-manager';
 
 	/**
-	 * @var CallbackManager
+	 * @var string
 	 */
-	private $callbackManager;
+	private $dataContainerName;
+
+	/**
+	 * @var array
+	 */
+	private $callbacks=array();
 
 
 	/**
-	 * @param CallbackManager $callbackManager
+	 * @param string $dataContainerName
 	 */
-	function __construct(CallbackManager $callbackManager)
+	function __construct($dataContainerName)
 	{
-		$this->callbackManager = $callbackManager;
+		$this->dataContainerName = $dataContainerName;
 	}
 
 
 	/**
-	 * @param \DcaTools\Dca\Callback\CallbackManager $callbackManager
+	 * @return string
 	 */
-	public function setCallbackManager($callbackManager)
+	public function getDataContainerName()
 	{
-		$this->callbackManager = $callbackManager;
+		return $this->dataContainerName;
 	}
 
 
 	/**
-	 * @return \DcaTools\Dca\Callback\CallbackManager
+	 * @param $callback
+	 * @param null $for
 	 */
-	public function getCallbackManager()
+	public function enableCallback($callback, $for=null)
 	{
-		return $this->callbackManager;
+		if(!isset($this->callbacks[$callback])) {
+			$this->callbacks[$callback] = array();
+		}
+
+		if($for) {
+			$this->callbacks[$callback][] = $for;
+		}
 	}
 
-
+	/**
+	 * @return array
+	 */
+	public function getCallbacks()
+	{
+		return $this->callbacks;
+	}
 
 } 

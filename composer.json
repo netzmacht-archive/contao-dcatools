@@ -1,41 +1,49 @@
 {
-    "name":"netzmacht/contao-dcatools",
-    "description":"",
-    "keywords":["dca", "datacontainer", "palettes", "devtool"],
-    "type":"contao-module",
-    "license":"LGPL-3.0+",
-    "authors":[
+    "name": "netzmacht/contao-dcatools",
+    "description": "",
+    "keywords": [
+        "dca",
+        "datacontainer",
+        "palettes",
+        "devtool"
+    ],
+    "type": "contao-module",
+    "license": "LGPL-3.0+",
+    "authors": [
         {
-            "name":"David Molineus",
-            "email":"mail@netzmacht.de",
-            "homepage":"http://www.netzmacht.de",
-            "role":"Project leader"
+            "name": "David Molineus",
+            "email": "mail@netzmacht.de",
+            "homepage": "http://www.netzmacht.de",
+            "role": "Project leader"
         }
     ],
-    "require":{
-        "php":">=5.3",
-        "contao/core":">=3.1,<3.3",
-        "contao-community-alliance/dependency-container":">=1.3.x-dev",
-        "contao-community-alliance/event-dispatcher":">=1.0.x-dev",
-        "beberlei/assert":"~2.0"
+    "require": {
+        "php": ">=5.3",
+        "contao/core": ">=3.1,<3.4",
+        "contao-community-alliance/dc-general": "dev-develop",
+        "contao-community-alliance/dependency-container": ">=1.3.x-dev",
+        "contao-community-alliance/event-dispatcher": ">=1.0.x-dev",
+        "beberlei/assert": "~2.0"
     },
     "require-dev": {
         "phpspec/phpspec": "dev-develop",
-        "henrikbjorn/phpspec-code-coverage" : "~0.1.0"
+        "henrikbjorn/phpspec-code-coverage": "~0.1.0"
     },
-    "autoload":{
-        "psr-0":{
-            "DcaTools" : "src/"
+    "autoload": {
+        "psr-0": {
+            "DcaTools": "src/"
         }
     },
-    "extra":{
+    "extra": {
         "contao": {
-            "sources":{
-                "module":"system/modules/dcatools"
+            "sources": {
+                "module": "system/modules/dcatools"
             }
         }
     },
+    "minimum-stability": "dev",
     "config": {
-        "bin-dir": "bin"
+        "bin-dir": "bin",
+        "component-dir": "../assets/components"
     }
 }

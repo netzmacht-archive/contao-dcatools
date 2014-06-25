@@ -19,6 +19,10 @@
         "contao-community-alliance/event-dispatcher":">=1.0.x-dev",
         "beberlei/assert":"~2.0"
     },
+    "require-dev": {
+        "phpspec/phpspec": "dev-develop",
+        "henrikbjorn/phpspec-code-coverage" : "~0.1.0"
+    },
     "autoload":{
         "psr-0":{
             "DcaTools" : "src/"
@@ -30,5 +34,8 @@
                 "module":"system/modules/dcatools"
             }
         }
+    },
+    "config": {
+        "bin-dir": "bin"
     }
 }

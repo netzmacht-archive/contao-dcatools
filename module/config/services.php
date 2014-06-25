@@ -19,6 +19,9 @@ use ContaoCommunityAlliance\Translator\TranslatorChain;
 /** @var \Pimple $container */
 $container = $GLOBALS['container'];
 
+$container['dcatools.event-propagator'] = $container->share(function(\Pimple $c) {
+	return new \ContaoCommunityAlliance\DcGeneral\Event\EventPropagator($c['event-dispatcher']);
+});
 
 $container['dcatools.translator'] = $container->share(function(\Pimple $c) {
 	$translator = new TranslatorChain();

@@ -12,7 +12,6 @@
 namespace DcaTools\Dca\Callback;
 
 use ContaoCommunityAlliance\DcGeneral\Contao\Callback\Callbacks;
-use ContaoCommunityAlliance\DcGeneral\Contao\Compatibility\DcCompat;
 use ContaoCommunityAlliance\DcGeneral\Contao\DataDefinition\Definition\Contao2BackendViewDefinitionInterface;
 use ContaoCommunityAlliance\DcGeneral\Contao\View\Contao2BackendView\Event\BuildWidgetEvent;
 use ContaoCommunityAlliance\DcGeneral\Contao\View\Contao2BackendView\Event\DecodePropertyValueForWidgetEvent;
@@ -82,20 +81,6 @@ class CallbackDispatcher
 	 */
 	public function containerGlobalButton($key, $href, $label, $title, $class, $attributes)
 	{
-		$dataContainerName = $this->dcGeneral->getEnvironment()->getDataDefinition()->getName();
-
-		if($this->hasLegacyCallbacks($dataContainerName, GetGlobalButtonEvent::NAME)) {
-			$html = null;
-
-			foreach($this->callbacks[$dataContainerName][GetGlobalButtonEvent::NAME] as $callback) {
-				$html = Callbacks::call($callback, $href, $label, $title, $class, $attributes);
-			}
-
-			if(!is_null($html)) {
-				return $html;
-			}
-		}
-
 		$environment = $this->dcGeneral->getEnvironment();
 		$event 		 = new GetGlobalButtonEvent($environment);
 
@@ -135,10 +120,6 @@ class CallbackDispatcher
 	 */
 	public function containerOnCopy($id, \DataContainer $dc)
 	{
-		if($this->isRecursionDetected($dc)) {
-			return;
-		}
-
 		$environment = $this->dcGeneral->getEnvironment();
 		$sourceModel = ModelFacade::byDc($environment, $dc);
 		$oldModel    = ModelFacade::byId($environment, $id);
@@ -153,10 +134,6 @@ class CallbackDispatcher
 	 */
 	public function containerOnCut(\DataContainer $dc)
 	{
-		if($this->isRecursionDetected($dc)) {
-			return;
-		}
-
 		$environment = $this->dcGeneral->getEnvironment();
 		$model       = ModelFacade::byDc($environment, $dc);
 		$event 		 = new PostPasteModelEvent($environment, $model);
@@ -171,17 +148,13 @@ class CallbackDispatcher
 	 */
 	public function containerOnDelete(\DataContainer $dc, $undoId)
 	{
-		if($this->isRecursionDetected($dc)) {
-			return;
-		}
-
 		$environment = $this->dcGeneral->getEnvironment();
 		$model 		 = ModelFacade::byDc($environment, $dc);
 		$model->setMeta('last-undo-id', $undoId);
 
 		$event 		 = new PostDeleteModelEvent($environment, $model);
 
-		$environment->getEventPropagator()->propagate($event::NAME, $event);
+		$environment->getEventPropagator()->propagate($event::NAME, $event, array($environment->getDataDefinition()->getName()));
 	}
 
 
@@ -190,10 +163,6 @@ class CallbackDispatcher
 	 */
 	public function containerOnLoad(\DataContainer $dc)
 	{
-		if($this->isRecursionDetected($dc)) {
-			return;
-		}
-
 		$environment = $this->dcGeneral->getEnvironment();
 		$model 		 = ModelFacade::byDc($environment, $dc);
 		$event 		 = new CreateDcGeneralEvent($environment, $model);
@@ -214,10 +183,6 @@ class CallbackDispatcher
 	 */
 	public function containerPasteButton(\DataContainer $dc, $row, $dataContainerName, $circularReference, $containedIds, $previous=null, $next=null)
 	{
-		if($this->isRecursionDetected($dc)) {
-			return '';
-		}
-
 		$environment = $this->dcGeneral->getEnvironment();
 		$model 		 = ModelFacade::ByArray($environment, $row);
 		$event       = new GetPasteButtonEvent($environment);
@@ -252,10 +217,6 @@ class CallbackDispatcher
 	 */
 	public function containerOnSubmit(\DataContainer $dc)
 	{
-		if($this->isRecursionDetected($dc)) {
-			return;
-		}
-
 		$environment = $this->dcGeneral->getEnvironment();
 		$model 		 = ModelFacade::byDc($environment, $dc);
 		$event 		 = new PostPersistModelEvent($environment, $model);
@@ -308,10 +269,6 @@ class CallbackDispatcher
 	 */
 	public function modelLabel($row, $label, \DataContainer $dc, $arguments=null)
 	{
-		if($this->isRecursionDetected($dc)) {
-			return $label;
-		}
-
 		$environment = $this->dcGeneral->getEnvironment();
 		$model 		 = ModelFacade::ByArray($environment, $row);
 		$event		 = new ModelToLabelEvent($environment, $model);
@@ -319,7 +276,7 @@ class CallbackDispatcher
 		$event->setLabel($label);
 		$event->setArgs($arguments);
 
-		$environment->getEventPropagator()->propagate($event::NAME, $event);
+		$environment->getEventPropagator()->propagate($event::NAME, $event, array($environment->getDataDefinition()->getName()));
 
 		return $event->getLabel();
 	}
@@ -343,18 +300,6 @@ class CallbackDispatcher
 	 */
 	public function modelOperationButton($key, $row, $href, $label, $title, $icon, $attributes, $dataContainerName, $rootEntries=null, $childRecordIds=null, $circularReference=null, $previous=null, $next=null)
 	{
-		if($this->hasLegacyCallbacks($dataContainerName, GetGroupHeaderEvent::NAME)) {
-			$html = null;
-
-			foreach($this->callbacks[$dataContainerName][GetGlobalButtonEvent::NAME] as $callback) {
-				$html = Callbacks::call($callback, $row, $href, $label, $title, $icon, $attributes, $dataContainerName, $rootEntries, $childRecordIds, $circularReference, $previous, $next);
-			}
-
-			if(!is_null($html)) {
-				return $html;
-			}
-		}
-
 		$environment = $this->dcGeneral->getEnvironment();
 		$model 		 = ModelFacade::ByArray($environment, $row);
 		$event		 = new GetOperationButtonEvent($environment);
@@ -369,6 +314,7 @@ class CallbackDispatcher
 			->getCommandNamed($key);
 
 		$event
+			->setKey($key)
 			->setCommand($command)
 			->setObjModel($model)
 			->setAttributes($attributes)
@@ -380,7 +326,7 @@ class CallbackDispatcher
 			->setPrevious($previous)
 			->setNext($next);
 
-		$environment->getEventPropagator()->propagate($event::NAME, $event);
+		$environment->getEventPropagator()->propagate($event::NAME, $event, array($dataContainerName, $key));
 
 		return $event->getHtml();
 	}
@@ -392,22 +338,6 @@ class CallbackDispatcher
 	 */
 	public function modelOptionsCallback(\DataContainer $dc)
 	{
-		if($this->isRecursionDetected($dc)) {
-			return array();
-		}
-
-		if($this->hasLegacyCallbacks($dc->name, GetGroupHeaderEvent::NAME)) {
-			$options = null;
-
-			foreach($this->callbacks[$dc->name][GetGroupHeaderEvent::NAME] as $callback) {
-				$options = Callbacks::call($callback, $dc);
-			}
-
-			if(!is_null($options)) {
-				return $options;
-			}
-		}
-
 		$environment = $this->dcGeneral->getEnvironment();
 		$model       = ModelFacade::byDc($environment, $dc);
 		$event		 = new GetPropertyOptionsEvent($environment, $model);
@@ -425,22 +355,6 @@ class CallbackDispatcher
 	 */
 	public function propertyInputField($property, \DataContainer $dc)
 	{
-		if($this->isRecursionDetected($dc)) {
-			return null;
-		}
-
-		if($this->hasLegacyCallbacks($dc->name, BuildWidgetEvent::NAME)) {
-			$widget = null;
-
-			foreach($this->callbacks[$dc->name][BuildWidgetEvent::NAME] as $callback) {
-				$widget = Callbacks::call($callback, $property, $dc);
-			}
-
-			if(!is_null($widget)) {
-				return $widget;
-			}
-		}
-
 		$environment = $this->dcGeneral->getEnvironment();
 		$model		 = ModelFacade::byDc($environment, $dc);
 		$event 		 = new BuildWidgetEvent($environment, $model, $property);
@@ -458,10 +372,6 @@ class CallbackDispatcher
 	 */
 	public function propertyOnLoad($value, \DataContainer $dc)
 	{
-		if($this->isRecursionDetected($dc)) {
-			return $value;
-		}
-
 		$environment = $this->dcGeneral->getEnvironment();
 		$model		 = ModelFacade::byDc($environment, $dc);
 		$event 		 = new DecodePropertyValueForWidgetEvent($environment, $model);
@@ -482,10 +392,6 @@ class CallbackDispatcher
 	 */
 	public function propertyOnSave($value, \DataContainer $dc)
 	{
-		if($this->isRecursionDetected($dc)) {
-			return $value;
-		}
-
 		$environment = $this->dcGeneral->getEnvironment();
 		$model		 = ModelFacade::byDc($environment, $dc);
 		$event 		 = new EncodePropertyValueFromWidgetEvent($environment, $model);
@@ -496,31 +402,6 @@ class CallbackDispatcher
 		$environment->getEventPropagator()->propagate($event::NAME, $event);
 
 		return $event->getValue();
-	}
-
-
-	/**
-	 * @param \DataContainer $dc
-	 * @return bool
-	 */
-	private function isRecursionDetected(\DataContainer $dc)
-	{
-		return ($dc instanceof DcCompat);
-	}
-
-
-	/**
-	 * @param $dataContainerName
-	 * @param $eventName
-	 * @return bool
-	 */
-	private function hasLegacyCallbacks($dataContainerName, $eventName)
-	{
-		if(!isset($this->callbacks[$dataContainerName])) {
-			return false;
-		}
-
-		return !isset($this->callbacks[$dataContainerName][$eventName]);
 	}
 
 }

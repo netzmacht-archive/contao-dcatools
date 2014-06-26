@@ -35,7 +35,7 @@ class CallbackManager
 	 */
 	function __construct($callbackClass)
 	{
-		$this->callbackClass	  = $callbackClass;
+		$this->callbackClass = $callbackClass;
 	}
 
 
@@ -56,56 +56,6 @@ class CallbackManager
 		}
 
 		return $this;
-	}
-
-
-	/**
-	 * @param $dataContainerName
-	 * @param $name
-	 * @param $callback
-	 * @return string
-	 */
-	private static function getCallbackPath($callback, $dataContainerName, $name)
-	{
-		$path = '';
-
-		switch($callback) {
-			case Callback::CONTAINER_ON_CUT:
-			case Callback::CONTAINER_ON_DELETE:
-			case Callback::CONTAINER_ON_LOAD:
-			case Callback::CONTAINER_ON_SUBMIT:
-				$path = 'config/' . $dataContainerName . '/' . $callback . '_callback';
-				break;
-
-			case Callback::MODEL_OPTIONS:
-			case Callback::PROPERTY_INPUT_FIELD:
-				$path = 'fields/' . $name . '/' . $callback;
-				break;
-
-			case Callback::PROPERTY_INPUT_FIELD_GET_WIZARD:
-				$path = 'fields/' . $name . '/' . $callback;
-				break;
-
-			case Callback::CONTAINER_GLOBAL_BUTTON:
-				$path = 'list/' . $callback;
-				break;
-
-			case Callback::MODEL_OPERATION_BUTTON:
-				$path = 'list/operations/' . $name . '/button_callback';
-				break;
-
-			case Callback::MODEL_LABEL:
-				$path = 'list/label/' . $callback . '_callback';
-				break;
-
-			case 'load':
-			case 'save':
-			case 'options':
-				$path = 'fields/' . $name . '/' . $callback . '_callback';
-				break;
-		}
-
-		return $path;
 	}
 
 
@@ -191,13 +141,11 @@ class CallbackManager
 		$last   = array_pop($chunks);
 
 		foreach($chunks as $chunk) {
-			if(isset($value[$chunk])) {
-				$current = &$value[$chunk];
-			} else {
-				$current = array();
+			if(!isset($value[$chunk])) {
+				$value[$chunk] = array();
 			}
 
-			$value = & $current;
+			$value = &$value[$chunk];
 		}
 
 		return $value[$last];
@@ -213,7 +161,7 @@ class CallbackManager
 	{
 		$path       = $this->getCallbackPath($callback, $dataContainerName, $for);
 		$definition = &$this->getCallbacksDefinition($dataContainerName, $path);
-		$method     = Callback::getCallbackMethodFromName($callback);
+		$method     = Callback::getMethodName($callback);
 
 		if($callback == Callback::MODEL_OPERATION_BUTTON || $callback == Callback::CONTAINER_GLOBAL_BUTTON) {
 			$method .= '_' . $for;

@@ -30,7 +30,6 @@ final class Callback
 	const CONTAINER_PASTE_BUTTON	  = 'paste_button';
 	const CONTAINER_PASTE_ROOT_BUTTON = 'paste_button';
 	const CONTAINER_SUBMIT_BUTTON     = 'buttons';
-	const CONTAINER_PANEL			  = 'panel';
 
 	// model callbacks
 	const MODEL_CHILD_RECORD 		  = 'child_record';
@@ -60,7 +59,7 @@ final class Callback
 	 * @param $callback
 	 * @return mixed|string
 	 */
-	public static function getCallbackMethodFromName($callback)
+	public static function getMethodName($callback)
 	{
 		$method = array_search($callback, static::getCallbacks());
 		$method = strtolower($method);
@@ -81,12 +80,79 @@ final class Callback
 	public static function isSingleCallback($callback)
 	{
 		return in_array($callback, array(
-			Callback::CONTAINER_GLOBAL_BUTTON,
-			Callback::MODEL_LABEL,
-			Callback::MODEL_OPTIONS,
-			Callback::MODEL_OPERATION_BUTTON,
-			Callback::PROPERTY_INPUT_FIELD,
+			static::CONTAINER_GLOBAL_BUTTON,
+			static::CONTAINER_PASTE_BUTTON,
+			static::CONTAINER_PASTE_ROOT_BUTTON,
+			static::MODEL_CHILD_RECORD,
+			static::MODEL_GROUP,
+			static::MODEL_LABEL,
+			static::MODEL_OPTIONS,
+			static::MODEL_OPERATION_BUTTON,
+			static::PROPERTY_INPUT_FIELD,
+			static::PROPERTY_INPUT_FIELD_GET_WIZARD,
 		));
+	}
+
+
+	/**
+	 * @param $name
+	 * @param $callback
+	 * @return string
+	 */
+	public static function getDcaPath($callback, $name=null)
+	{
+		$path = false;
+
+		switch($callback) {
+			case Callback::CONTAINER_ON_COPY:
+			case Callback::CONTAINER_ON_CUT:
+			case Callback::CONTAINER_ON_DELETE:
+			case Callback::CONTAINER_ON_LOAD:
+			case Callback::CONTAINER_ON_SUBMIT:
+				$path = 'config/' . $callback . '_callback';
+				break;
+
+			case static::CONTAINER_SUBMIT_BUTTON:
+				$path = 'edit/buttons_callback';
+				break;
+
+			case static::PROPERTY_ON_LOAD:
+			case static::PROPERTY_ON_SAVE:
+			case Callback::MODEL_OPTIONS:
+			case Callback::PROPERTY_INPUT_FIELD:
+				$path = 'fields/' . $name . '/' . $callback . '_callback';
+				break;
+
+			case Callback::PROPERTY_INPUT_FIELD_GET_WIZARD:
+				$path = 'fields/' . $name . '/' . $callback;
+				break;
+
+			case static::CONTAINER_HEADER:
+			case static::CONTAINER_PASTE_BUTTON:
+			case static::CONTAINER_PASTE_ROOT_BUTTON:
+			case static::MODEL_CHILD_RECORD:
+				$path = 'list/sorting/' . $callback . '_callback';
+				break;
+
+			case static::MODEL_GROUP:
+				$path = 'list/label/' . $callback . '_callback';
+				break;
+
+			case Callback::CONTAINER_GLOBAL_BUTTON:
+				$path = 'list/global_operations/' . $name . '/button_callback';;
+				break;
+
+			case Callback::MODEL_OPERATION_BUTTON:
+				$path = 'list/operations/' . $name . '/button_callback';
+				break;
+
+			case Callback::MODEL_LABEL:
+				$path = 'list/label/' . $callback . '_callback';
+				break;
+
+		}
+
+		return $path;
 	}
 
 }

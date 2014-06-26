@@ -11,7 +11,6 @@
 
 namespace DcaTools\Dca\Callback;
 
-use ContaoCommunityAlliance\DcGeneral\Contao\Callback\Callbacks;
 use ContaoCommunityAlliance\DcGeneral\Contao\DataDefinition\Definition\Contao2BackendViewDefinitionInterface;
 use ContaoCommunityAlliance\DcGeneral\Contao\View\Contao2BackendView\Event\BuildWidgetEvent;
 use ContaoCommunityAlliance\DcGeneral\Contao\View\Contao2BackendView\Event\DecodePropertyValueForWidgetEvent;
@@ -31,7 +30,7 @@ use ContaoCommunityAlliance\DcGeneral\Event\PostDuplicateModelEvent;
 use ContaoCommunityAlliance\DcGeneral\Event\PostPasteModelEvent;
 use ContaoCommunityAlliance\DcGeneral\Event\PostPersistModelEvent;
 use ContaoCommunityAlliance\DcGeneral\Factory\Event\CreateDcGeneralEvent;
-use DcaTools\Data\ModelFacade;
+use DcaTools\Data\ModelFactory;
 
 
 class CallbackDispatcher
@@ -50,7 +49,7 @@ class CallbackDispatcher
 	/**
 	 * @param $dcGeneral
 	 */
-	function __construct(DcGeneral $dcGeneral=null)
+	function __construct(DcGeneral $dcGeneral)
 	{
 		$this->dcGeneral = $dcGeneral;
 	}
@@ -121,8 +120,8 @@ class CallbackDispatcher
 	public function containerOnCopy($id, \DataContainer $dc)
 	{
 		$environment = $this->dcGeneral->getEnvironment();
-		$sourceModel = ModelFacade::byDc($environment, $dc);
-		$oldModel    = ModelFacade::byId($environment, $id);
+		$sourceModel = ModelFactory::create($environment, $dc);
+		$oldModel    = ModelFactory::byId($environment, $id);
 		$event 		 = new PostDuplicateModelEvent($environment, $sourceModel, $oldModel);
 
 		$environment->getEventPropagator()->propagate($event::NAME, $event);
@@ -135,7 +134,7 @@ class CallbackDispatcher
 	public function containerOnCut(\DataContainer $dc)
 	{
 		$environment = $this->dcGeneral->getEnvironment();
-		$model       = ModelFacade::byDc($environment, $dc);
+		$model       = ModelFactory::byDc($environment, $dc);
 		$event 		 = new PostPasteModelEvent($environment, $model);
 
 		$environment->getEventPropagator()->propagate($event::NAME, $event);
@@ -149,7 +148,7 @@ class CallbackDispatcher
 	public function containerOnDelete(\DataContainer $dc, $undoId)
 	{
 		$environment = $this->dcGeneral->getEnvironment();
-		$model 		 = ModelFacade::byDc($environment, $dc);
+		$model 		 = ModelFactory::byDc($environment, $dc);
 		$model->setMeta('last-undo-id', $undoId);
 
 		$event 		 = new PostDeleteModelEvent($environment, $model);
@@ -164,7 +163,7 @@ class CallbackDispatcher
 	public function containerOnLoad(\DataContainer $dc)
 	{
 		$environment = $this->dcGeneral->getEnvironment();
-		$model 		 = ModelFacade::byDc($environment, $dc);
+		$model 		 = ModelFactory::byDc($environment, $dc);
 		$event 		 = new CreateDcGeneralEvent($environment, $model);
 
 		$environment->getEventPropagator()->propagate($event::NAME, $event);
@@ -184,12 +183,12 @@ class CallbackDispatcher
 	public function containerPasteButton(\DataContainer $dc, $row, $dataContainerName, $circularReference, $containedIds, $previous=null, $next=null)
 	{
 		$environment = $this->dcGeneral->getEnvironment();
-		$model 		 = ModelFacade::ByArray($environment, $row);
+		$model 		 = ModelFactory::ByArray($environment, $row);
 		$event       = new GetPasteButtonEvent($environment);
 		$collection  = new DefaultCollection();
 
 		foreach($containedIds as $id) {
-			$collection->push(ModelFacade::byId($environment, $id));
+			$collection->push(ModelFactory::byId($environment, $id));
 		}
 
 		$environment->getClipboard()->getContainedIds();
@@ -199,11 +198,11 @@ class CallbackDispatcher
 			->setContainedModels($collection);
 
 		if($previous) {
-			$event->setPrevious(ModelFacade::byId($environment, $previous));
+			$event->setPrevious(ModelFactory::byId($environment, $previous));
 		}
 
 		if($next) {
-			$event->setNext(ModelFacade::byId($environment, $previous));
+			$event->setNext(ModelFactory::byId($environment, $previous));
 		}
 
 		$environment->getEventPropagator()->propagate($event::NAME, $event);
@@ -218,7 +217,7 @@ class CallbackDispatcher
 	public function containerOnSubmit(\DataContainer $dc)
 	{
 		$environment = $this->dcGeneral->getEnvironment();
-		$model 		 = ModelFacade::byDc($environment, $dc);
+		$model 		 = ModelFactory::byDc($environment, $dc);
 		$event 		 = new PostPersistModelEvent($environment, $model);
 
 		$environment->getEventPropagator()->propagate($event::NAME, $event);
@@ -232,7 +231,7 @@ class CallbackDispatcher
 	public function modelChildRecord($row)
 	{
 		$environment = $this->dcGeneral->getEnvironment();
-		$model 		 = ModelFacade::ByArray($environment, $row);
+		$model 		 = ModelFactory::ByArray($environment, $row);
 		$event		 = new ParentViewChildRecordEvent($environment, $model);
 
 		$environment->getEventPropagator()->propagate($event::NAME, $event);
@@ -251,7 +250,7 @@ class CallbackDispatcher
 	public function modelGroup($groupField, $groupMode, $value, $row)
 	{
 		$environment = $this->dcGeneral->getEnvironment();
-		$model 		 = ModelFacade::ByArray($environment, $row);
+		$model 		 = ModelFactory::ByArray($environment, $row);
 		$event		 = new GetGroupHeaderEvent($environment, $model, $groupField, $value, $groupMode);
 
 		$environment->getEventPropagator()->propagate($event::NAME, $event);
@@ -270,7 +269,7 @@ class CallbackDispatcher
 	public function modelLabel($row, $label, \DataContainer $dc, $arguments=null)
 	{
 		$environment = $this->dcGeneral->getEnvironment();
-		$model 		 = ModelFacade::ByArray($environment, $row);
+		$model 		 = ModelFactory::ByArray($environment, $row);
 		$event		 = new ModelToLabelEvent($environment, $model);
 
 		$event->setLabel($label);
@@ -301,8 +300,10 @@ class CallbackDispatcher
 	public function modelOperationButton($key, $row, $href, $label, $title, $icon, $attributes, $dataContainerName, $rootEntries=null, $childRecordIds=null, $circularReference=null, $previous=null, $next=null)
 	{
 		$environment = $this->dcGeneral->getEnvironment();
-		$model 		 = ModelFacade::ByArray($environment, $row);
+		$model 		 = ModelFactory::ByArray($environment, $row);
 		$event		 = new GetOperationButtonEvent($environment);
+		$previous    = $previous ? ModelFactory::byId($environment, $next, false) : null;
+		$next    	 = $next ? ModelFactory::byId($environment, $next, false) : null;
 
 		/** @var Contao2BackendViewDefinitionInterface $definition */
 		$definition = $environment
@@ -339,7 +340,7 @@ class CallbackDispatcher
 	public function modelOptionsCallback(\DataContainer $dc)
 	{
 		$environment = $this->dcGeneral->getEnvironment();
-		$model       = ModelFacade::byDc($environment, $dc);
+		$model       = ModelFactory::byDc($environment, $dc);
 		$event		 = new GetPropertyOptionsEvent($environment, $model);
 
 		$environment->getEventPropagator()->propagate($event::NAME, $event);
@@ -356,7 +357,7 @@ class CallbackDispatcher
 	public function propertyInputField($property, \DataContainer $dc)
 	{
 		$environment = $this->dcGeneral->getEnvironment();
-		$model		 = ModelFacade::byDc($environment, $dc);
+		$model		 = ModelFactory::byDc($environment, $dc);
 		$event 		 = new BuildWidgetEvent($environment, $model, $property);
 
 		$environment->getEventPropagator()->propagate($event::NAME, $event);
@@ -373,7 +374,7 @@ class CallbackDispatcher
 	public function propertyOnLoad($value, \DataContainer $dc)
 	{
 		$environment = $this->dcGeneral->getEnvironment();
-		$model		 = ModelFacade::byDc($environment, $dc);
+		$model		 = ModelFactory::byDc($environment, $dc);
 		$event 		 = new DecodePropertyValueForWidgetEvent($environment, $model);
 		$event
 			->setValue($value)
@@ -393,7 +394,7 @@ class CallbackDispatcher
 	public function propertyOnSave($value, \DataContainer $dc)
 	{
 		$environment = $this->dcGeneral->getEnvironment();
-		$model		 = ModelFacade::byDc($environment, $dc);
+		$model		 = ModelFactory::byDc($environment, $dc);
 		$event 		 = new EncodePropertyValueFromWidgetEvent($environment, $model);
 		$event
 			->setValue($value)

@@ -29,9 +29,9 @@ final class ModelFactory
 	 * @param \DataContainer $dc
 	 * @return ModelInterface
 	 */
-	public function createByDc(EnvironmentInterface $environment, \DataContainer $dc)
+	public static function createByDc(EnvironmentInterface $environment, \DataContainer $dc)
 	{
-		return $this->createbyDatabaseResult($environment->getDataDefinition()->getName(), $dc->activeRecord);
+		return static::createbyDatabaseResult($environment->getDataDefinition()->getName(), $dc->activeRecord);
 	}
 
 
@@ -40,7 +40,7 @@ final class ModelFactory
 	 * @param \Database\Result $result
 	 * @return ModelInterface
 	 */
-	public function createByDatabaseResult($dataContainerName, \Database\Result $result)
+	public static function createByDatabaseResult($dataContainerName, \Database\Result $result)
 	{
 		return new ActiveRecordModelDecorator($dataContainerName, $result);
 	}
@@ -50,7 +50,7 @@ final class ModelFactory
 	 * @param \Model $model
 	 * @return ModelInterface
 	 */
-	public function createByLegacyModel(\Model $model)
+	public static function createByLegacyModel(\Model $model)
 	{
 		return new ActiveRecordModelDecorator($model->getTable(), $model->getResult());
 	}
@@ -62,7 +62,7 @@ final class ModelFactory
 	 * @param bool $fetch
 	 * @return ModelInterface
 	 */
-	public function createById(EnvironmentInterface $environment, $id, $fetch=true)
+	public static function createById(EnvironmentInterface $environment, $id, $fetch=true)
 	{
 		if($fetch) {
 			return ConfigBuilder::create($environment)->setId($id)->fetch();
@@ -81,7 +81,7 @@ final class ModelFactory
 	 * @param $row
 	 * @return ModelInterface
 	 */
-	public function createByArray(EnvironmentInterface $environment, $row)
+	public static function createByArray(EnvironmentInterface $environment, $row)
 	{
 		$model = $environment->getDataProvider()->getEmptyModel();
 		$model->setPropertiesAsArray($row);

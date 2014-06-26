@@ -10,11 +10,13 @@ use ContaoCommunityAlliance\DcGeneral\EnvironmentInterface;
 use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
 
+// How I love the Contao autoloader....
 class_alias('Contao\System', 'System');
 class_alias('Contao\Controller', 'Controller');
 class_alias('Contao\Backend', 'Backend');
 class_alias('Contao\DataContainer', 'DataContainer');
 class_alias('Contao\Database\Result', 'Database\Result');
+
 
 class ModelFactorySpec extends ObjectBehavior
 {
@@ -27,8 +29,7 @@ class ModelFactorySpec extends ObjectBehavior
 		DataProviderInterface $dataProvider,
 		ModelInterface $model,
 		ConfigInterface $config
-	)
-	{
+	) {
 		$dataDefinition->getName()->willReturn(static::CONTAINER_NAME);
 
 		$dataProvider->getEmptyModel()->willReturn($model);
@@ -60,20 +61,15 @@ class ModelFactorySpec extends ObjectBehavior
 		$this->createById($environment, static::ID, false)->shouldReturn($model);
 	}
 
-	function it_creates_model_from_legacy_data_container(
-		EnvironmentInterface $environment,
-		\DataContainer $dc,
-		\Database\Result $result
-	) {
+	function it_creates_model_from_legacy_dc(EnvironmentInterface $environment,	\DataContainer $dc,	\Database\Result $result)
+	{
 		$dc->activeRecord = $result;
 
 		$this->createByDc($environment, $dc)->shouldHaveType('ContaoCommunityAlliance\DcGeneral\Data\ModelInterface');
 	}
 
-	function it_creates_model_from_database_result(
-		EnvironmentInterface $environment,
-		\Database\Result $result
-	) {
+	function it_creates_model_from_database_result(EnvironmentInterface $environment, \Database\Result $result)
+	{
 		$this->createByDatabaseResult($environment, $result)->shouldHaveType('ContaoCommunityAlliance\DcGeneral\Data\ModelInterface');
 	}
 }

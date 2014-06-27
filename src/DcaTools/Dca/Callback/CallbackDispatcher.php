@@ -11,19 +11,21 @@
 
 namespace DcaTools\Dca\Callback;
 
+use ContaoCommunityAlliance\Contao\Bindings\ContaoEvents;
+use ContaoCommunityAlliance\Contao\Bindings\Events\Backend\AddToUrlEvent;
 use ContaoCommunityAlliance\DcGeneral\Contao\DataDefinition\Definition\Contao2BackendViewDefinitionInterface;
 use ContaoCommunityAlliance\DcGeneral\Contao\View\Contao2BackendView\Event\BuildWidgetEvent;
 use ContaoCommunityAlliance\DcGeneral\Contao\View\Contao2BackendView\Event\DecodePropertyValueForWidgetEvent;
 use ContaoCommunityAlliance\DcGeneral\Contao\View\Contao2BackendView\Event\EncodePropertyValueFromWidgetEvent;
 use ContaoCommunityAlliance\DcGeneral\Contao\View\Contao2BackendView\Event\GetGlobalButtonEvent;
 use ContaoCommunityAlliance\DcGeneral\Contao\View\Contao2BackendView\Event\GetGroupHeaderEvent;
-use ContaoCommunityAlliance\DcGeneral\Contao\View\Contao2BackendView\Event\GetOperationButtonEvent;
 use ContaoCommunityAlliance\DcGeneral\Contao\View\Contao2BackendView\Event\GetParentHeaderEvent;
 use ContaoCommunityAlliance\DcGeneral\Contao\View\Contao2BackendView\Event\GetPasteButtonEvent;
 use ContaoCommunityAlliance\DcGeneral\Contao\View\Contao2BackendView\Event\GetPropertyOptionsEvent;
 use ContaoCommunityAlliance\DcGeneral\Contao\View\Contao2BackendView\Event\ModelToLabelEvent;
 use ContaoCommunityAlliance\DcGeneral\Contao\View\Contao2BackendView\Event\ParentViewChildRecordEvent;
 use ContaoCommunityAlliance\DcGeneral\Data\DefaultCollection;
+use ContaoCommunityAlliance\DcGeneral\DataDefinition\Definition\BasicDefinitionInterface;
 use ContaoCommunityAlliance\DcGeneral\DcGeneral;
 use ContaoCommunityAlliance\DcGeneral\Event\PostDeleteModelEvent;
 use ContaoCommunityAlliance\DcGeneral\Event\PostDuplicateModelEvent;
@@ -31,6 +33,7 @@ use ContaoCommunityAlliance\DcGeneral\Event\PostPasteModelEvent;
 use ContaoCommunityAlliance\DcGeneral\Event\PostPersistModelEvent;
 use ContaoCommunityAlliance\DcGeneral\Factory\Event\CreateDcGeneralEvent;
 use DcaTools\Data\ModelFactory;
+use DcaTools\View\ViewHelper;
 
 
 class CallbackDispatcher
@@ -45,13 +48,20 @@ class CallbackDispatcher
 	 */
 	private $callbacks = array();
 
+	/**
+	 * @var ViewHelper
+	 */
+	private $viewHelper = array();
+
 
 	/**
-	 * @param $dcGeneral
+	 * @param \ContaoCommunityAlliance\DcGeneral\DcGeneral $dcGeneral
+	 * @param \DcaTools\View\ViewHelper $viewHelper
 	 */
-	function __construct(DcGeneral $dcGeneral)
+	function __construct(DcGeneral $dcGeneral, ViewHelper $viewHelper)
 	{
-		$this->dcGeneral = $dcGeneral;
+		$this->dcGeneral  = $dcGeneral;
+		$this->viewHelper = $viewHelper;
 	}
 
 
@@ -120,8 +130,8 @@ class CallbackDispatcher
 	public function containerOnCopy($id, \DataContainer $dc)
 	{
 		$environment = $this->dcGeneral->getEnvironment();
-		$sourceModel = ModelFactory::create($environment, $dc);
-		$oldModel    = ModelFactory::byId($environment, $id);
+		$sourceModel = ModelFactory::createByDc($environment, $dc);
+		$oldModel    = ModelFactory::createById($environment, $id);
 		$event 		 = new PostDuplicateModelEvent($environment, $sourceModel, $oldModel);
 
 		$environment->getEventPropagator()->propagate($event::NAME, $event);
@@ -134,7 +144,7 @@ class CallbackDispatcher
 	public function containerOnCut(\DataContainer $dc)
 	{
 		$environment = $this->dcGeneral->getEnvironment();
-		$model       = ModelFactory::byDc($environment, $dc);
+		$model       = ModelFactory::createByDc($environment, $dc);
 		$event 		 = new PostPasteModelEvent($environment, $model);
 
 		$environment->getEventPropagator()->propagate($event::NAME, $event);
@@ -148,7 +158,7 @@ class CallbackDispatcher
 	public function containerOnDelete(\DataContainer $dc, $undoId)
 	{
 		$environment = $this->dcGeneral->getEnvironment();
-		$model 		 = ModelFactory::byDc($environment, $dc);
+		$model 		 = ModelFactory::createByDc($environment, $dc);
 		$model->setMeta('last-undo-id', $undoId);
 
 		$event 		 = new PostDeleteModelEvent($environment, $model);
@@ -163,7 +173,7 @@ class CallbackDispatcher
 	public function containerOnLoad(\DataContainer $dc)
 	{
 		$environment = $this->dcGeneral->getEnvironment();
-		$model 		 = ModelFactory::byDc($environment, $dc);
+		$model 		 = ModelFactory::createByDc($environment, $dc);
 		$event 		 = new CreateDcGeneralEvent($environment, $model);
 
 		$environment->getEventPropagator()->propagate($event::NAME, $event);
@@ -174,40 +184,58 @@ class CallbackDispatcher
 	 * @param \DataContainer $dc
 	 * @param $row
 	 * @param $dataContainerName
-	 * @param $circularReference
+	 * @param $isCircular
 	 * @param $containedIds
 	 * @param null $previous
 	 * @param null $next
 	 * @return string
 	 */
-	public function containerPasteButton(\DataContainer $dc, $row, $dataContainerName, $circularReference, $containedIds, $previous=null, $next=null)
+	public function containerPasteButton(\DataContainer $dc, $row, $dataContainerName, $isCircular, $containedIds, $previous, $next)
 	{
 		$environment = $this->dcGeneral->getEnvironment();
-		$model 		 = ModelFactory::ByArray($environment, $row);
-		$event       = new GetPasteButtonEvent($environment);
+		$propagator  = $environment->getEventPropagator();
+		$model 		 = ModelFactory::createByArray($environment, $row, $dataContainerName);
 		$collection  = new DefaultCollection();
+		$clipboard   = $environment->getClipboard();
 
 		foreach($containedIds as $id) {
-			$collection->push(ModelFactory::byId($environment, $id));
+			$collection->push(ModelFactory::createById($environment, $id, $dataContainerName, false));
 		}
 
-		$environment->getClipboard()->getContainedIds();
-		$event
+		/** @var AddToUrlEvent $urlAfter */
+		$add2UrlAfter = sprintf('act=copy&mode=2&pid=%s&id=%s', $model->getProperty('pid'), $model->getId());
+		$urlAfter     = $propagator->propagate(ContaoEvents::BACKEND_ADD_TO_URL, new AddToUrlEvent($add2UrlAfter));
+
+		/** @var AddToUrlEvent $urlInto */
+		$add2UrlInto = sprintf('act=copy&mode=1&pid=%s&id=%s', $model->getProperty('pid'), $model->getId());
+		$urlInto     = $propagator->propagate(ContaoEvents::BACKEND_ADD_TO_URL,	new AddToUrlEvent($add2UrlInto));
+
+		$buttonEvent = new GetPasteButtonEvent($environment);
+		$buttonEvent
 			->setModel($model)
-			->setCircularReference($circularReference)
+			->setCircularReference($isCircular)
+			->setPrevious(ModelFactory::createById($environment, $previous, $dataContainerName, false))
+			->setNext(ModelFactory::createById($environment, $next, $dataContainerName, false))
+			->setHrefAfter($urlAfter->getUrl())
+			->setHrefInto($urlInto->getUrl())
+			// Check if the id is in the ignore list.
+			->setPasteAfterDisabled($clipboard->isCut() && $isCircular)
+			->setPasteIntoDisabled($clipboard->isCut() && $isCircular)
 			->setContainedModels($collection);
 
-		if($previous) {
-			$event->setPrevious(ModelFactory::byId($environment, $previous));
+		$propagator->propagate(
+			$buttonEvent::NAME,
+			$buttonEvent,
+			array($environment->getDataDefinition()->getName())
+		);
+
+		$buffer  = $this->viewHelper->renderPasteAfterButton($buttonEvent);
+
+		if ($environment->getDataDefinition()->getBasicDefinition()->getMode() == BasicDefinitionInterface::MODE_HIERARCHICAL) {
+			$buffer .= ' ' . $this->viewHelper->renderPasteIntoButton($buttonEvent);
 		}
 
-		if($next) {
-			$event->setNext(ModelFactory::byId($environment, $previous));
-		}
-
-		$environment->getEventPropagator()->propagate($event::NAME, $event);
-
-		return $event->getHtml();
+		return $buffer;
 	}
 
 
@@ -217,7 +245,7 @@ class CallbackDispatcher
 	public function containerOnSubmit(\DataContainer $dc)
 	{
 		$environment = $this->dcGeneral->getEnvironment();
-		$model 		 = ModelFactory::byDc($environment, $dc);
+		$model 		 = ModelFactory::createByDc($environment, $dc);
 		$event 		 = new PostPersistModelEvent($environment, $model);
 
 		$environment->getEventPropagator()->propagate($event::NAME, $event);
@@ -231,7 +259,7 @@ class CallbackDispatcher
 	public function modelChildRecord($row)
 	{
 		$environment = $this->dcGeneral->getEnvironment();
-		$model 		 = ModelFactory::ByArray($environment, $row);
+		$model 		 = ModelFactory::createByArray($environment, $row);
 		$event		 = new ParentViewChildRecordEvent($environment, $model);
 
 		$environment->getEventPropagator()->propagate($event::NAME, $event);
@@ -250,7 +278,7 @@ class CallbackDispatcher
 	public function modelGroup($groupField, $groupMode, $value, $row)
 	{
 		$environment = $this->dcGeneral->getEnvironment();
-		$model 		 = ModelFactory::ByArray($environment, $row);
+		$model 		 = ModelFactory::createByArray($environment, $row);
 		$event		 = new GetGroupHeaderEvent($environment, $model, $groupField, $value, $groupMode);
 
 		$environment->getEventPropagator()->propagate($event::NAME, $event);
@@ -269,7 +297,7 @@ class CallbackDispatcher
 	public function modelLabel($row, $label, \DataContainer $dc, $arguments=null)
 	{
 		$environment = $this->dcGeneral->getEnvironment();
-		$model 		 = ModelFactory::ByArray($environment, $row);
+		$model 		 = ModelFactory::createByArray($environment, $row);
 		$event		 = new ModelToLabelEvent($environment, $model);
 
 		$event->setLabel($label);
@@ -300,10 +328,9 @@ class CallbackDispatcher
 	public function modelOperationButton($key, $row, $href, $label, $title, $icon, $attributes, $dataContainerName, $rootEntries=null, $childRecordIds=null, $circularReference=null, $previous=null, $next=null)
 	{
 		$environment = $this->dcGeneral->getEnvironment();
-		$model 		 = ModelFactory::ByArray($environment, $row);
-		$event		 = new GetOperationButtonEvent($environment);
-		$previous    = $previous ? ModelFactory::byId($environment, $next, false) : null;
-		$next    	 = $next ? ModelFactory::byId($environment, $next, false) : null;
+		$model 		 = ModelFactory::createByArray($environment, $row, $dataContainerName);
+		$previous    = $previous ? ModelFactory::createById($environment, $previous, $dataContainerName, false) : null;
+		$next        = $next ? ModelFactory::createById($environment, $next, $dataContainerName, false) : null;
 
 		/** @var Contao2BackendViewDefinitionInterface $definition */
 		$definition = $environment
@@ -314,22 +341,9 @@ class CallbackDispatcher
 			->getModelCommands()
 			->getCommandNamed($key);
 
-		$event
-			->setKey($key)
-			->setCommand($command)
-			->setObjModel($model)
-			->setAttributes($attributes)
-			->setLabel($label)
-			->setTitle($title)
-			->setHref($href)
-			->setChildRecordIds($childRecordIds)
-			->setCircularReference($circularReference)
-			->setPrevious($previous)
-			->setNext($next);
+		$buffer = $this->viewHelper->renderCommand($command, $model, $circularReference, $childRecordIds, $previous, $next);
 
-		$environment->getEventPropagator()->propagate($event::NAME, $event, array($dataContainerName, $key));
-
-		return $event->getHtml();
+		return $buffer;
 	}
 
 
@@ -340,7 +354,7 @@ class CallbackDispatcher
 	public function modelOptionsCallback(\DataContainer $dc)
 	{
 		$environment = $this->dcGeneral->getEnvironment();
-		$model       = ModelFactory::byDc($environment, $dc);
+		$model       = ModelFactory::createByDc($environment, $dc);
 		$event		 = new GetPropertyOptionsEvent($environment, $model);
 
 		$environment->getEventPropagator()->propagate($event::NAME, $event);
@@ -357,7 +371,7 @@ class CallbackDispatcher
 	public function propertyInputField($property, \DataContainer $dc)
 	{
 		$environment = $this->dcGeneral->getEnvironment();
-		$model		 = ModelFactory::byDc($environment, $dc);
+		$model		 = ModelFactory::createByDc($environment, $dc);
 		$event 		 = new BuildWidgetEvent($environment, $model, $property);
 
 		$environment->getEventPropagator()->propagate($event::NAME, $event);
@@ -374,7 +388,7 @@ class CallbackDispatcher
 	public function propertyOnLoad($value, \DataContainer $dc)
 	{
 		$environment = $this->dcGeneral->getEnvironment();
-		$model		 = ModelFactory::byDc($environment, $dc);
+		$model		 = ModelFactory::createByDc($environment, $dc);
 		$event 		 = new DecodePropertyValueForWidgetEvent($environment, $model);
 		$event
 			->setValue($value)
@@ -394,7 +408,7 @@ class CallbackDispatcher
 	public function propertyOnSave($value, \DataContainer $dc)
 	{
 		$environment = $this->dcGeneral->getEnvironment();
-		$model		 = ModelFactory::byDc($environment, $dc);
+		$model		 = ModelFactory::createByDc($environment, $dc);
 		$event 		 = new EncodePropertyValueFromWidgetEvent($environment, $model);
 		$event
 			->setValue($value)

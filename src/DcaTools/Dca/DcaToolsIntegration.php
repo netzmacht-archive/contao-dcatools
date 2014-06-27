@@ -19,6 +19,7 @@ use DcaTools\Dca\Callback\CallbackDispatcher;
 use DcaTools\Dca\Callback\CallbackManager;
 use DcaTools\Event\InitializeCallbackManagerEvent;
 use DcaTools\Exception\InvalidArgumentException;
+use DcaTools\View\ViewHelper;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
@@ -91,7 +92,14 @@ class DcaToolsIntegration
 		if(!$dataContainer instanceof DC_General) {
 			$dcGeneral = $this->createDcGeneral($dataContainer->table);
 
-			$this->callbackDispatcher = new CallbackDispatcher($dcGeneral);
+			/** @var \Pimple $container */
+			global $container;
+
+			/** @var ViewHelper $viewHelper */
+			$viewHelper = $container['dcatools.view-helper'];
+			$viewHelper->setEnvironment($dcGeneral->getEnvironment());
+
+			$this->callbackDispatcher = new CallbackDispatcher($dcGeneral, $viewHelper);
 			$this->initializeCallbackManager($dcGeneral);
 		}
 	}
@@ -109,7 +117,8 @@ class DcaToolsIntegration
 	private function createDcGeneral($name)
 	{
 		/** @var \Pimple $container */
-		$container = $GLOBALS['container'];
+		global $container;
+
 		$factory   = new DcGeneralFactory();
 		$dcGeneral = $factory
 			->setEventPropagator($container['dcatools.event-propagator'])

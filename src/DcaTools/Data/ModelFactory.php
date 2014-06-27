@@ -59,16 +59,17 @@ final class ModelFactory
 	/**
 	 * @param EnvironmentInterface $environment
 	 * @param $id
+	 * @param string $source
 	 * @param bool $fetch
 	 * @return ModelInterface
 	 */
-	public static function createById(EnvironmentInterface $environment, $id, $fetch=true)
+	public static function createById(EnvironmentInterface $environment, $id, $source=null, $fetch=true)
 	{
 		if($fetch) {
-			return ConfigBuilder::create($environment)->setId($id)->fetch();
+			return ConfigBuilder::create($environment, $source)->setId($id)->fetch();
 		}
 		else {
-			$model = $environment->getDataProvider()->getEmptyModel();
+			$model = $environment->getDataProvider($source)->getEmptyModel();
 			$model->setId($id);
 
 			return $model;
@@ -79,11 +80,12 @@ final class ModelFactory
 	/**
 	 * @param EnvironmentInterface $environment
 	 * @param $row
+	 * @param null $source
 	 * @return ModelInterface
 	 */
-	public static function createByArray(EnvironmentInterface $environment, $row)
+	public static function createByArray(EnvironmentInterface $environment, $row, $source=null)
 	{
-		$model = $environment->getDataProvider()->getEmptyModel();
+		$model = $environment->getDataProvider($source)->getEmptyModel();
 		$model->setPropertiesAsArray($row);
 		$model->setId($row['id']);
 

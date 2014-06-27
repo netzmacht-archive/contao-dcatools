@@ -50,7 +50,7 @@ class InitializeCallbackManagerEvent extends Event
 
 	/**
 	 * @param $callback
-	 * @param null $for
+	 * @param string|array|null $for
 	 */
 	public function enableCallback($callback, $for=null)
 	{
@@ -59,7 +59,12 @@ class InitializeCallbackManagerEvent extends Event
 		}
 
 		if($for) {
-			$this->callbacks[$callback][] = $for;
+			$this->callbacks[$callback] = array_unique(
+				array_merge(
+					$this->callbacks[$callback],
+					(array) $for
+				)
+			);
 		}
 	}
 

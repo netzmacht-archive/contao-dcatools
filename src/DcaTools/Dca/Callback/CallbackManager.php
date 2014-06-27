@@ -145,7 +145,10 @@ class CallbackManager
 				$value[$chunk] = array();
 			}
 
-			$value = &$value[$chunk];
+			$tmp   = &$value[$chunk];
+			unset($value);
+			$value = &$tmp;
+			unset($tmp);
 		}
 
 		return $value[$last];
@@ -159,7 +162,7 @@ class CallbackManager
 	 */
 	private function registerCallback($callback, $dataContainerName, $for)
 	{
-		$path       = $this->getCallbackPath($callback, $dataContainerName, $for);
+		$path       = Callback::getDcaPath($callback, $for);
 		$definition = &$this->getCallbacksDefinition($dataContainerName, $path);
 		$method     = Callback::getMethodName($callback);
 

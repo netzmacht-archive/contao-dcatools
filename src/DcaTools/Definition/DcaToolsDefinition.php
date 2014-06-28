@@ -13,7 +13,6 @@ namespace DcaTools\Definition;
 
 use ContaoCommunityAlliance\DcGeneral\DataDefinition\Definition\DefinitionInterface;
 use DcaTools\Condition\Command;
-use DcaTools\Definition\CommandConditionCollection;
 
 
 /**
@@ -38,6 +37,11 @@ class DcaToolsDefinition implements DefinitionInterface
 	 * @var bool
 	 */
 	private $legacyMode = false;
+
+	/**
+	 * @var array
+	 */
+	private $callbacks = array();
 
 
 	/**
@@ -84,6 +88,22 @@ class DcaToolsDefinition implements DefinitionInterface
 	public function getPermissionConditions()
 	{
 		return $this->permissionConditions;
+	}
+
+	/**
+	 * @param array $callbacks
+	 */
+	public function setCallbacks(array $callbacks)
+	{
+		$this->callbacks = $callbacks;
+	}
+
+	/**
+	 * @return array
+	 */
+	public function getCallbacks()
+	{
+		return $this->callbacks;
 	}
 
 }

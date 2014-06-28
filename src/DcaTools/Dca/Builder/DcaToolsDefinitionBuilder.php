@@ -78,22 +78,23 @@ class DcaToolsDefinitionBuilder extends DcaReadingDataDefinitionBuilder
 	 */
 	public function build(ContainerInterface $container, BuildDataDefinitionEvent $event)
 	{
-		$dcaToolsDefinition = new DcaToolsDefinition();
+		$definition = new DcaToolsDefinition();
 		$this->loadDca($container->getName(), $event->getDispatcher());
 
-		$dcaToolsDefinition->setLegacyMode($this->getFromDca('dcatools/legacy'));
+		$definition->setLegacyMode($this->getFromDca('dcatools/legacy'));
+		$definition->setCallbacks((array)$this->getFromDca('dcatools/callbacks'));
 
 		$this->buildCommandConditions(
-			$dcaToolsDefinition->getCommandConditions(),
+			$definition->getCommandConditions(),
 			(array) $this->getFromDca('dcatools/command_conditions')
 		);
 
 		$this->buildPermissionConditions(
-			$dcaToolsDefinition->getPermissionConditions(),
+			$definition->getPermissionConditions(),
 			(array) $this->getFromDca('dcatools/permission_conditions')
 		);
 
-		$container->setDefinition($dcaToolsDefinition::NAME, $dcaToolsDefinition);
+		$container->setDefinition($definition::NAME, $definition);
 	}
 
 

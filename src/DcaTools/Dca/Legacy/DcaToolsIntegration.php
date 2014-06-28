@@ -15,7 +15,7 @@ namespace DcaTools\Dca\Legacy;
 use ContaoCommunityAlliance\DcGeneral\DC_General;
 use ContaoCommunityAlliance\DcGeneral\DcGeneral;
 use ContaoCommunityAlliance\DcGeneral\Factory\DcGeneralFactory;
-use DcaTools\Event\InitializeCallbackManagerEvent;
+use DcaTools\Definition\DcaToolsDefinition;
 use DcaTools\Exception\InvalidArgumentException;
 use DcaTools\View\ViewHelper;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -132,26 +132,25 @@ class DcaToolsIntegration
 
 
 	/**
-	 * @param DcGeneral $dataContainer
+	 * @param DcGeneral $dcGeneral
 	 */
-	private function initializeCallbackManager(DcGeneral $dataContainer)
+	private function initializeCallbackManager(DcGeneral $dcGeneral)
 	{
 		/** @var EventDispatcherInterface $eventDispatcher */
 		$eventDispatcher    	  = $GLOBALS['container']['event-dispatcher'];
 		$this->callbackManager    = new CallbackManager(get_called_class());
 
-		$name  = $dataContainer->getEnvironment()->getDataDefinition()->getName();
-		$event = new InitializeCallbackManagerEvent($name);
+		/** @var DcaToolsDefinition $definition */
+		$definition = $dcGeneral->getEnvironment()->getDataDefinition()->getDefinition(DcaToolsDefinition::NAME);
+		$name       = $dcGeneral->getEnvironment()->getDataDefinition()->getName();
 
-		$eventDispatcher->dispatch($event::NAME, $event);
-
-		foreach($event->getCallbacks() as $callback => $for) {
+		foreach($definition->getCallbacks() as $callback => $for) {
 			if(!$for) {
 				$this->callbackManager->enableCallback($callback, $name);
 				continue;
 			}
 
-			foreach($for as  $value) {
+			foreach((array)$for as $value) {
 				$this->callbackManager->enableCallback($callback, $name, $value);
 			}
 		}

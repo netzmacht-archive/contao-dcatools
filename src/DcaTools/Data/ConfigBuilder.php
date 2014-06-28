@@ -12,9 +12,11 @@
 
 namespace DcaTools\Data;
 
+use ContaoCommunityAlliance\DcGeneral\Data\CollectionInterface;
 use ContaoCommunityAlliance\DcGeneral\Data\ConfigInterface;
 use ContaoCommunityAlliance\DcGeneral\Data\DCGE;
 use ContaoCommunityAlliance\DcGeneral\Data\DataProviderInterface;
+use ContaoCommunityAlliance\DcGeneral\Data\ModelInterface;
 use ContaoCommunityAlliance\DcGeneral\EnvironmentInterface;
 
 
@@ -344,7 +346,7 @@ class ConfigBuilder
 
 
 	/**
-	 * @return \DcGeneral\Data\ModelInterface
+	 * @return ModelInterface
 	 */
 	public function fetch()
 	{
@@ -353,7 +355,7 @@ class ConfigBuilder
 
 
 	/**
-	 * @return \DcGeneral\Data\CollectionInterface|\DcGeneral\Data\ModelInterface[]
+	 * @return CollectionInterface|ModelInterface[]
 	 */
 	public function fetchAll()
 	{

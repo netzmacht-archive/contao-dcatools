@@ -14,6 +14,7 @@ namespace DcaTools\Condition\Permission;
 
 use ContaoCommunityAlliance\DcGeneral\Data\ModelInterface;
 use ContaoCommunityAlliance\DcGeneral\EnvironmentInterface;
+use DcaTools\Condition\Permission\Context\Context;
 use DcaTools\User\User;
 
 
@@ -46,12 +47,22 @@ final class HasAccessCondition implements PermissionCondition
 
 	/**
 	 * @param EnvironmentInterface $environment
-	 * @param ModelInterface $model
+	 * @param Context $context
 	 * @return bool|mixed
 	 */
-	public function __invoke(EnvironmentInterface $environment, ModelInterface $model)
+	public function __invoke(EnvironmentInterface $environment, Context $context)
 	{
-		return $this->condition->__invoke($environment, $model);
+		return $this->condition->__invoke($environment, $context);
 	}
+
+
+	/**
+	 * @return string
+	 */
+	public function getError()
+	{
+		return 'Permission denied: No access';
+	}
+
 
 } 

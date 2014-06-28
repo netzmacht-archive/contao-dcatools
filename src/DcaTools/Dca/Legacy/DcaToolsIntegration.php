@@ -100,8 +100,6 @@ class DcaToolsIntegration
 
 			$this->callbackDispatcher = new CallbackDispatcher($dcGeneral, $viewHelper);
 			$this->initializeCallbackManager($dcGeneral);
-
-			$this->callbackDispatcher->containerOnLoad($dataContainer);
 		}
 	}
 

@@ -12,17 +12,17 @@
 namespace DcaTools\Condition\Permission;
 
 
-use ContaoCommunityAlliance\DcGeneral\Data\ModelInterface;
 use ContaoCommunityAlliance\DcGeneral\EnvironmentInterface;
+use DcaTools\Condition\Permission\Context\Context;
 
 interface PermissionCondition
 {
 	/**
 	 * @param EnvironmentInterface $environment
-	 * @param ModelInterface $model
+	 * @param Context $context
 	 * @return bool
 	 */
-	public function __invoke(EnvironmentInterface $environment, ModelInterface $model);
+	public function __invoke(EnvironmentInterface $environment, Context $context);
 
 
 	/**

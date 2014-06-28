@@ -13,9 +13,10 @@ namespace DcaTools\Condition\Permission;
 
 
 use Assert\Assertion;
+use DcaTools\Condition\Command\AbstractCondition;
 use DcaTools\User\User;
 
-abstract class AbstractChildrenCondition implements PermissionCondition
+abstract class AbstractChildrenCondition extends AbstractCondition
 {
 	/**
 	 * @var User

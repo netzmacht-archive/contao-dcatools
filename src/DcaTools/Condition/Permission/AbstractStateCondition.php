@@ -15,6 +15,7 @@ namespace DcaTools\Condition\Permission;
 use ContaoCommunityAlliance\DcGeneral\Data\ModelInterface;
 use ContaoCommunityAlliance\DcGeneral\EnvironmentInterface;
 use ContaoCommunityAlliance\DcGeneral\InputProviderInterface;
+use DcaTools\Condition\Permission\Context\Context;
 
 abstract class AbstractStateCondition extends AbstractCondition
 {
@@ -22,11 +23,15 @@ abstract class AbstractStateCondition extends AbstractCondition
 	const PARAM_POST    = 'post';
 	const PARAM_SESSION = 'session';
 
+	const CONTEXT_MODEL  = 'model';
+	const CONTEXT_PARENT = 'parent';
+
 
 	/**
 	 * @var array
 	 */
 	protected $config = array(
+		'always'   => false,
 		'action'   => null,
 		'property' => null,
 		'param'    => AbstractStateCondition::PARAM_GET,
@@ -35,24 +40,33 @@ abstract class AbstractStateCondition extends AbstractCondition
 		'operator' => '=',
 		'callback' => null,
 		'inverse'  => false,
+		'context'  => AbstractStateCondition::CONTEXT_MODEL
 	);
 
 
 	/**
 	 * @param EnvironmentInterface $environment
-	 * @param ModelInterface $model
+	 * @param Context $context
 	 * @return bool|mixed
 	 */
-	public function __invoke(EnvironmentInterface $environment, ModelInterface $model)
+	public function __invoke(EnvironmentInterface $environment, Context $context)
 	{
-		$state = true;
+		if($this->config['always']) {
+			$model = $this->getContextModel($context);
+
+			return $this->getState($environment, $model);
+		}
 
 		if($this->config['action']) {
-			if($this->getAction($environment) == $this->config['action']) {
-				$state = $this->getState($environment, $model);
+			if($this->getAction($environment) != $this->config['action']) {
+				return true;
 			}
 		}
-		elseif($this->config['property']) {
+
+		$state = true;
+
+		if($this->config['property']) {
+			$model = $this->getContextModel($context);
 			$state = $this->getStateByProperty($model);
 		}
 		elseif($this->config['param']) {
@@ -70,7 +84,7 @@ abstract class AbstractStateCondition extends AbstractCondition
 	/**
 	 * @param EnvironmentInterface $environment
 	 * @param ModelInterface $model
-	 * @return mixed
+	 * @return bool
 	 */
 	abstract protected function getState(EnvironmentInterface $environment, ModelInterface $model);
 
@@ -101,11 +115,11 @@ abstract class AbstractStateCondition extends AbstractCondition
 	{
 		switch($operator) {
 			case '=':
-				return ($property === $value);
+				return ($property == $value);
 				break;
 
 			case '!=':
-				return ($property === $value);
+				return ($property != $value);
 				break;
 
 			case '<':
@@ -122,10 +136,6 @@ abstract class AbstractStateCondition extends AbstractCondition
 
 			case '<=':
 				return ($property <= $value);
-				break;
-
-			case '==':
-				return ($property == $value);
 				break;
 		}
 
@@ -192,6 +202,20 @@ abstract class AbstractStateCondition extends AbstractCondition
 		$state = $this->compare($value, $this->config['operator'], $this->config['value']);
 
 		return $state;
+	}
+
+
+	/**
+	 * @param Context $context
+	 * @return ModelInterface
+	 */
+	protected function getContextModel(Context $context)
+	{
+		if($this->config['context'] == static::CONTEXT_PARENT) {
+			return $context->getParent();
+		}
+
+		return $context->getModel();
 	}
 
 } 

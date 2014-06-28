@@ -12,25 +12,25 @@
 namespace DcaTools\Condition\Permission;
 
 
-use ContaoCommunityAlliance\DcGeneral\Data\ModelInterface;
 use ContaoCommunityAlliance\DcGeneral\EnvironmentInterface;
+use DcaTools\Condition\Permission\Context\Context;
 
 class OrCondition extends AbstractChildrenCondition
 {
 
 	/**
 	 * @param EnvironmentInterface $environment
-	 * @param ModelInterface $model
+	 * @param Context $context
 	 * @return bool
 	 */
-	public function __invoke(EnvironmentInterface $environment, ModelInterface $model)
+	public function __invoke(EnvironmentInterface $environment, Context $context)
 	{
 		if(empty($this->conditions)) {
 			return true;
 		}
 
 		foreach($this->conditions as $condition) {
-			if($condition($environment, $model)) {
+			if($condition($environment, $context)) {
 				return true;
 			}
 		}

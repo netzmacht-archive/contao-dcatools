@@ -34,7 +34,7 @@ final class IsAllowedCondition extends AbstractStateCondition
 	/**
 	 * @param EnvironmentInterface $environment
 	 * @param ModelInterface $model
-	 * @return mixed
+	 * @return bool
 	 */
 	protected function getState(EnvironmentInterface $environment, ModelInterface $model)
 	{

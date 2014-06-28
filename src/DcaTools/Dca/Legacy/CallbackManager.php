@@ -9,10 +9,10 @@
  *
  */
 
-namespace DcaTools\Dca\Callback;
+namespace DcaTools\Dca\Legacy;
 
 use DcaTools\Assertion;
-use DcaTools\Dca\Callback;
+use DcaTools\Dca\Legacy;
 use DcaTools\Exception\InvalidArgumentException;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 

@@ -9,29 +9,26 @@
  *
  */
 
-namespace DcaTools\Dca\Button\Condition;
+namespace DcaTools\Condition\Command;
 
 
-abstract class AbstractCondition implements DispatchesByInvoke
+use DcaTools\Condition\Command;
+
+
+abstract class AbstractCondition implements CommandCondition
 {
 	/**
 	 * @var array
 	 */
 	protected $config = array();
 
-	/**
-	 * @var ConditionManager
-	 */
-	protected $manager;
 
 	/**
-	 * @param ConditionManager $manager
 	 * @param array $config
 	 */
-	public function __construct(ConditionManager $manager, array $config=array())
+	public function __construct(array $config=array())
 	{
 		$this->config  = array_merge($this->config, $config);
-		$this->manager = $manager;
 	}
 
 } 

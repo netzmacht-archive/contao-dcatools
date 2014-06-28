@@ -9,7 +9,7 @@
  *
  */
 
-namespace DcaTools\Dca\Callback;
+namespace DcaTools\Dca\Legacy;
 
 use ContaoCommunityAlliance\Contao\Bindings\ContaoEvents;
 use ContaoCommunityAlliance\Contao\Bindings\Events\Backend\AddToUrlEvent;
@@ -168,13 +168,12 @@ class CallbackDispatcher
 
 
 	/**
-	 * @param \DataContainer $dc
+	 *
 	 */
-	public function containerOnLoad(\DataContainer $dc)
+	public function containerOnLoad()
 	{
 		$environment = $this->dcGeneral->getEnvironment();
-		$model 		 = ModelFactory::createByDc($environment, $dc);
-		$event 		 = new CreateDcGeneralEvent($environment, $model);
+		$event 		 = new CreateDcGeneralEvent($this->dcGeneral);
 
 		$environment->getEventPropagator()->propagate($event::NAME, $event);
 	}

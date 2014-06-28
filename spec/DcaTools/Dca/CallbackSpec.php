@@ -2,7 +2,7 @@
 
 namespace spec\DcaTools\Dca;
 
-use DcaTools\Dca\Callback;
+use DcaTools\Dca\Legacy;
 use PhpSpec\ObjectBehavior;
 use Prophecy\Argument;
 

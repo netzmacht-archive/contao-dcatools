@@ -10,23 +10,37 @@
  * @copyright 2013 netzmacht creative David Molineus
  */
 
-use \DcaTools\Dca\Button\Condition as CommandCond;
+use ContaoCommunityAlliance\DcGeneral\Factory\Event\BuildDataDefinitionEvent;
+use ContaoCommunityAlliance\DcGeneral\Factory\Event\CreateDcGeneralEvent;
+use DcaTools\Condition\Command;
+use DcaTools\Condition\Permission;
 
 /**
  * hooks
  */
-$GLOBALS['TL_HOOKS']['loadDataContainer'][] = array('DcaTools\Dca\DcaToolsIntegration', 'onLoadDataContainer');
-$GLOBALS['TL_HOOKS']['initializeSystem'][]  = array('DcaTools\Contao\Hooks', 'onInitializeSystem');
+$GLOBALS['TL_HOOKS']['loadDataContainer'][] = array('DcaTools\Dca\Legacy\DcaToolsIntegration', 'onLoadDataContainer');
 
-$GLOBALS['DCATOOLS_COMMAND_CONDITIONS']['isAdmin'] = function($manager, $config) {
-	global $container;
-
-	return new CommandCond\IsAdminCondition($container['dcatools.acl'], $manager, $config);
+$GLOBALS['DCATOOLS_COMMAND_CONDITIONS']['isAllowed'] = 'DcaTools\Condition\Command\IsAllowedCondition';
+$GLOBALS['DCATOOLS_COMMAND_CONDITIONS']['hasAccess'] = 'DcaTools\Condition\Command\HasAccessCondition';
+$GLOBALS['DCATOOLS_COMMAND_CONDITIONS']['hide']      = 'DcaTools\Condition\Command\HideCondition';
+$GLOBALS['DCATOOLS_COMMAND_CONDITIONS']['disable']   = 'DcaTools\Condition\Command\DisableCondition';
+$GLOBALS['DCATOOLS_COMMAND_CONDITIONS']['isAdmin']   = function($config) {
+	return new Command\IsAdminCondition($GLOBALS['container']['dcatools.user'], $config);
 };
 
-$GLOBALS['DCATOOLS_COMMAND_CONDITIONS']['isAllowed']   = 'DcaTools\Dca\Button\Condition\IsAllowedCondition';
-$GLOBALS['DCATOOLS_COMMAND_CONDITIONS']['hasAccess']   = 'DcaTools\Dca\Button\Condition\HasAccessCondition';
-$GLOBALS['DCATOOLS_COMMAND_CONDITIONS']['hide']        = 'DcaTools\Dca\Button\Condition\HideCondition';
-$GLOBALS['DCATOOLS_COMMAND_CONDITIONS']['disableIcon'] = 'DcaTools\Dca\Button\Condition\DisableCondition';
+$GLOBALS['DCATOOLS_PERMISSION_CONDITIONS']['isAdmin']   = function($user, $config) {
+	return new Permission\IsAdminCondition($user, $config);
+};
+
 
 $GLOBALS['TL_EVENT_SUBSCRIBERS'][] = 'DcaTools\Contao\CompatibilitySubscriber';
+
+$GLOBALS['TL_EVENTS'][CreateDcGeneralEvent::NAME][] = 'DcaTools\Condition\Permission\PermissionHandler::handle';
+
+$GLOBALS['TL_EVENTS'][BuildDataDefinitionEvent::NAME][] = function(BuildDataDefinitionEvent $event) {
+	$GLOBALS['container']['dcatools.definition-builder']->build($event->getContainer(), $event);
+};
+
+$GLOBALS['TL_EVENTS'][BuildDataDefinitionEvent::NAME][] = array(function(BuildDataDefinitionEvent $event) {
+	$GLOBALS['container']['dcatools.command-condition-handler']->setUp($event);
+}, -1000);

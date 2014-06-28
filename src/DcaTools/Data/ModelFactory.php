@@ -42,7 +42,7 @@ final class ModelFactory
 	 */
 	public static function createByDatabaseResult($dataContainerName, \Database\Result $result)
 	{
-		return new ActiveRecordModelDecorator($dataContainerName, $result);
+		return new DatabaseResultDecorator($dataContainerName, $result);
 	}
 
 
@@ -52,7 +52,7 @@ final class ModelFactory
 	 */
 	public static function createByLegacyModel(\Model $model)
 	{
-		return new ActiveRecordModelDecorator($model->getTable(), $model->getResult());
+		return new DatabaseResultDecorator($model->getTable(), $model->getResult());
 	}
 
 

@@ -14,8 +14,10 @@ use ContaoCommunityAlliance\DcGeneral\Contao\InputProvider;
 use ContaoCommunityAlliance\Translator\Contao\LangArrayTranslator;
 use ContaoCommunityAlliance\Translator\TranslatorChain;
 use DcaTools\Config\Map;
-use DcaTools\Dca\Button\ButtonRenderer;
-use DcaTools\Dca\Button\Condition\ConditionManager;
+use DcaTools\Dca\Builder\DcaToolsDefinitionBuilder;
+use DcaTools\View\ButtonRenderer;
+use DcaTools\Condition\Command\CommandConditionHandler;
+use DcaTools\Condition\Command\ConditionManager;
 use DcaTools\View\DcGeneralBasedViewHelper;
 
 /**
@@ -40,20 +42,24 @@ $container['dcatools.button-renderer'] = $container->share(function(\Pimple $c) 
 	return new ButtonRenderer();
 });
 
-$container['dcatools.button-condition-manager'] = $container->share(function(\Pimple $c) {
-	$map        = new Map($GLOBALS['DCATOOLS_COMMAND_CONDITIONS']);
-	$dispatcher = $c['event-dispatcher'];
-	$renderer   = $c['dcatools.button-renderer'];
-
-	return new ConditionManager($dispatcher, $map, $renderer, new InputProvider());
+$container['dcatools.command-condition-handler'] = $container->share(function($c) {
+	return new CommandConditionHandler($c['dcatools.button-renderer']);
 });
+
+$container['dcatools.definition-builder'] = function(\Pimple $c) {
+	$builder = new DcaToolsDefinitionBuilder(
+		$c['dcatools.user'],
+		(array) $GLOBALS['DCATOOLS_COMMAND_CONDITIONS'],
+		(array) $GLOBALS['DCATOOLS_PERMISSION_CONDITIONS']
+	);
+
+	return $builder;
+};
 
 $container['dcatools.view-helper'] = $container->share(function() {
 	return new DcGeneralBasedViewHelper();
 });
 
-$container['dcatools.acl'] = $container->share(function() {
-	$user = \BackendUser::getInstance();
-
-	return new \DcaTools\Contao\Acl($user);
+$container['dcatools.user'] = $container->share(function() {
+	return new \DcaTools\Contao\BackendUserDecorator(\BackendUser::getInstance());
 });

@@ -22,7 +22,7 @@ use ContaoCommunityAlliance\DcGeneral\Data\PropertyValueBagInterface;
  *
  * @package DcaTools\Data
  */
-class ActiveRecordModelDecorator implements ModelInterface
+class DatabaseResultDecorator implements ModelInterface
 {
 
 	/**

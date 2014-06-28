@@ -9,7 +9,7 @@
  *
  */
 
-namespace DcaTools\Dca\Button;
+namespace DcaTools\View;
 
 
 use DcaTools\Dca\Button;

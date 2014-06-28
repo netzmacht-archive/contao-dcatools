@@ -9,7 +9,7 @@
  *
  */
 
-namespace DcaTools\Dca;
+namespace DcaTools\Dca\Legacy;
 
 
 /**

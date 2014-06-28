@@ -9,14 +9,12 @@
  *
  */
 
-namespace DcaTools\Dca;
+namespace DcaTools\Dca\Legacy;
 
 
 use ContaoCommunityAlliance\DcGeneral\DC_General;
 use ContaoCommunityAlliance\DcGeneral\DcGeneral;
 use ContaoCommunityAlliance\DcGeneral\Factory\DcGeneralFactory;
-use DcaTools\Dca\Callback\CallbackDispatcher;
-use DcaTools\Dca\Callback\CallbackManager;
 use DcaTools\Event\InitializeCallbackManagerEvent;
 use DcaTools\Exception\InvalidArgumentException;
 use DcaTools\View\ViewHelper;
@@ -69,7 +67,8 @@ class DcaToolsIntegration
 	public function onLoadDataContainer($name)
 	{
 		// dcatools is not enabled
-		if(!isset($GLOBALS['TL_DCA'][$name]['dcatools']) || !isset($GLOBALS['TL_DCA'][$name]['dcatools']['enabled'])) {
+		if(!isset($GLOBALS['TL_DCA'][$name]['dcatools']) || !isset($GLOBALS['TL_DCA'][$name]['dcatools']['legacy']) ||
+			!$GLOBALS['TL_DCA'][$name]['dcatools']['legacy']) {
 			return;
 		}
 
@@ -101,6 +100,8 @@ class DcaToolsIntegration
 
 			$this->callbackDispatcher = new CallbackDispatcher($dcGeneral, $viewHelper);
 			$this->initializeCallbackManager($dcGeneral);
+
+			$this->callbackDispatcher->containerOnLoad($dataContainer);
 		}
 	}
 

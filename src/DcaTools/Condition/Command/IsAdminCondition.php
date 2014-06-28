@@ -9,21 +9,22 @@
  *
  */
 
-namespace DcaTools\Dca\Button\Condition;
+namespace DcaTools\Condition\Command;
 
 
 use ContaoCommunityAlliance\DcGeneral\Data\ModelInterface;
 use ContaoCommunityAlliance\DcGeneral\InputProviderInterface;
-use DcaTools\Acl;
 use DcaTools\Dca\Button;
+use DcaTools\User\User;
 
 
 class IsAdminCondition extends AbstractCondition
 {
 	/**
-	 * @var Acl
+	 * @var User
 	 */
-	private $acl;
+	private $user;
+
 
 	/**
 	 * @var array
@@ -35,19 +36,18 @@ class IsAdminCondition extends AbstractCondition
 
 
 	/**
-	 * @param Acl $acl
-	 * @param ConditionManager $manager
-	 * @param array $arguments
+	 * @param User $user
+	 * @param array $config
 	 */
-	public function __construct(Acl $acl, ConditionManager $manager, $arguments = array())
+	public function __construct(User $user, $config = array())
 	{
-		if(isset($arguments['action'])) {
-			$arguments['action'] = (array) $arguments['action'];
+		if(isset($config['action'])) {
+			$config['action'] = (array) $config['action'];
 		}
 
-		parent::__construct($manager, $arguments);
+		parent::__construct($config);
 
-		$this->acl = $acl;
+		$this->user = $user;
 	}
 
 
@@ -60,11 +60,11 @@ class IsAdminCondition extends AbstractCondition
 	public function __invoke(Button $button, InputProviderInterface $input, ModelInterface $model = null)
 	{
 		if($this->config['always']) {
-			return $this->acl->isAdmin();
+			return $this->user->hasRole(User::ROLE_ADMIN);
 		}
 
 		if($this->config['action'] && in_array($input->getParameter('action'), $this->config['action'])) {
-			return $this->acl->isAdmin();
+			return $this->user->hasRole(User::ROLE_ADMIN);
 		}
 
 		return true;

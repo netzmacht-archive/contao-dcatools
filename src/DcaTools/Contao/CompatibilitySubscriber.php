@@ -80,6 +80,9 @@ class CompatibilitySubscriber implements EventSubscriberInterface
 		{
 			return;
 		}
+		else {
+			$serializedId = $event->getModel();
+		}
 
 		/** @var ToggleCommandInterface $operation */
 		$operation    = $event->getCommand();

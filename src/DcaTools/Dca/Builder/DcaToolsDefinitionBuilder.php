@@ -174,7 +174,7 @@ class DcaToolsDefinitionBuilder extends DcaReadingDataDefinitionBuilder
 		}
 
 		Assertion::classExists($condition, 'Condition class does not exists');
-		return new $condition($config);
+		return new $condition($this->user, $config);
 	}
 
 } 

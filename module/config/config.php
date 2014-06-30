@@ -28,9 +28,10 @@ $GLOBALS['DCATOOLS_COMMAND_CONDITIONS']['isAdmin']   = function($config) {
 	return new Command\IsAdminCondition($GLOBALS['container']['dcatools.user'], $config);
 };
 
-$GLOBALS['DCATOOLS_PERMISSION_CONDITIONS']['isAdmin']   = function($user, $config) {
-	return new Permission\IsAdminCondition($user, $config);
-};
+$GLOBALS['DCATOOLS_PERMISSION_CONDITIONS']['isAdmin']   = 'DcaTools\Condition\Permission\IsAdminCondition';
+$GLOBALS['DCATOOLS_PERMISSION_CONDITIONS']['role']      = 'DcaTools\Condition\Permission\RoleCondition';
+$GLOBALS['DCATOOLS_PERMISSION_CONDITIONS']['hasAccess'] = 'DcaTools\Condition\Permission\HasAccessCondition';
+$GLOBALS['DCATOOLS_PERMISSION_CONDITIONS']['isAllowed'] = 'DcaTools\Condition\Permission\IsAllowedCondition';
 
 
 $GLOBALS['TL_EVENT_SUBSCRIBERS'][] = 'DcaTools\Contao\CompatibilitySubscriber';

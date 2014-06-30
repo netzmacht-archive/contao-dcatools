@@ -59,4 +59,15 @@ class BackendUserDecorator implements User
 		return $this->user->isAllowed($action, $model->getPropertiesAsArray());
 	}
 
+
+	/**
+	 * Get Current user id
+	 *
+	 * @return int
+	 */
+	public function getId()
+	{
+		return $this->user->id;
+	}
+
 } 

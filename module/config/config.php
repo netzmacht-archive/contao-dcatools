@@ -32,6 +32,7 @@ $GLOBALS['DCATOOLS_PERMISSION_CONDITIONS']['isAdmin']   = 'DcaTools\Condition\Pe
 $GLOBALS['DCATOOLS_PERMISSION_CONDITIONS']['role']      = 'DcaTools\Condition\Permission\RoleCondition';
 $GLOBALS['DCATOOLS_PERMISSION_CONDITIONS']['hasAccess'] = 'DcaTools\Condition\Permission\HasAccessCondition';
 $GLOBALS['DCATOOLS_PERMISSION_CONDITIONS']['isAllowed'] = 'DcaTools\Condition\Permission\IsAllowedCondition';
+$GLOBALS['DCATOOLS_PERMISSION_CONDITIONS']['owner']     = 'DcaTools\Condition\Permission\OwnerCondition';
 
 
 $GLOBALS['TL_EVENT_SUBSCRIBERS'][] = 'DcaTools\Contao\CompatibilitySubscriber';

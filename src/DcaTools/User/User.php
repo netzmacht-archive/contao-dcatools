@@ -34,4 +34,12 @@ interface User
 	 */
 	public function isAllowed($action, ModelInterface $model);
 
+
+	/**
+	 * Get Current user id
+	 *
+	 * @return int
+	 */
+	public function getId();
+
 } 

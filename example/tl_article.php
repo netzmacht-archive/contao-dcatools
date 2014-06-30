@@ -24,16 +24,15 @@ $GLOBALS['TL_DCA']['tl_article']['dcatools'] = array
 	(
 		array
 		(
-			'condition' => 'disable',
-			'config'    => array('condition' => 'isAdmin', 'inverse' => false),
-			'filter'    => '',
-		),
-
-		array
-		(
 			'condition' => 'hide',
 			'config'	=> array('always' => true),
 			'filter'	=> array('show', 'cut', 'delete'),
+		),
+		array
+		(
+			'condition' => 'disable',
+			'config'    => array('condition' => 'isNotAdmin'),
+			'filter'    => '*',
 		),
 	),
 	'global_command_conditions' => array
@@ -43,7 +42,6 @@ $GLOBALS['TL_DCA']['tl_article']['dcatools'] = array
 	'permission_conditions' => array(
 		array(
 			'condition' => 'isAdmin',
-			'config'    => array('inverse' => false),
 		)
 	),
 );

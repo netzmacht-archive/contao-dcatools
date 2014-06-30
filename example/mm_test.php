@@ -10,7 +10,7 @@ $GLOBALS['TL_DCA']['mm_test']['dcatools'] = array
 		array
 		(
 			'condition' => 'disable',
-			'config'    => array('condition' => 'isAdmin', 'inverse' => true),
+			'config'    => array('condition' => 'isNotAdmin'),
 			'filter'    => 'delete',
 		),
 	)

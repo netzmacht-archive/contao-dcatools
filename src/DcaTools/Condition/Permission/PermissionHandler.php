@@ -92,7 +92,7 @@ class PermissionHandler implements EventSubscriberInterface
 		$environment = $event->getEnvironment();
 		$definition  = $event->getEnvironment()->getDataDefinition()->getDefinition(DcaToolsDefinition::NAME);
 
-		if($event->getContext() || !$definition->getLegacyMode()) {
+		if($event->getContext() /*|| !$definition->getLegacyMode()*/ ) {
 			return;
 		}
 

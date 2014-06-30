@@ -20,12 +20,27 @@ use DcaTools\Condition\Permission;
  */
 $GLOBALS['TL_HOOKS']['loadDataContainer'][] = array('DcaTools\Dca\Legacy\DcaToolsIntegration', 'onLoadDataContainer');
 
-$GLOBALS['DCATOOLS_COMMAND_CONDITIONS']['isAllowed'] = 'DcaTools\Condition\Command\IsAllowedCondition';
-$GLOBALS['DCATOOLS_COMMAND_CONDITIONS']['hasAccess'] = 'DcaTools\Condition\Command\HasAccessCondition';
 $GLOBALS['DCATOOLS_COMMAND_CONDITIONS']['hide']      = 'DcaTools\Condition\Command\HideCondition';
 $GLOBALS['DCATOOLS_COMMAND_CONDITIONS']['disable']   = 'DcaTools\Condition\Command\DisableCondition';
+$GLOBALS['DCATOOLS_COMMAND_CONDITIONS']['isAllowed'] = 'DcaTools\Condition\Command\IsAllowedCondition';
+$GLOBALS['DCATOOLS_COMMAND_CONDITIONS']['hasAccess'] = 'DcaTools\Condition\Command\HasAccessCondition';
 $GLOBALS['DCATOOLS_COMMAND_CONDITIONS']['isAdmin']   = function($config) {
 	return new Command\IsAdminCondition($GLOBALS['container']['dcatools.user'], $config);
+};
+$GLOBALS['DCATOOLS_COMMAND_CONDITIONS']['isNotAdmin']   = function($config) {
+	DcaTools\Util\State::toggleKey($config, 'inverse');
+
+	return $GLOBALS['DCATOOLS_COMMAND_CONDITIONS']['isAdmin']($config);
+};
+$GLOBALS['DCATOOLS_COMMAND_CONDITIONS']['hasNoAccess']   = function($config) {
+	DcaTools\Util\State::toggleKey($config, 'inverse');
+
+	return $GLOBALS['DCATOOLS_COMMAND_CONDITIONS']['hasAccess']($config);
+};
+$GLOBALS['DCATOOLS_COMMAND_CONDITIONS']['isNotAllowed']   = function($config) {
+	DcaTools\Util\State::toggleKey($config, 'inverse');
+
+	return $GLOBALS['DCATOOLS_COMMAND_CONDITIONS']['isAllowed']($config);
 };
 
 $GLOBALS['DCATOOLS_PERMISSION_CONDITIONS']['isAdmin']   = 'DcaTools\Condition\Permission\IsAdminCondition';

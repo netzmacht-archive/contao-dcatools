@@ -29,8 +29,7 @@ class HideCondition extends AbstractStateCondition
 	public function __invoke(Button $button, InputProviderInterface $input, ModelInterface $model = null)
 	{
 		$visible = $this->getState($button, $input, $model);
-
-		$button->setVisible($visible);
+		$button->setVisible(!$visible);
 	}
 
 } 

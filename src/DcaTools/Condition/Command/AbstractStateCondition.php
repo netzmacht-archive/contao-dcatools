@@ -29,7 +29,7 @@ abstract class AbstractStateCondition extends AbstractCondition
 		'property'  => null,
 		'value'		=> null,
 		'callback'  => null,
-		'invserse'  => false,
+		'inverse'   => false,
 	);
 
 
@@ -41,32 +41,30 @@ abstract class AbstractStateCondition extends AbstractCondition
 	 */
 	protected function getState(Button $button, InputProviderInterface $input, ModelInterface $model=null)
 	{
-		$visible = true;
+		$state = false;
 
 		if($this->config['always']) {
-			$visible = false;
+			$state = true;
 		}
 		elseif($this->config['condition']) {
 			$condition = $this->config['condition'];
-			$visible   = $condition($button, $input, $model);
+			$state     = $condition($button, $input, $model);
 		}
 		elseif($this->config['property']) {
 			Assertion::notNull($model, 'Property can part of condition for model operations');
 
-			$visible = ($model->getProperty($this->config['property']) == $this->config['value']);
+			$state = ($model->getProperty($this->config['property']) == $this->config['value']);
 		}
 		elseif($this->config['callback']) {
 			$callback = $this->config['callback'];
-			$visible  = call_user_func($callback, $button, $input, $model);
+			$state  = call_user_func($callback, $button, $input, $model);
 		}
 
 		if($this->config['inverse']) {
-			$visible = !$visible;
-
-			return $visible;
+			$state = !$state;
 		}
 
-		return $visible;
+		return $state;
 	}
 
 } 

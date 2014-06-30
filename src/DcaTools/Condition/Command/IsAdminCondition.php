@@ -30,8 +30,9 @@ class IsAdminCondition extends AbstractCondition
 	 * @var array
 	 */
 	protected $config = array(
-		'always' => false,
-		'action' => array(),
+		'always'  => false,
+		'action'  => array(),
+		'inverse' => false,
 	);
 
 
@@ -43,6 +44,9 @@ class IsAdminCondition extends AbstractCondition
 	{
 		if(isset($config['action'])) {
 			$config['action'] = (array) $config['action'];
+		}
+		elseif(!isset($config['always'])) {
+			$config['always'] = true;
 		}
 
 		parent::__construct($config);
@@ -59,15 +63,20 @@ class IsAdminCondition extends AbstractCondition
 	 */
 	public function __invoke(Button $button, InputProviderInterface $input, ModelInterface $model = null)
 	{
+		$isAdmin = false;
+
 		if($this->config['always']) {
-			return $this->user->hasRole(User::ROLE_ADMIN);
+			$isAdmin =  $this->user->hasRole(User::ROLE_ADMIN);
 		}
-
 		if($this->config['action'] && in_array($input->getParameter('action'), $this->config['action'])) {
-			return $this->user->hasRole(User::ROLE_ADMIN);
+			$isAdmin = $this->user->hasRole(User::ROLE_ADMIN);
 		}
 
-		return true;
+		if($this->config['inverse']) {
+			return !$isAdmin;
+		}
+
+		return $isAdmin;
 	}
 
 }

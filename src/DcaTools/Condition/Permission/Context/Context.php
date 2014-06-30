@@ -12,6 +12,7 @@
 namespace DcaTools\Condition\Permission\Context;
 
 
+use ContaoCommunityAlliance\DcGeneral\Data\CollectionInterface;
 use ContaoCommunityAlliance\DcGeneral\Data\ModelInterface;
 
 interface Context
@@ -25,4 +26,16 @@ interface Context
 	 * @return ModelInterface
 	 */
 	public function getModel();
+
+	/**
+	 * @return bool
+	 */
+	public function hasCollection();
+
+
+	/**
+	 * @return CollectionInterface|null
+	 */
+	public function getCollection();
+
 } 

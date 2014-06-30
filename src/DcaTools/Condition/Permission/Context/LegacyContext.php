@@ -12,24 +12,32 @@
 namespace DcaTools\Condition\Permission\Context;
 
 
+use ContaoCommunityAlliance\DcGeneral\Data\CollectionInterface;
 use ContaoCommunityAlliance\DcGeneral\Data\ModelInterface;
-use ContaoCommunityAlliance\DcGeneral\DcGeneral;
+use ContaoCommunityAlliance\DcGeneral\EnvironmentInterface;
 use DcaTools\Data\ConfigBuilder;
 
 class LegacyContext implements Context
 {
 	/**
-	 * @var DcGeneral
+	 * @var EnvironmentInterface
 	 */
-	private $dcGeneral;
+	private $environment;
+
+	/**
+	 * @var CollectionInterface
+	 */
+	private $collection;
 
 
 	/**
-	 * @param $dcGeneral
+	 * @param EnvironmentInterface $environment
+	 * @param CollectionInterface $collection
 	 */
-	function __construct(DcGeneral $dcGeneral)
+	function __construct(EnvironmentInterface $environment, CollectionInterface $collection=null)
 	{
-		$this->dcGeneral = $dcGeneral;
+		$this->environment = $environment;
+		$this->collection  = $collection;
 	}
 
 
@@ -38,31 +46,57 @@ class LegacyContext implements Context
 	 */
 	public function getParent()
 	{
-		$environment = $this->dcGeneral->getEnvironment();
-		$name        = $environment->getParentDataDefinition()->getName();
-		$input       = $environment->getInputProvider();
+		$name        = $this->environment->getParentDataDefinition()->getName();
+		$input       = $this->environment->getInputProvider();
 
-		if($input->hasParameter('id')) {
-			$id = $input->getParameter('id');
-		}
-		else {
+		if($input->hasParameter('act')) {
 			$id = CURRENT_ID;
 		}
+		else {
+			if($input->hasParameter('id')) {
+				$id = $input->getParameter('id');
+			}
+			else {
+				$id = CURRENT_ID;
+			}
+		}
 
-		return ConfigBuilder::create($environment, $name)->setId($id)->fetch();
+		return ConfigBuilder::create($this->environment, $name)->setId($id)->fetch();
 	}
 
 
 	/**
+	 * @throws \RuntimeException
 	 * @return ModelInterface
 	 */
 	public function getModel()
 	{
-		$environment = $this->dcGeneral->getEnvironment();
-		$input       = $environment->getInputProvider();
+		$input       = $this->environment->getInputProvider();
 		$id 		 = $input->getParameter('id');
 
-		return ConfigBuilder::create($environment)->id($id)->fetch();
+		if(!$input->hasParameter('act') || !$input->getParameter('key')) {
+			throw new \RuntimeException('unable to get model without an action');
+		}
+
+		return ConfigBuilder::create($this->environment)->id($id)->fetch();
+	}
+
+
+	/**
+	 * @return bool
+	 */
+	public function hasCollection()
+	{
+		return ($this->collection !== null);
+	}
+
+
+	/**
+	 * @return CollectionInterface|null
+	 */
+	public function getCollection()
+	{
+		return $this->collection;
 	}
 
 } 

@@ -34,8 +34,7 @@ $GLOBALS['DCATOOLS_PERMISSION_CONDITIONS']['isAdmin']   = function($user, $confi
 
 
 $GLOBALS['TL_EVENT_SUBSCRIBERS'][] = 'DcaTools\Contao\CompatibilitySubscriber';
-
-$GLOBALS['TL_EVENTS'][CreateDcGeneralEvent::NAME][] = 'DcaTools\Condition\Permission\PermissionHandler::handle';
+$GLOBALS['TL_EVENT_SUBSCRIBERS'][] = 'DcaTools\Condition\Permission\PermissionHandler';
 
 $GLOBALS['TL_EVENTS'][BuildDataDefinitionEvent::NAME][] = function(BuildDataDefinitionEvent $event) {
 	$GLOBALS['container']['dcatools.definition-builder']->build($event->getContainer(), $event);

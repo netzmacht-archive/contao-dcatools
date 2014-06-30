@@ -12,6 +12,7 @@
 namespace DcaTools\Condition\Permission;
 
 
+use Assert\Assertion;
 use ContaoCommunityAlliance\DcGeneral\Data\ModelInterface;
 use ContaoCommunityAlliance\DcGeneral\EnvironmentInterface;
 use ContaoCommunityAlliance\DcGeneral\InputProviderInterface;
@@ -23,8 +24,9 @@ abstract class AbstractStateCondition extends AbstractCondition
 	const PARAM_POST    = 'post';
 	const PARAM_SESSION = 'session';
 
-	const CONTEXT_MODEL  = 'model';
-	const CONTEXT_PARENT = 'parent';
+	const CONTEXT_MODEL      = 'model';
+	const CONTEXT_PARENT     = 'parent';
+	const CONTEXT_COLLECTION = 'collection';
 
 
 	/**
@@ -65,12 +67,40 @@ abstract class AbstractStateCondition extends AbstractCondition
 
 		$state = true;
 
-		if($this->config['property']) {
-			$model = $this->getContextModel($context);
-			$state = $this->getStateByProperty($model);
-		}
-		elseif($this->config['param']) {
+		if($this->config['param']) {
 			$state = $this->getStateByParam($environment);
+
+			if(!$this->config['property']) {
+				return $state;
+			}
+			elseif(!$state) {
+				return true;
+			}
+		}
+
+		if(!$this->config['property']) {
+			return true;
+		}
+
+		if($this->config['context'] == static::CONTEXT_COLLECTION) {
+			$collection = $context->getCollection();
+
+			foreach($collection as $model) {
+				$state = $this->getStateByProperty($model);
+
+				if($this->config['inverse']) {
+					$state = !$state;
+				}
+
+				if(!$state) {
+					$state = false;
+					break;
+				}
+			}
+		}
+		else {
+			$model = $this->getContextModel($context);
+			$state = $this->getStateByProperty($model);;
 		}
 
 		if($this->config['inverse']) {
@@ -211,11 +241,20 @@ abstract class AbstractStateCondition extends AbstractCondition
 	 */
 	protected function getContextModel(Context $context)
 	{
-		if($this->config['context'] == static::CONTEXT_PARENT) {
-			return $context->getParent();
-		}
+		switch($this->config['context']) {
+			case static::CONTEXT_PARENT:
+				return $context->getParent();
+				break;
 
-		return $context->getModel();
+			case static::CONTEXT_COLLECTION:
+				return $context->getCollection();
+				break;
+
+			default:
+			case static::CONTEXT_MODEL:
+				return $context->getModel();
+				break;
+		}
 	}
 
 } 

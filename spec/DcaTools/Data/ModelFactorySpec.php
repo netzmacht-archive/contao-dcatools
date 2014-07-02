@@ -53,12 +53,12 @@ class ModelFactorySpec extends ObjectBehavior
 
 	function it_creates_model_by_id(EnvironmentInterface $environment, ModelInterface $model)
 	{
-		$this->createById($environment, static::ID, false)->shouldReturn($model);
+		$this->createById($environment, static::ID, null, false)->shouldReturn($model);
 	}
 
 	function it_creates_model_by_id_loading_from_data_provider(EnvironmentInterface $environment, ModelInterface $model)
 	{
-		$this->createById($environment, static::ID, false)->shouldReturn($model);
+		$this->createById($environment, static::ID, null, false)->shouldReturn($model);
 	}
 
 	function it_creates_model_from_legacy_dc(EnvironmentInterface $environment,	\DataContainer $dc,	\Database\Result $result)

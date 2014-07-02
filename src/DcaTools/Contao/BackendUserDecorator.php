@@ -70,4 +70,16 @@ class BackendUserDecorator implements User
 		return $this->user->id;
 	}
 
+
+	/**
+	 * Get username of current user
+	 *
+	 * @return string
+	 */
+	public function getUsername()
+	{
+		return $this->user->username;
+	}
+
+
 } 

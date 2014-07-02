@@ -10,14 +10,12 @@
  * @copyright 2013 netzmacht creative David Molineus
  */
 
-use ContaoCommunityAlliance\DcGeneral\Contao\InputProvider;
 use ContaoCommunityAlliance\Translator\Contao\LangArrayTranslator;
 use ContaoCommunityAlliance\Translator\TranslatorChain;
-use DcaTools\Config\Map;
 use DcaTools\Dca\Builder\DcaToolsDefinitionBuilder;
+use DcaTools\Definition\Permission\PermissionHandler;
 use DcaTools\View\ButtonRenderer;
-use DcaTools\Condition\Command\CommandConditionHandler;
-use DcaTools\Condition\Command\ConditionManager;
+use DcaTools\Definition\Command\CommandConditionHandler;
 use DcaTools\View\DcGeneralBasedViewHelper;
 
 /**
@@ -43,12 +41,15 @@ $container['dcatools.button-renderer'] = $container->share(function(\Pimple $c) 
 });
 
 $container['dcatools.command-condition-handler'] = $container->share(function($c) {
-	return new CommandConditionHandler($c['dcatools.button-renderer']);
+	return new CommandConditionHandler($c['dcatools.button-renderer'], $c['dcatools.user']);
+});
+
+$container['dcatools.permission-handler'] = $container->share(function($c) {
+	return new PermissionHandler($c['dcatools.user']);
 });
 
 $container['dcatools.definition-builder'] = function(\Pimple $c) {
 	$builder = new DcaToolsDefinitionBuilder(
-		$c['dcatools.user'],
 		(array) $GLOBALS['DCATOOLS_COMMAND_CONDITIONS'],
 		(array) $GLOBALS['DCATOOLS_PERMISSION_CONDITIONS']
 	);

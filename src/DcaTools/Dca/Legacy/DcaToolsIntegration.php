@@ -73,7 +73,7 @@ class DcaToolsIntegration
 		}
 
 		// no not activate for dc general
-		if($GLOBALS['TL_DCA'][$name]['config']['dataContainer'] == 'DC_General') {
+		if($GLOBALS['TL_DCA'][$name]['config']['dataContainer'] == 'General') {
 			return;
 		}
 
@@ -89,7 +89,12 @@ class DcaToolsIntegration
 	{
 		// check again against dc general to avoid that a subclass would be used
 		if(!$dataContainer instanceof DC_General) {
+			$driver    = $GLOBALS['TL_DCA'][$dataContainer->name]['config']['dataContainer'];
+			$GLOBALS['TL_DCA'][$dataContainer->name]['config']['dataContainer'] = 'General';
+
 			$dcGeneral = $this->createDcGeneral($dataContainer->table);
+
+			$GLOBALS['TL_DCA'][$dataContainer->name]['config']['dataContainer'] = $driver;
 
 			/** @var \Pimple $container */
 			global $container;

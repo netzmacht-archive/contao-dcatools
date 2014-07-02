@@ -42,4 +42,12 @@ interface User
 	 */
 	public function getId();
 
+
+	/**
+	 * Get username of current user
+	 *
+	 * @return string
+	 */
+	public function getUsername();
+
 } 

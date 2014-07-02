@@ -12,7 +12,9 @@
 namespace DcaTools\Definition;
 
 use ContaoCommunityAlliance\DcGeneral\DataDefinition\Definition\DefinitionInterface;
-use DcaTools\Condition\Command;
+use DcaTools\Definition\Command\CommandConditions;
+use DcaTools\Definition\Command\Condition;
+use DcaTools\Definition\Permission\PermissionConditions;
 
 
 /**
@@ -24,12 +26,12 @@ class DcaToolsDefinition implements DefinitionInterface
 	const NAME = 'dcatools';
 
 	/**
-	 * @var CommandConditionCollection
+	 * @var CommandConditions
 	 */
 	private $commandConditions;
 
 	/**
-	 * @var PermissionConditionCollection
+	 * @var PermissionConditions
 	 */
 	private $permissionConditions;
 
@@ -48,11 +50,11 @@ class DcaToolsDefinition implements DefinitionInterface
 	 *
 	 */
 	public function __construct(
-		CommandConditionCollection $commandConditions=null,
-		PermissionConditionCollection $permissionConditions=null
+		CommandConditions $commandConditions=null,
+		PermissionConditions $permissionConditions=null
 	) {
-		$this->commandConditions    = $commandConditions?: new CommandConditionCollection();
-		$this->permissionConditions = $permissionConditions ?: new PermissionConditionCollection();
+		$this->commandConditions    = $commandConditions?: new CommandConditions();
+		$this->permissionConditions = $permissionConditions ?: new PermissionConditions();
 	}
 
 	/**
@@ -74,7 +76,7 @@ class DcaToolsDefinition implements DefinitionInterface
 
 
 	/**
-	 * @return CommandConditionCollection
+	 * @return CommandConditions
 	 */
 	public function getCommandConditions()
 	{
@@ -83,7 +85,7 @@ class DcaToolsDefinition implements DefinitionInterface
 
 
 	/**
-	 * @return PermissionConditionCollection
+	 * @return PermissionConditions
 	 */
 	public function getPermissionConditions()
 	{

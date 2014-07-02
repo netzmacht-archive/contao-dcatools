@@ -15,13 +15,11 @@ use ContaoCommunityAlliance\DcGeneral\Contao\Dca\Builder\Legacy\DcaReadingDataDe
 use ContaoCommunityAlliance\DcGeneral\DataDefinition\ContainerInterface;
 use ContaoCommunityAlliance\DcGeneral\Factory\Event\BuildDataDefinitionEvent;
 use DcaTools\Assertion;
-use DcaTools\Condition\Command\CommandCondition;
-use DcaTools\Config\Map;
-use DcaTools\Condition\Command;
-use DcaTools\Definition\CommandConditionCollection;
+use DcaTools\Definition\Command\CommandCondition;
+use DcaTools\Definition\Command\Condition;
+use DcaTools\Definition\Command\CommandConditions;
 use DcaTools\Definition\DcaToolsDefinition;
-use DcaTools\Definition\PermissionConditionCollection;
-use DcaTools\User\User;
+use DcaTools\Definition\Permission\PermissionConditions;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 
@@ -38,32 +36,16 @@ class DcaToolsDefinitionBuilder extends DcaReadingDataDefinitionBuilder
 	 */
 	private $permissionConditions;
 
-	/**
-	 * @var User
-	 */
-	private $user;
-
 
 	/**
-	 * @param User $user
 	 * @param array $commandConditions
 	 * @param array $permissionConditions
+	 * @internal param \DcaTools\User\User $user
 	 */
-	function __construct(User $user, array $commandConditions, array $permissionConditions)
+	function __construct(array $commandConditions, array $permissionConditions)
 	{
-		$this->user				    = $user;
 		$this->commandConditions    = $commandConditions;
 		$this->permissionConditions = $permissionConditions;
-	}
-
-
-	/**
-	 * @param BuildDataDefinitionEvent $event
-	 * @throws NotImplementedException
-	 */
-	public static function process(BuildDataDefinitionEvent $event)
-	{
-		//throw new NotImplementedException();
 	}
 
 
@@ -99,50 +81,18 @@ class DcaToolsDefinitionBuilder extends DcaReadingDataDefinitionBuilder
 
 
 	/**
-	 * @param \DcaTools\Definition\CommandConditionCollection $conditions
+	 * @param \DcaTools\Definition\Command\CommandConditions $conditions
 	 * @param $definitions
 	 */
-	private function buildCommandConditions(CommandConditionCollection $conditions, $definitions)
+	private function buildCommandConditions(CommandConditions $conditions, $definitions)
 	{
 		foreach($definitions as $definition) {
-			$condition = $this->createCommandCondition($definition['condition'], $definition['config']);
-			$conditions->addCondition($condition, $definition['filter']);
-		}
-	}
+			$condition = $this->createCommandCondition(
+				$definition['condition'],
+				(array) $definition['config'],
+				(array) $definition['filter']
+			);
 
-
-	/**
-	 * @param $condition
-	 * @param $config
-	 * @return CommandCondition
-	 */
-	private function createCommandCondition($condition, $config)
-	{
-		if(isset($this->commandConditions[$condition])) {
-			$condition = $this->commandConditions[$condition];
-
-			if(isset($config['condition'])) {
-				$config['condition'] = $this->createCommandCondition($config['condition'], (array) $config['config']);
-			}
-
-			if(is_callable($condition)) {
-				return call_user_func($condition, $config);
-			}
-		}
-
-		Assertion::classExists($condition, 'Condition class does not exists');
-		return new $condition($config);
-	}
-
-
-	/**
-	 * @param \DcaTools\Definition\PermissionConditionCollection $conditions
-	 * @param $definitions
-	 */
-	private function buildPermissionConditions(PermissionConditionCollection $conditions, $definitions)
-	{
-		foreach($definitions as $definition) {
-			$condition = $this->createPermissionCondition($definition['condition'], $definition['config']);
 			$conditions->addCondition($condition);
 		}
 	}
@@ -150,10 +100,58 @@ class DcaToolsDefinitionBuilder extends DcaReadingDataDefinitionBuilder
 
 	/**
 	 * @param $condition
-	 * @param $config
+	 * @param array $config
+	 * @param array $filter
+	 * @return CommandCondition
+	 */
+	private function createCommandCondition($condition, array $config, array $filter)
+	{
+		if(isset($this->commandConditions[$condition])) {
+			$condition = $this->commandConditions[$condition];
+
+			if(isset($config['condition'])) {
+				$config['condition'] = $this->createCommandCondition(
+					$config['condition'],
+					(array) $config['config'],
+					(array) $config['filter']
+				);
+			}
+
+			if(is_callable($condition)) {
+				return call_user_func($condition, $config, $filter);
+			}
+		}
+
+		Assertion::classExists($condition, 'Condition class does not exists');
+		return new $condition($config, $filter);
+	}
+
+
+	/**
+	 * @param \DcaTools\Definition\Permission\PermissionConditions $conditions
+	 * @param $definitions
+	 */
+	private function buildPermissionConditions(PermissionConditions $conditions, $definitions)
+	{
+		foreach($definitions as $definition) {
+			$condition = $this->createPermissionCondition(
+				$definition['condition'],
+				(array) $definition['config'],
+				(array) $definition['filter']
+			);
+
+			$conditions->addCondition($condition);
+		}
+	}
+
+
+	/**
+	 * @param $condition
+	 * @param array $config
+	 * @param array $filter
 	 * @return mixed
 	 */
-	private function createPermissionCondition($condition, $config)
+	private function createPermissionCondition($condition, array $config, array $filter)
 	{
 		if(isset($this->permissionConditions[$condition])) {
 			$condition = $this->permissionConditions[$condition];
@@ -161,20 +159,24 @@ class DcaToolsDefinitionBuilder extends DcaReadingDataDefinitionBuilder
 			if(isset($config['conditions'])) {
 				$children = array();
 
-				foreach($config['conditions'] as $condition) {
-					$children[] = $this->createPermissionCondition($condition['condition'], (array) $condition['config']);
+				foreach($config['conditions'] as $child) {
+					$children[] = $this->createPermissionCondition(
+						$child['condition'],
+						(array) $child['config'],
+						(array) $child['filter']
+					);
 				}
 
 				$config['conditions'] = $children;
 			}
 
 			if(is_callable($condition)) {
-				return call_user_func($condition, $this->user, $config);
+				return call_user_func($condition, $config, $filter);
 			}
 		}
 
 		Assertion::classExists($condition, 'Condition class does not exists');
-		return new $condition($this->user, $config);
+		return new $condition($config, $filter);
 	}
 
 } 

@@ -14,6 +14,7 @@ namespace DcaTools\Definition;
 use ContaoCommunityAlliance\DcGeneral\DataDefinition\Definition\DefinitionInterface;
 use DcaTools\Definition\Command\CommandConditions;
 use DcaTools\Definition\Command\Condition;
+use DcaTools\Definition\Command\GlobalCommandConditions;
 use DcaTools\Definition\Permission\PermissionConditions;
 
 
@@ -45,24 +46,34 @@ class DcaToolsDefinition implements DefinitionInterface
 	 */
 	private $callbacks = array();
 
+	/**
+	 * @var CommandConditions
+	 */
+	private $globalCommandConditions;
+
 
 	/**
 	 *
 	 */
 	public function __construct(
 		CommandConditions $commandConditions=null,
+		GlobalCommandConditions $globalCommandConditions=null,
 		PermissionConditions $permissionConditions=null
 	) {
-		$this->commandConditions    = $commandConditions?: new CommandConditions();
-		$this->permissionConditions = $permissionConditions ?: new PermissionConditions();
+		$this->commandConditions       = $commandConditions ?: new CommandConditions();
+		$this->globalCommandConditions = $globalCommandConditions ?: new GlobalCommandConditions();
+		$this->permissionConditions    = $permissionConditions ?: new PermissionConditions();
 	}
 
 	/**
 	 * @param mixed $legacyMode
+	 * @return $this
 	 */
 	public function setLegacyMode($legacyMode)
 	{
 		$this->legacyMode = $legacyMode;
+
+		return $this;
 	}
 
 
@@ -85,6 +96,15 @@ class DcaToolsDefinition implements DefinitionInterface
 
 
 	/**
+	 * @return CommandConditions
+	 */
+	public function getGlobalCommandConditions()
+	{
+		return $this->globalCommandConditions;
+	}
+
+
+	/**
 	 * @return PermissionConditions
 	 */
 	public function getPermissionConditions()
@@ -92,13 +112,18 @@ class DcaToolsDefinition implements DefinitionInterface
 		return $this->permissionConditions;
 	}
 
+
 	/**
 	 * @param array $callbacks
+	 * @return $this;
 	 */
 	public function setCallbacks(array $callbacks)
 	{
 		$this->callbacks = $callbacks;
+
+		return $this;
 	}
+
 
 	/**
 	 * @return array

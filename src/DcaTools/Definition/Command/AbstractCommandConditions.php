@@ -49,6 +49,18 @@ abstract class AbstractCommandConditions implements \IteratorAggregate
 
 
 	/**
+	 * @param CommandCondition $condition
+	 * @return bool
+	 */
+	public function hasCondition(CommandCondition $condition)
+	{
+		$hash = spl_object_hash($condition);
+
+		return isset($this->conditions[$hash]);
+	}
+
+
+	/**
 	 * @param array $conditions
 	 * @return $this
 	 */
@@ -67,7 +79,7 @@ abstract class AbstractCommandConditions implements \IteratorAggregate
 	 */
 	public function getConditions()
 	{
-		return $this->conditions;
+		return array_values($this->conditions);
 	}
 
 
@@ -80,7 +92,7 @@ abstract class AbstractCommandConditions implements \IteratorAggregate
 	 */
 	public function getIterator()
 	{
-		return new \ArrayIterator($this->conditions);
+		return new \ArrayIterator($this->getConditions());
 	}
 
 } 

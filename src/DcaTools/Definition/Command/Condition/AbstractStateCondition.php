@@ -15,6 +15,7 @@ use ContaoCommunityAlliance\DcGeneral\Data\ModelInterface;
 use ContaoCommunityAlliance\DcGeneral\InputProviderInterface;
 use DcaTools\Assertion;
 use DcaTools\Dca\Button;
+use DcaTools\Definition\Command\CommandCondition;
 use DcaTools\Definition\Command\Condition;
 use DcaTools\User\User;
 
@@ -37,8 +38,9 @@ abstract class AbstractStateCondition extends AbstractCondition
 		$state = false;
 
 		if($this->config['condition']) {
+			/** @var CommandCondition $condition */
 			$condition = $this->config['condition'];
-			$state     = $condition($button, $input, $user, $model);
+			$state     = $condition->match($button, $input, $user, $model);
 		}
 		elseif($this->config['property']) {
 			Assertion::notNull($model, 'Property can part of condition for model operations');

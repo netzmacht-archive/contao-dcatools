@@ -14,6 +14,7 @@ namespace DcaTools\Definition\Permission\Condition;
 
 use ContaoCommunityAlliance\DcGeneral\EnvironmentInterface;
 use DcaTools\Definition\Permission\Context;
+use DcaTools\Definition\Permission\PermissionCondition;
 use DcaTools\User\User;
 
 
@@ -42,12 +43,13 @@ class OrCondition extends AbstractCondition
 	 */
 	public function execute(EnvironmentInterface $environment, User $user, Context $context)
 	{
-		if(empty($this->conditions)) {
+		if(empty($this->config['conditions'])) {
 			return true;
 		}
 
-		foreach($this->conditions as $condition) {
-			$match = $condition($environment, $context);
+		foreach($this->config['conditions'] as $condition) {
+			/** @var PermissionCondition $condition */
+			$match = $condition->match($environment, $user, $context);
 			$match = $this->applyConfigInverse($match);
 
 			if($match) {

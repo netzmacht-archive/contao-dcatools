@@ -88,8 +88,13 @@ class PermissionHandler implements EventSubscriberInterface
 
 		foreach($conditions as $condition) {
 			/** @var PermissionCondition $condition */
-			if(!$condition->__invoke($environment, $this->user, $context)) {
-				\Controller::log($condition->getError(), get_class($condition) . '::__INVOKE__', TL_ERROR);
+			if(!$condition->match($environment, $this->user, $context)) {
+				\Controller::log(
+					$condition->getError(),
+					get_class($condition) . '::__INVOKE__',
+					TL_ERROR)
+
+				;
 				$redirect   = new RedirectEvent('contao/main.php?act=error');
 
 				$propagator->propagate(ContaoEvents::CONTROLLER_REDIRECT, $redirect);

@@ -67,9 +67,9 @@ abstract class AbstractCondition extends AbstractGenericCondition implements Per
 	 * @param Context $context
 	 * @return bool
 	 */
-	public function __invoke(EnvironmentInterface $environment, User $user, Context $context)
+	public function match(EnvironmentInterface $environment, User $user, Context $context)
 	{
-		if($this->match($environment, $user, $context)) {
+		if($this->filter($environment, $user, $context)) {
 			return $this->execute($environment, $user, $context);
 		}
 
@@ -85,7 +85,7 @@ abstract class AbstractCondition extends AbstractGenericCondition implements Per
 	 * @param Context $context
 	 * @return mixed
 	 */
-	public function match(EnvironmentInterface $environment, User $user, Context $context)
+	public function filter(EnvironmentInterface $environment, User $user, Context $context)
 	{
 		$match = null;
 

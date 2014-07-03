@@ -16,6 +16,11 @@ use ContaoCommunityAlliance\DcGeneral\EnvironmentInterface;
 use DcaTools\Definition\Permission\Context;
 use DcaTools\User\User;
 
+
+/**
+ * Interface PermissionCondition
+ * @package DcaTools\Definition\Permission
+ */
 interface PermissionCondition
 {
 	/**
@@ -24,7 +29,7 @@ interface PermissionCondition
 	 * @param Context $context
 	 * @return bool
 	 */
-	public function __invoke(EnvironmentInterface $environment, User $user, Context $context);
+	public function match(EnvironmentInterface $environment, User $user, Context $context);
 
 
 	/**
@@ -42,7 +47,7 @@ interface PermissionCondition
 	 * @param Context $context
 	 * @return bool
 	 */
-	public function match(EnvironmentInterface $environment, User $user, Context $context);
+	public function filter(EnvironmentInterface $environment, User $user, Context $context);
 
 
 	/**

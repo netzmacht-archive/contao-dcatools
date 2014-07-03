@@ -36,7 +36,7 @@ interface CommandCondition
 	 * @param ModelInterface $model
 	 * @return bool
 	 */
-	public function __invoke(Button $button, InputProviderInterface $input, User $user, ModelInterface $model = null);
+	public function match(Button $button, InputProviderInterface $input, User $user, ModelInterface $model = null);
 
 
 	/**
@@ -56,6 +56,6 @@ interface CommandCondition
 	 * @param ModelInterface $model
 	 * @return bool
 	 */
-	public function match(Button $button, InputProviderInterface $input, User $user, ModelInterface $model = null);
+	public function filter(Button $button, InputProviderInterface $input, User $user, ModelInterface $model = null);
 
 } 

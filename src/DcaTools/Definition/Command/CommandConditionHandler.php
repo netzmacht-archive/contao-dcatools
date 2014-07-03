@@ -24,7 +24,7 @@ use DcaTools\Definition\DcaToolsDefinition;
 
 class CommandConditionHandler
 {
-	const PRIORITY = 10000;
+	const PRIORITY = 1000;
 
 	/**
 	 * @var string
@@ -110,7 +110,7 @@ class CommandConditionHandler
 		$input  = $event->getEnvironment()->getInputProvider();
 
 		foreach($conditions as $condition) {
-			if(!$condition->__invoke($button, $input, $this->user, $model)) {
+			if(!$condition->match($button, $input, $this->user, $model)) {
 				break;
 			}
 		}

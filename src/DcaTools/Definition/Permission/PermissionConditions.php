@@ -61,6 +61,7 @@ class PermissionConditions implements \IteratorAggregate
 		return $this;
 	}
 
+
 	/**
 	 * @return array
 	 */

@@ -15,8 +15,8 @@ namespace DcaTools\Definition\Command\Condition;
 use ContaoCommunityAlliance\DcGeneral\Data\ModelInterface;
 use ContaoCommunityAlliance\DcGeneral\EnvironmentInterface;
 use DcaTools\Assertion;
+use DcaTools\Condition\Command\CommandConditionFactory;
 use DcaTools\Dca\Button;
-use DcaTools\Definition\Command\CommandConditionFactory;
 use DcaTools\Definition\Command\CommandFilter;
 use DcaTools\User\User;
 

@@ -54,6 +54,11 @@ class ConfigBuilder
 	 */
 	protected $fields = array();
 
+	/**
+	 * @var array
+	 */
+	private $ids = array();
+
 
 	/**
 	 * @param DataProviderInterface $dataProvider
@@ -103,10 +108,8 @@ class ConfigBuilder
 	 */
 	public function id($id)
 	{
-		$ids = $this->config->getIds();
-		$ids[] = $id;
+		$this->ids[] = $id;
 
-		$this->config->setIds($ids);
 		return $this;
 	}
 
@@ -150,11 +153,16 @@ class ConfigBuilder
 
 
 	/**
+	 * @param $fields,...
 	 * @return $this
 	 */
-	public function fields()
+	public function fields($fields)
 	{
-		foreach(func_get_args() as $field) {
+		if(!is_array($fields)) {
+			$fields = func_get_args();
+		}
+
+		foreach($fields as $field) {
 			$this->field($field);
 		}
 
@@ -169,16 +177,21 @@ class ConfigBuilder
 	public function sorting($column, $direction = DCGE::MODEL_SORTING_ASC)
 	{
 		$this->sorting[$column] = $direction;
+
 		return $this;
 	}
 
 
 	/**
 	 * @param array $sorting
+	 *
+	 * @return $this
 	 */
 	public function setSorting(array $sorting)
 	{
 		$this->sorting = $sorting;
+
+		return $this;
 	}
 
 
@@ -341,6 +354,13 @@ class ConfigBuilder
 			$this->config->setFields($this->fields);
 		}
 
+		if(count($this->ids) == 1 && $this->config->getId() === null) {
+			$this->config->setId($this->ids[0]);
+		}
+		elseif($this->ids) {
+			$this->config->setIds($this->ids);
+		}
+
 		return $this->config;
 	}
 
@@ -369,7 +389,7 @@ class ConfigBuilder
 	 */
 	public function delete()
 	{
-		if($this->config->getId()) {
+		if($this->config->getId() || count($this->ids) == 1) {
 			$this->provider->delete($this->getConfig());
 		}
 		else {

@@ -13,7 +13,7 @@ namespace DcaTools\Definition\Permission\Filter;
 
 
 use DcaTools\Condition\Permission\FilterFactory;
-use DcaTools\Definition\Permission\Condition\Filter\PermissionFilter;
+use DcaTools\Definition\Permission\PermissionFilter;
 
 abstract class AbstractFilter implements PermissionFilter
 {

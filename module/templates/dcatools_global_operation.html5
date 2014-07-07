@@ -1,5 +1,0 @@
-<?php if($this->disabled): ?>
-	<?php echo \Image::getHtml($this->icon, $this->label, 'class="disabeld"'); ?>
-<?php else: ?>
-	<a href="<?php echo $this->href; ?>" title="<?php echo $this->title; ?>" class="<?php echo $this->icon; ?>" <?php echo $this->attributes; ?>><?php echo $this->label; ?></a>
-<?php endif; ?>

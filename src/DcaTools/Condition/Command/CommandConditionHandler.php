@@ -16,8 +16,8 @@ use ContaoCommunityAlliance\DcGeneral\Contao\DataDefinition\Definition\Contao2Ba
 use ContaoCommunityAlliance\DcGeneral\Contao\View\Contao2BackendView\Event\GetOperationButtonEvent;
 use ContaoCommunityAlliance\DcGeneral\Factory\Event\BuildDataDefinitionEvent;
 use DcaTools\Dca\Button;
+use DcaTools\Definition\Command\CommandCondition;
 use DcaTools\User\User;
-use DcaTools\View\ButtonRenderer;
 use DcaTools\Definition\Command\Condition;
 use DcaTools\Definition\DcaToolsDefinition;
 
@@ -32,23 +32,16 @@ class CommandConditionHandler
 	private static $eventNamePattern = '%s[%s][%s]';
 
 	/**
-	 * @var ButtonRenderer
-	 */
-	private $renderer;
-
-	/**
 	 * @var User
 	 */
 	private $user;
 
 
 	/**
-	 * @param ButtonRenderer $renderer
 	 * @param \DcaTools\User\User $user
 	 */
-	function __construct(ButtonRenderer $renderer, User $user)
+	function __construct(User $user)
 	{
-		$this->renderer = $renderer;
 		$this->user     = $user;
 	}
 
@@ -115,10 +108,8 @@ class CommandConditionHandler
 			}
 		}
 
-		$html = $this->renderer->render($button);
-
-		if($html !== false) {
-			$event->setHtml($html);
+		if(!$button->isVisible()) {
+			$event->setHtml('');
 			$event->stopPropagation();
 		}
 	}

@@ -18,7 +18,7 @@ use DcaTools\Condition\Permission\PermissionConditionFactory;
 use DcaTools\Condition\Permission\PermissionHandler;
 use DcaTools\Dca\Builder\DcaToolsDefinitionBuilder;
 use DcaTools\View\ButtonRenderer;
-use DcaTools\View\DcGeneralBasedViewHelper;
+use DcaTools\View\DcGeneralViewHelper;
 
 /**
  * driver manager
@@ -38,12 +38,8 @@ $container['dcatools.translator'] = $container->share(function(\Pimple $c) {
 	return $translator;
 });
 
-$container['dcatools.button-renderer'] = $container->share(function(\Pimple $c) {
-	return new ButtonRenderer();
-});
-
 $container['dcatools.command-condition-handler'] = $container->share(function($c) {
-	return new CommandConditionHandler($c['dcatools.button-renderer'], $c['dcatools.user']);
+	return new CommandConditionHandler($c['dcatools.user']);
 });
 
 $container['dcatools.permission-handler'] = $container->share(function($c) {
@@ -65,8 +61,12 @@ $container['dcatools.definition-builder'] = function(\Pimple $c) {
 	return $builder;
 };
 
-$container['dcatools.view-helper'] = $container->share(function() {
-	return new DcGeneralBasedViewHelper();
+$container['dcatools.view-helper.default'] = $container->share(function() {
+	return new DcGeneralViewHelper();
+});
+
+$container['dcatools.view-helper.legacy'] = $container->share(function() {
+	return new \DcaTools\View\LegacyViewHelper();
 });
 
 $container['dcatools.user'] = $container->share(function() {

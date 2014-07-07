@@ -89,23 +89,13 @@ class DcaToolsIntegration
 	{
 		// check again against dc general to avoid that a subclass would be used
 		if(!$dataContainer instanceof DC_General) {
-			$driver    = $GLOBALS['TL_DCA'][$dataContainer->name]['config']['dataContainer'];
-			$GLOBALS['TL_DCA'][$dataContainer->name]['config']['dataContainer'] = 'General';
-
-			$dcGeneral = $this->createDcGeneral($dataContainer->table);
-
-			$GLOBALS['TL_DCA'][$dataContainer->name]['config']['dataContainer'] = $driver;
-
-			/** @var \Pimple $container */
-			global $container;
-
-			/** @var ViewHelper $viewHelper */
-			$viewHelper = $container['dcatools.view-helper'];
-			$viewHelper->setEnvironment($dcGeneral->getEnvironment());
+			$dcGeneral  = $this->createDcGeneral($dataContainer->table);
+			$viewHelper = $this->createViewHelper($dcGeneral);
 
 			$this->callbackDispatcher = new CallbackDispatcher($dcGeneral, $viewHelper);
 			$this->initializeCallbackManager($dcGeneral);
 		}
+
 	}
 
 
@@ -123,12 +113,17 @@ class DcaToolsIntegration
 		/** @var \Pimple $container */
 		global $container;
 
+		$driver    = $GLOBALS['TL_DCA'][$name]['config']['dataContainer'];
+		$GLOBALS['TL_DCA'][$name]['config']['dataContainer'] = 'General';
+
 		$factory   = new DcGeneralFactory();
 		$dcGeneral = $factory
 			->setEventPropagator($container['dcatools.event-propagator'])
 			->setTranslator($container['dcatools.translator'])
 			->setContainerName($name)
 			->createDcGeneral();
+
+		$GLOBALS['TL_DCA'][$name]['config']['dataContainer'] = $driver;
 
 		return $dcGeneral;
 	}
@@ -139,9 +134,7 @@ class DcaToolsIntegration
 	 */
 	private function initializeCallbackManager(DcGeneral $dcGeneral)
 	{
-		/** @var EventDispatcherInterface $eventDispatcher */
-		$eventDispatcher    	  = $GLOBALS['container']['event-dispatcher'];
-		$this->callbackManager    = new CallbackManager(get_called_class());
+		$this->callbackManager = new CallbackManager(get_called_class());
 
 		/** @var DcaToolsDefinition $definition */
 		$definition = $dcGeneral->getEnvironment()->getDataDefinition()->getDefinition(DcaToolsDefinition::NAME);
@@ -179,6 +172,31 @@ class DcaToolsIntegration
 		}
 
 		return call_user_func_array(array($this->callbackDispatcher, $method), $arguments);
+	}
+
+
+	/**
+	 * @param $dcGeneral
+	 * @return ViewHelper
+	 */
+	private function createViewHelper(DcGeneral $dcGeneral)
+	{
+		global $container;
+
+		/** @var DcaToolsDefinition $definition */
+		$definition = $dcGeneral->getEnvironment()->getDataDefinition()->getDefinition(DcaToolsDefinition::NAME);
+
+		if($definition->getLegacyMode()) {
+			$viewHelper = $container['dcatools.view-helper.legacy'];
+		}
+		else {
+			$viewHelper = $container['dcatools.view-helper.default'];
+		}
+
+		/** @var ViewHelper $viewHelper */
+		$viewHelper->setEnvironment($dcGeneral->getEnvironment());
+
+		return $viewHelper;
 	}
 
 } 

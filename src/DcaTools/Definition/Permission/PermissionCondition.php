@@ -26,10 +26,11 @@ interface PermissionCondition
 {
 	/**
 	 * @param array $config
+	 * @param PermissionFilter $filter
 	 * @param PermissionConditionFactory $factory
 	 * @return PermissionCondition
 	 */
-	public static function fromConfig(array $config, PermissionConditionFactory $factory);
+	public static function fromConfig(array $config, PermissionFilter $filter=null, PermissionConditionFactory $factory);
 
 
 	/**

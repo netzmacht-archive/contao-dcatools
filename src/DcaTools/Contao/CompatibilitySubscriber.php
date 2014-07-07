@@ -11,6 +11,8 @@
 
 namespace DcaTools\Contao;
 
+use ContaoCommunityAlliance\Contao\Bindings\ContaoEvents;
+use ContaoCommunityAlliance\Contao\Bindings\Events\Image\GenerateHtmlEvent;
 use ContaoCommunityAlliance\DcGeneral\Contao\View\Contao2BackendView\Event\GetOperationButtonEvent;
 use ContaoCommunityAlliance\DcGeneral\Contao\View\Contao2BackendView\Event\GetPasteButtonEvent;
 use ContaoCommunityAlliance\DcGeneral\DataDefinition\Definition\View\ToggleCommandInterface;
@@ -43,8 +45,35 @@ class CompatibilitySubscriber implements EventSubscriberInterface
 	{
 		return array(
 			GetPasteButtonEvent::NAME . '[tl_article]' => 'articlePasteButtons',
-			GetOperationButtonEvent::NAME . '[tl_article][toggle]' => array('toggle', 100),
+			ContaoEvents::IMAGE_GET_HTML 			   => 'generateDisabledIcon',
+		//	GetOperationButtonEvent::NAME . '[tl_article][toggle]' => array('toggle', 100),
 		);
+	}
+
+
+	/**
+	 * @param GenerateHtmlEvent $event
+	 */
+	public function generateDisabledIcon(GenerateHtmlEvent $event)
+	{
+		if(strpos($event->getSrc(), '_1.') === false) {
+			return;
+		}
+
+		$html = \Image::getHtml($event->getSrc(), $event->getAlt(), $event->getAttributes());
+
+		if(!$html) {
+			$src  = str_replace('_1.', '_.', $event->getSrc());
+			$html = \Image::getHtml($src, $event->getAlt(), $event->getAttributes());
+
+			if(!$html) {
+				return;
+			}
+
+			$event->stopPropagation();
+		}
+
+		$event->setHtml($html);
 	}
 
 
@@ -98,4 +127,4 @@ class CompatibilitySubscriber implements EventSubscriberInterface
 		$dataProvider->save($model);
 	}
 
-} 
+}

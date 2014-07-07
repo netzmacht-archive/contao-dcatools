@@ -168,12 +168,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/contao-community-alliance/dc-general.git",
-                "reference": "d9c6c4471fc6c623ae0913d0cc3fc25ee3ed37b4"
+                "reference": "250ffe47259c52c3d34dee72d6a235c481fbef29"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/contao-community-alliance/dc-general/zipball/d9c6c4471fc6c623ae0913d0cc3fc25ee3ed37b4",
-                "reference": "d9c6c4471fc6c623ae0913d0cc3fc25ee3ed37b4",
+                "url": "https://api.github.com/repos/contao-community-alliance/dc-general/zipball/250ffe47259c52c3d34dee72d6a235c481fbef29",
+                "reference": "250ffe47259c52c3d34dee72d6a235c481fbef29",
                 "shasum": ""
             },
             "require": {
@@ -252,7 +252,7 @@
                 "framework",
                 "php"
             ],
-            "time": "2014-06-24 14:12:16"
+            "time": "2014-07-04 13:43:43"
         },
         {
             "name": "contao-community-alliance/dependency-container",
@@ -515,16 +515,16 @@
         },
         {
             "name": "contao/core",
-            "version": "3.3.1",
+            "version": "3.3.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/contao-community-alliance/composerized-contao-core.git",
-                "reference": "75bce9c9123a47051d6ab586c1e6dd95ac0a19f5"
+                "reference": "6c5de548731b9a024930be23451ee824cabac13c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/contao-community-alliance/composerized-contao-core/zipball/75bce9c9123a47051d6ab586c1e6dd95ac0a19f5",
-                "reference": "75bce9c9123a47051d6ab586c1e6dd95ac0a19f5",
+                "url": "https://api.github.com/repos/contao-community-alliance/composerized-contao-core/zipball/6c5de548731b9a024930be23451ee824cabac13c",
+                "reference": "6c5de548731b9a024930be23451ee824cabac13c",
                 "shasum": ""
             },
             "require": {
@@ -561,7 +561,7 @@
                 "contao",
                 "core"
             ],
-            "time": "2014-05-30 14:00:37"
+            "time": "2014-07-01 16:41:26"
         },
         {
             "name": "contao/idna",
@@ -725,16 +725,16 @@
         },
         {
             "name": "leafo/scssphp",
-            "version": "0.0.10",
+            "version": "v0.0.12",
             "source": {
                 "type": "git",
                 "url": "https://github.com/leafo/scssphp.git",
-                "reference": "558357feceb9b932a192966945904414dc372e4d"
+                "reference": "ff76df3e45af45e808f3fcd516a2cb5cbc77f45e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/leafo/scssphp/zipball/558357feceb9b932a192966945904414dc372e4d",
-                "reference": "558357feceb9b932a192966945904414dc372e4d",
+                "url": "https://api.github.com/repos/leafo/scssphp/zipball/ff76df3e45af45e808f3fcd516a2cb5cbc77f45e",
+                "reference": "ff76df3e45af45e808f3fcd516a2cb5cbc77f45e",
                 "shasum": ""
             },
             "require": {
@@ -767,7 +767,7 @@
             ],
             "description": "scssphp is a compiler for SCSS written in PHP.",
             "homepage": "http://leafo.net/scssphp/",
-            "time": "2014-04-15 02:25:09"
+            "time": "2014-07-07 01:51:39"
         },
         {
             "name": "michelf/php-markdown",
@@ -1161,12 +1161,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpspec/phpspec.git",
-                "reference": "886a8c1f0a212d631942b5527691fadcd2aa8eb7"
+                "reference": "bded1df9e0302facf979509ffe12e4744fcbb371"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpspec/phpspec/zipball/886a8c1f0a212d631942b5527691fadcd2aa8eb7",
-                "reference": "886a8c1f0a212d631942b5527691fadcd2aa8eb7",
+                "url": "https://api.github.com/repos/phpspec/phpspec/zipball/bded1df9e0302facf979509ffe12e4744fcbb371",
+                "reference": "bded1df9e0302facf979509ffe12e4744fcbb371",
                 "shasum": ""
             },
             "require": {
@@ -1227,7 +1227,7 @@
                 "testing",
                 "tests"
             ],
-            "time": "2014-05-09 09:04:39"
+            "time": "2014-07-05 12:55:52"
         },
         {
             "name": "phpspec/prophecy",
@@ -1293,12 +1293,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/php-code-coverage.git",
-                "reference": "c8decd0f7c2098bb281dff36ffcaa5f8a64adc8f"
+                "reference": "09a53c29da426623e9a8a416dda1c7ed3b2d3d72"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/php-code-coverage/zipball/c8decd0f7c2098bb281dff36ffcaa5f8a64adc8f",
-                "reference": "c8decd0f7c2098bb281dff36ffcaa5f8a64adc8f",
+                "url": "https://api.github.com/repos/sebastianbergmann/php-code-coverage/zipball/09a53c29da426623e9a8a416dda1c7ed3b2d3d72",
+                "reference": "09a53c29da426623e9a8a416dda1c7ed3b2d3d72",
                 "shasum": ""
             },
             "require": {
@@ -1350,7 +1350,7 @@
                 "testing",
                 "xunit"
             ],
-            "time": "2014-06-24 06:28:42"
+            "time": "2014-06-30 09:08:59"
         },
         {
             "name": "phpunit/php-file-iterator",
@@ -1447,12 +1447,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/php-token-stream.git",
-                "reference": "955c24b708f8bfd6a05f303217a8dac3a443d531"
+                "reference": "a0802561692c3b2bb0ed972f7ffafbfab068e580"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/php-token-stream/zipball/955c24b708f8bfd6a05f303217a8dac3a443d531",
-                "reference": "955c24b708f8bfd6a05f303217a8dac3a443d531",
+                "url": "https://api.github.com/repos/sebastianbergmann/php-token-stream/zipball/a0802561692c3b2bb0ed972f7ffafbfab068e580",
+                "reference": "a0802561692c3b2bb0ed972f7ffafbfab068e580",
                 "shasum": ""
             },
             "require": {
@@ -1489,7 +1489,7 @@
             "keywords": [
                 "tokenizer"
             ],
-            "time": "2014-05-12 05:34:42"
+            "time": "2014-06-26 07:15:38"
         },
         {
             "name": "sebastian/environment",
@@ -1643,12 +1643,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/Finder.git",
-                "reference": "bed12a8b775813b252daf137b64f79113fbc5da5"
+                "reference": "e26f1529c714f57d667599b4eb1b482326691f08"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/Finder/zipball/bed12a8b775813b252daf137b64f79113fbc5da5",
-                "reference": "bed12a8b775813b252daf137b64f79113fbc5da5",
+                "url": "https://api.github.com/repos/symfony/Finder/zipball/e26f1529c714f57d667599b4eb1b482326691f08",
+                "reference": "e26f1529c714f57d667599b4eb1b482326691f08",
                 "shasum": ""
             },
             "require": {
@@ -1683,7 +1683,7 @@
             ],
             "description": "Symfony Finder Component",
             "homepage": "http://symfony.com",
-            "time": "2014-05-23 14:36:49"
+            "time": "2014-06-20 17:41:51"
         },
         {
             "name": "symfony/yaml",
@@ -1692,12 +1692,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/Yaml.git",
-                "reference": "b01d366060f33e18fd98b0008c41a01b0d25c95c"
+                "reference": "a0e90f173c33a57bfbb5561793d25864182239ad"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/Yaml/zipball/b01d366060f33e18fd98b0008c41a01b0d25c95c",
-                "reference": "b01d366060f33e18fd98b0008c41a01b0d25c95c",
+                "url": "https://api.github.com/repos/symfony/Yaml/zipball/a0e90f173c33a57bfbb5561793d25864182239ad",
+                "reference": "a0e90f173c33a57bfbb5561793d25864182239ad",
                 "shasum": ""
             },
             "require": {
@@ -1732,7 +1732,7 @@
             ],
             "description": "Symfony Yaml Component",
             "homepage": "http://symfony.com",
-            "time": "2014-06-04 06:43:44"
+            "time": "2014-06-20 17:41:51"
         }
     ],
     "aliases": [

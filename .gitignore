@@ -1,3 +1,4 @@
 vendor/
 bin/phpspec
+bin/pscss
 coverage

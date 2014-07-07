@@ -16,7 +16,7 @@ use ContaoCommunityAlliance\DcGeneral\EnvironmentInterface;
 use DcaTools\Assertion;
 use DcaTools\Condition\Permission\Context;
 use DcaTools\Condition\Permission\FilterFactory;
-use DcaTools\Definition\Permission\Condition\Filter\PermissionFilter;
+use DcaTools\Definition\Permission\PermissionFilter;
 use DcaTools\User\User;
 
 class ActionFilter extends AbstractFilter

@@ -26,13 +26,23 @@ $GLOBALS['TL_DCA']['tl_article']['dcatools'] = array
 		(
 			'condition' => 'hide',
 			'config'	=> array('always' => true),
-			'filter'	=> array('show', 'cut', 'delete'),
+			'filter'	=> array(
+				array(
+					'filter'  => 'commands',
+					'config' => array('commands' => array('show', 'cut', 'delete')),
+				),
+			),
 		),
 		array
 		(
 			'condition' => 'disable',
-			'config'    => array('condition' => 'isNotAdmin'),
-			'filter'    => '*',
+			'config'    => array('condition' => 'isAdmin'),
+			'filter'    => array(
+				array(
+					'filter' => 'commands',
+					'config' => array('commands' => '*'),
+				),
+			),
 		),
 	),
 	'global_command_conditions' => array

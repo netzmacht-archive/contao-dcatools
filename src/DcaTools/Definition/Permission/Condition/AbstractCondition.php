@@ -15,8 +15,8 @@ namespace DcaTools\Definition\Permission\Condition;
 use ContaoCommunityAlliance\DcGeneral\EnvironmentInterface;
 use DcaTools\Condition\Permission\Context;
 use DcaTools\Condition\Permission\PermissionConditionFactory;
-use DcaTools\Definition\Permission\Condition\Filter\PermissionFilter;
 use DcaTools\Definition\Permission\PermissionCondition;
+use DcaTools\Definition\Permission\PermissionFilter;
 use DcaTools\User\User;
 
 
@@ -54,13 +54,14 @@ abstract class AbstractCondition implements PermissionCondition
 
 	/**
 	 * @param array $config
+	 * @param PermissionFilter $filter
 	 * @param PermissionConditionFactory $factory
 	 * @return PermissionCondition
 	 */
-	public static function fromConfig(array $config, PermissionConditionFactory $factory)
+	public static function fromConfig(array $config, PermissionFilter $filter=null, PermissionConditionFactory $factory)
 	{
 		/** @var AbstractCondition $condition */
-		$condition = new static();
+		$condition = new static($filter);
 
 		if(isset($config['inverse'])) {
 			$condition->setInverse($config['inverse']);
@@ -89,7 +90,7 @@ abstract class AbstractCondition implements PermissionCondition
 	{
 		$match = true;
 
-		$this->error = 'Permission denied: ' . $this->describe($environment, $user, $context)  . ' failed';
+		$this->error = 'Permission denied. Condition failed: ' . $this->describe($environment, $user, $context);
 
 		if($this->filter($environment, $user, $context)) {
 			$match = $this->execute($environment, $user, $context);

@@ -9,7 +9,7 @@
  *
  */
 
-namespace DcaTools\Definition\Permission\Condition\Filter;
+namespace DcaTools\Definition\Permission;
 
 
 use ContaoCommunityAlliance\DcGeneral\EnvironmentInterface;

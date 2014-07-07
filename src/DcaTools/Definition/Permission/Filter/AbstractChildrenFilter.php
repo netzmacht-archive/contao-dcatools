@@ -14,7 +14,7 @@ namespace DcaTools\Definition\Permission\Filter;
 
 use DcaTools\Assertion;
 use DcaTools\Condition\Permission\FilterFactory;
-use DcaTools\Definition\Permission\Condition\Filter\PermissionFilter;
+use DcaTools\Definition\Permission\PermissionFilter;
 use DcaTools\Exception\InvalidArgumentException;
 
 abstract class AbstractChildrenFilter implements PermissionFilter
@@ -54,7 +54,7 @@ abstract class AbstractChildrenFilter implements PermissionFilter
 	 */
 	public function setChildren(array $children)
 	{
-		Assertion::allIsInstanceOf($children, 'DcaTools\Definition\Command\Permission\PermissionFilter');
+		Assertion::allIsInstanceOf($children, 'DcaTools\Definition\Permission\PermissionFilter');
 
 		$this->children = $children;
 

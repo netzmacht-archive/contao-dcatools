@@ -31,6 +31,10 @@ final class IsAdminCondition extends AbstractCondition
 	 */
 	public function describe(EnvironmentInterface $environment, User $user, Context $context)
 	{
+		if($this->isInverse()) {
+			return sprintf('User "%s" has not to be admin', $user->getId());
+		}
+
 		return sprintf('User "%s" has to be admin', $user->getId());
 	}
 

@@ -32,13 +32,6 @@ class Button
 	 */
 	private $buttonEvent;
 
-
-	/**
-	 * @var bool
-	 */
-	private $disabled = false;
-
-
 	/**
 	 * @var bool
 	 */
@@ -146,19 +139,27 @@ class Button
 
 	/**
 	 * @param boolean $disabled
+	 *
+	 * @return $this
 	 */
-	public function setDisabled($disabled)
+	public function setDisabled($disabled=true)
 	{
-		$this->disabled = $disabled;
+		$this->buttonEvent->setDisabled($disabled);
+
+		return $this;
 	}
 
 
 	/**
 	 * @param boolean $visible
+	 *
+	 * @return $this
 	 */
 	public function setVisible($visible)
 	{
 		$this->visible = $visible;
+
+		return $this;
 	}
 
 
@@ -176,7 +177,7 @@ class Button
 	 */
 	public function isDisabled()
 	{
-		return $this->disabled;
+		return $this->buttonEvent->isDisabled();
 	}
 
 }

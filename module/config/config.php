@@ -10,6 +10,7 @@
  * @copyright 2013 netzmacht creative David Molineus
  */
 
+use ContaoCommunityAlliance\Contao\Bindings\ContaoEvents;
 use ContaoCommunityAlliance\DcGeneral\Factory\Event\BuildDataDefinitionEvent;
 use ContaoCommunityAlliance\DcGeneral\Factory\Event\CreateDcGeneralEvent;
 use DcaTools\Definition\Command\Condition;
@@ -38,13 +39,14 @@ $GLOBALS['DCATOOLS_PERMISSION_CONDITIONS']['isAllowed'] = 'DcaTools\Definition\P
 $GLOBALS['DCATOOLS_PERMISSION_CONDITIONS']['owner']     = 'DcaTools\Definition\Permission\Condition\OwnerCondition';
 $GLOBALS['DCATOOLS_PERMISSION_CONDITIONS']['or']        = 'DcaTools\Definition\Permission\Condition\OrCondition';
 
-$GLOBALS['DCATOOLS_PERMISSION_FILTERS']['action'] = 'DcaTools\Definition\Permission\Filter\ActonFilter';
+$GLOBALS['DCATOOLS_PERMISSION_FILTERS']['action'] = 'DcaTools\Definition\Permission\Filter\ActionFilter';
 $GLOBALS['DCATOOLS_PERMISSION_FILTERS']['all'] = 'DcaTools\Definition\Permission\Filter\AllFilter';
 $GLOBALS['DCATOOLS_PERMISSION_FILTERS']['any'] = 'DcaTools\Definition\Permission\Filter\AnyFilter';
 $GLOBALS['DCATOOLS_PERMISSION_FILTERS']['context'] = 'DcaTools\Definition\Permission\Filter\ContextFilter';
 $GLOBALS['DCATOOLS_PERMISSION_FILTERS']['param'] = 'DcaTools\Definition\Permission\Filter\ParamFilter';
 $GLOBALS['DCATOOLS_PERMISSION_FILTERS']['property'] = 'DcaTools\Definition\Permission\Filter\PropertyFilter';
 
+//$GLOBALS['TL_EVENTS'][]
 
 $GLOBALS['TL_EVENT_SUBSCRIBERS'][] = 'DcaTools\Contao\CompatibilitySubscriber';
 $GLOBALS['TL_EVENT_SUBSCRIBERS'][] = function() {

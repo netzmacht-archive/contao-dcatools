@@ -54,7 +54,7 @@ class PermissionConditionFactory
 		$condition = $this->map[$name];
 
 		if(!empty($filter)) {
-			$filter = $this->filterFactory->createByName('all', $filter);
+			$filter = $this->filterFactory->createByName('all', $filter, $this);
 		}
 
 		if(is_callable($condition)) {

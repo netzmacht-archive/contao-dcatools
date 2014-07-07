@@ -9,7 +9,7 @@
  *
  */
 
-namespace DcaTools\Definition\Permission\Context;
+namespace DcaTools\Condition\Permission\Context;
 
 
 use ContaoCommunityAlliance\DcGeneral\Contao\View\Contao2BackendView\IdSerializer;
@@ -19,7 +19,7 @@ use ContaoCommunityAlliance\DcGeneral\Data\ModelInterface;
 use ContaoCommunityAlliance\DcGeneral\EnvironmentInterface;
 use ContaoCommunityAlliance\DcGeneral\View\ViewInterface;
 use DcaTools\Data\ConfigBuilder;
-use DcaTools\Definition\Permission\Context;
+use DcaTools\Condition\Permission\Context;
 
 class DcGeneralContext implements Context
 {
@@ -89,7 +89,7 @@ class DcGeneralContext implements Context
 	 */
 	public function getCollection()
 	{
-		if($this->hasCollection()) {
+		if($this->isListView()) {
 			/** @var ListView $view */
 			$view = $this->view;
 

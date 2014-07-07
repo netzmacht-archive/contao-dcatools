@@ -13,7 +13,8 @@ namespace DcaTools\Definition\Permission\Condition;
 
 
 use ContaoCommunityAlliance\DcGeneral\EnvironmentInterface;
-use DcaTools\Definition\Permission\Context;
+use DcaTools\Assertion;
+use DcaTools\Condition\Permission\Context;
 use DcaTools\Definition\Permission\PermissionCondition;
 use DcaTools\User\User;
 
@@ -25,34 +26,25 @@ use DcaTools\User\User;
 class OrCondition extends AbstractCondition
 {
 	/**
-	 * @return array
+	 * @var PermissionCondition[]
 	 */
-	protected function getDefaultConfig()
-	{
-		return array(
-			'conditions' => array(),
-		);
-	}
+	private $conditions = array();
 
 
 	/**
 	 * @param EnvironmentInterface $environment
-	 * @param \DcaTools\User\User $user
+	 * @param User $user
 	 * @param Context $context
 	 * @return bool
 	 */
-	public function execute(EnvironmentInterface $environment, User $user, Context $context)
+	protected function execute(EnvironmentInterface $environment, User $user, Context $context)
 	{
-		if(empty($this->config['conditions'])) {
+		if(empty($this->conditions)) {
 			return true;
 		}
 
-		foreach($this->config['conditions'] as $condition) {
-			/** @var PermissionCondition $condition */
-			$match = $condition->match($environment, $user, $context);
-			$match = $this->applyConfigInverse($match);
-
-			if($match) {
+		foreach($this->conditions as $condition) {
+			if($condition->match($environment, $user, $context)) {
 				return true;
 			}
 		}
@@ -60,4 +52,45 @@ class OrCondition extends AbstractCondition
 		return false;
 	}
 
-} 
+
+	/**
+	 * @param EnvironmentInterface $environment
+	 * @param User $user
+	 * @param Context $context
+	 * @return string
+	 */
+	public function describe(EnvironmentInterface $environment, User $user, Context $context)
+	{
+		$descriptions = array();
+
+		foreach($this->conditions as $condition) {
+			$descriptions[] = $condition->describe($environment, $user, $context);
+		}
+
+		return 'At least one of these conditions match: '. implode(' OR ', $descriptions);
+	}
+
+
+	/**
+	 * @param PermissionCondition[] $conditions
+	 * @return $this
+	 */
+	public function setConditions($conditions)
+	{
+		Assertion::allIsInstanceOf($conditions, 'DcaTools\Definition\Permission\PermissionCondition');
+
+		$this->conditions = $conditions;
+
+		return $this;
+	}
+
+
+	/**
+	 * @return PermissionCondition[]
+	 */
+	public function getConditions()
+	{
+		return $this->conditions;
+	}
+
+}

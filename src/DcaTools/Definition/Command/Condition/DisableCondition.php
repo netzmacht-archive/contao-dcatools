@@ -13,7 +13,7 @@ namespace DcaTools\Definition\Command\Condition;
 
 
 use ContaoCommunityAlliance\DcGeneral\Data\ModelInterface;
-use ContaoCommunityAlliance\DcGeneral\InputProviderInterface;
+use ContaoCommunityAlliance\DcGeneral\EnvironmentInterface;
 use DcaTools\Dca\Button;
 use DcaTools\Definition\Command\Condition;
 use DcaTools\User\User;
@@ -24,14 +24,15 @@ class DisableCondition extends AbstractStateCondition
 
 	/**
 	 * @param Button $button
-	 * @param InputProviderInterface $input
+	 * @param EnvironmentInterface $environment
 	 * @param \DcaTools\User\User $user
 	 * @param ModelInterface $model
+	 *
 	 * @return bool
 	 */
-	public function execute(Button $button, InputProviderInterface $input, User $user, ModelInterface $model=null)
+	public function execute(Button $button, EnvironmentInterface $environment, User $user, ModelInterface $model=null)
 	{
-		$disabled = $this->getState($button, $input, $user, $model);
+		$disabled = $this->getState($button, $environment, $user, $model);
 		$button->setDisabled($disabled);
 
 		return !$disabled;

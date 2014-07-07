@@ -13,7 +13,8 @@ namespace DcaTools\Definition\Permission;
 
 
 use ContaoCommunityAlliance\DcGeneral\EnvironmentInterface;
-use DcaTools\Definition\Permission\Context;
+use DcaTools\Condition\Permission\Context;
+use DcaTools\Condition\Permission\PermissionConditionFactory;
 use DcaTools\User\User;
 
 
@@ -24,6 +25,14 @@ use DcaTools\User\User;
 interface PermissionCondition
 {
 	/**
+	 * @param array $config
+	 * @param PermissionConditionFactory $factory
+	 * @return PermissionCondition
+	 */
+	public static function fromConfig(array $config, PermissionConditionFactory $factory);
+
+
+	/**
 	 * @param EnvironmentInterface $environment
 	 * @param User $user
 	 * @param Context $context
@@ -33,26 +42,17 @@ interface PermissionCondition
 
 
 	/**
-	 * @param EnvironmentInterface $environment
-	 * @param User $user
-	 * @param Context $context
-	 * @return bool
-	 */
-	public function execute(EnvironmentInterface $environment, User $user, Context $context);
-
-
-	/**
-	 * @param EnvironmentInterface $environment
-	 * @param User $user
-	 * @param Context $context
-	 * @return bool
-	 */
-	public function filter(EnvironmentInterface $environment, User $user, Context $context);
-
-
-	/**
 	 * @return string
 	 */
 	public function getError();
+
+
+	/**
+	 * @param EnvironmentInterface $environment
+	 * @param User $user
+	 * @param Context $context
+	 * @return string
+	 */
+	public function describe(EnvironmentInterface $environment, User $user, Context $context);
 
 } 

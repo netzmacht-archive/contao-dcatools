@@ -9,17 +9,18 @@
  *
  */
 
-namespace DcaTools\Definition\Permission;
+namespace DcaTools\Condition\Permission;
 
 
 use ContaoCommunityAlliance\Contao\Bindings\ContaoEvents;
 use ContaoCommunityAlliance\Contao\Bindings\Events\Controller\RedirectEvent;
 use ContaoCommunityAlliance\DcGeneral\Factory\Event\CreateDcGeneralEvent;
 use DcaTools\Assertion;
-use DcaTools\Definition\Permission\Context\DcGeneralContext;
-use DcaTools\Definition\Permission\Context\LegacyContext;
-use DcaTools\Definition\Permission\Event\GetPermissionContextEvent;
+use DcaTools\Condition\Permission\Context\DcGeneralContext;
+use DcaTools\Condition\Permission\Context\LegacyContext;
+use DcaTools\Condition\Permission\Event\GetPermissionContextEvent;
 use DcaTools\Definition\DcaToolsDefinition;
+use DcaTools\Definition\Permission\PermissionCondition;
 use DcaTools\User\User;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
@@ -84,7 +85,7 @@ class PermissionHandler implements EventSubscriberInterface
 		$propagator->propagate($event::NAME, $event, array($environment->getDataDefinition()->getName()));
 
 		$context = $event->getContext();
-		Assertion::isInstanceOf($context, 'DcaTools\Definition\Permission\Context', 'No permission context created');
+		Assertion::isInstanceOf($context, 'DcaTools\Condition\Permission\Context', 'No permission context created');
 
 		foreach($conditions as $condition) {
 			/** @var PermissionCondition $condition */
@@ -106,7 +107,7 @@ class PermissionHandler implements EventSubscriberInterface
 
 	/**
 	 * @param GetPermissionContextEvent $event
-	 * @return LegacyContext
+	 * @return Context
 	 */
 	public function getPermissionContext(GetPermissionContextEvent $event)
 	{

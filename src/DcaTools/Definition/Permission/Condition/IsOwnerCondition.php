@@ -15,7 +15,9 @@ namespace DcaTools\Definition\Permission\Condition;
 use ContaoCommunityAlliance\DcGeneral\Data\ModelInterface;
 use ContaoCommunityAlliance\DcGeneral\EnvironmentInterface;
 use DcaTools\Assertion;
-use DcaTools\Definition\Permission\Context;
+use DcaTools\Condition\Permission\Context;
+use DcaTools\Condition\Permission\PermissionConditionFactory;
+use DcaTools\Definition\Permission\PermissionCondition;
 use DcaTools\User\User;
 
 
@@ -28,29 +30,65 @@ class IsOwnerCondition extends AbstractCondition
 	const BY_ID       = 'id';
 	const BY_USERNAME = 'username';
 
+	/**
+	 * @var string
+	 */
+	private $by = IsOwnerCondition::BY_ID;
 
 	/**
-	 * @return array
+	 * @var string
 	 */
-	protected function getDefaultConfig()
+	private $property = 'userid';
+
+	/**
+	 * @var string
+	 */
+	private $context = Context::MODEL;
+
+
+	/**
+	 * @param array $config
+	 * @param PermissionConditionFactory $factory
+	 * @return PermissionCondition
+	 */
+	public static function fromConfig(array $config, PermissionConditionFactory $factory)
 	{
-		return array(
-			'by' 	   => static::BY_ID,
-			'property' => 'userid',
-			'context'  => Context::MODEL
-		);
+		/** @var IsOwnerCondition $condition */
+		$condition = parent::fromConfig($config, $factory);
+
+		if(isset($config['by'])) {
+			Assertion::inArray($config['by'], array(static::BY_ID, static::BY_USERNAME), 'By has to be by id or by username');
+
+			$condition->setBy($config['by']);
+		}
+
+		if(isset($config['property'])) {
+			$condition->setProperty($config['property']);
+		}
+
+		if(isset($config['context'])) {
+			Assertion::inArray(
+				$config['context'],
+				array(Context::MODEL, Context::PARENT, Context::COLLECTION),
+				'By has to be by id or by username'
+			);
+
+			$condition->setContext($config['context']);
+		}
+
+		return $condition;
 	}
 
 
 	/**
 	 * @param EnvironmentInterface $environment
 	 * @param User $user
-	 * @param \DcaTools\Definition\Permission\Context $context
+	 * @param \DcaTools\Condition\Permission\Context $context
 	 * @return bool
 	 */
 	public function execute(EnvironmentInterface $environment, User $user, Context $context)
 	{
-		if($this->config['context'] == Context::MODEL) {
+		if($this->context == Context::COLLECTION) {
 			Assertion::true($context->isListView(), 'You are not in list view. Access to the collection is not allowed there.');
 
 			$owner      = false;
@@ -58,9 +96,8 @@ class IsOwnerCondition extends AbstractCondition
 
 			foreach($collection as $model) {
 				$owner = $this->isOwner($model, $user);
-				$owner = $this->applyConfigInverse($owner);
 
-				if(!$owner) {
+				if(!$owner || $this->isInverse()) {
 					break;
 				}
 			}
@@ -68,32 +105,96 @@ class IsOwnerCondition extends AbstractCondition
 			return $owner;
 		}
 
-		$model = $this->getContextModel($context);
-		$owner = $this->isOwner($model, $user);
+		if($this->context == Context::PARENT) {
+			$model = $context->getParent();
+		}
+		else {
+			$model = $context->getModel();
+		}
 
-		return $this->applyConfigInverse($owner);
+		return $this->isOwner($model, $user);
 	}
 
 
 	/**
 	 * @param ModelInterface $model
 	 * @param User $user
-	 * @return bool
-	 */
+	 * @return bool	 */
 	private function isOwner(ModelInterface $model, User $user)
 	{
-		switch($this->config['by']) {
-			case static::BY_ID:
-				return $user->getId() == $model->getProperty($this->config['property']);
-				break;
+		$value = $model->getProperty($this->property);
 
-			case static::BY_USERNAME:
-				return $user->getUsername() == $model->getProperty($this->config['property']);
-				break;
-
-			default:
-				return false;
+		if($this->by == static::BY_USERNAME) {
+			return $user->getUsername() == $value;
 		}
+
+		return $user->getId() == $value;
+	}
+
+
+	/**
+	 * @param string $by
+	 *
+	 * @return $this
+	 */
+	public function setBy($by)
+	{
+		$this->by = $by;
+
+		return $this;
+	}
+
+
+	/**
+	 * @return string
+	 */
+	public function getBy()
+	{
+		return $this->by;
+	}
+
+
+	/**
+	 * @param string $context
+	 *
+	 * @return $this
+	 */
+	public function setContext($context)
+	{
+		$this->context = $context;
+
+		return $this;
+	}
+
+
+	/**
+	 * @return string
+	 */
+	public function getContext()
+	{
+		return $this->context;
+	}
+
+
+	/**
+	 * @param string $property
+	 *
+	 * @return $this
+	 */
+	public function setProperty($property)
+	{
+		$this->property = $property;
+
+		return $this;
+	}
+
+
+	/**
+	 * @return string
+	 */
+	public function getProperty()
+	{
+		return $this->property;
 	}
 
 } 

@@ -9,7 +9,7 @@
  *
  */
 
-namespace DcaTools\Definition\Command\Condition;
+namespace DcaTools\Definition\Command\Filter;
 
 
 use ContaoCommunityAlliance\DcGeneral\Data\ModelInterface;
@@ -18,7 +18,11 @@ use DcaTools\Dca\Button;
 use DcaTools\User\User;
 
 
-class IsAdminCondition extends AbstractStateCondition
+/**
+ * Class AnyFilter
+ * @package DcaTools\Definition\Command\Condition\Filter
+ */
+class AnyFilter extends AbstractChildrenFilter
 {
 
 	/**
@@ -26,11 +30,22 @@ class IsAdminCondition extends AbstractStateCondition
 	 * @param EnvironmentInterface $environment
 	 * @param User $user
 	 * @param ModelInterface $model
+	 *
 	 * @return bool
 	 */
-	public function execute(Button $button, EnvironmentInterface $environment, User $user, ModelInterface $model = null)
+	public function match(Button $button, EnvironmentInterface $environment, User $user, ModelInterface $model = null)
 	{
-		return $user->hasRole(User::ROLE_ADMIN);
+		if(empty($this->children)) {
+			return true;
+		}
+
+		foreach($this->children as $child) {
+			if($child->match($button, $environment, $user, $model)) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
-}
+} 

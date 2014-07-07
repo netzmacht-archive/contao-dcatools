@@ -13,42 +13,114 @@ namespace DcaTools\Definition\Permission\Condition;
 
 
 use ContaoCommunityAlliance\DcGeneral\EnvironmentInterface;
-use DcaTools\Definition\Permission\Context;
+use DcaTools\Assertion;
+use DcaTools\Condition\Permission\Context;
+use DcaTools\Condition\Permission\PermissionConditionFactory;
+use DcaTools\Definition\Permission\PermissionCondition;
 use DcaTools\User\User;
 
 
 /**
- * Class HasAccessCondition is a legacy wrapper condition. It's just here using Contao's language for
- * BackendUser::hasAccess
- *
  * @package DcaTools\Condition\Permission
  */
 final class HasAccessCondition extends AbstractCondition
 {
+	/**
+	 * @var
+	 */
+	private $action;
 
 	/**
-	 * @return array
+	 * @var
 	 */
-	protected function getDefaultConfig()
+	private $domain;
+
+
+	/**
+	 * @param array $config
+	 * @param PermissionConditionFactory $factory
+	 *
+	 * @return PermissionCondition
+	 */
+	public static function fromConfig(array $config, PermissionConditionFactory $factory)
 	{
-		return array(
-			'action' => null,
-			'domain' => null,
-		);
+		Assertion::keyExists($config, 'action', 'Action is required');
+		Assertion::keyExists($config, 'domain', 'Domain is required');
+
+		/** @var HasAccessCondition $condition */
+		$condition = parent::fromConfig($config, $factory);
+		$condition->setAction($config['action']);
+		$condition->setDomain($config['domain']);
+
+		return $condition;
 	}
 
 
 	/**
 	 * @param EnvironmentInterface $environment
-	 * @param \DcaTools\User\User $user
-	 * @param \DcaTools\Definition\Permission\Context $context
+	 * @param User $user
+	 * @param Context $context
+	 * @return string
+	 */
+	public function describe(EnvironmentInterface $environment, User $user, Context $context)
+	{
+		return sprintf('Access %s.%s required for User "%s"', $this->domain, $this->action, $user->getId());
+	}
+
+
+	/**
+	 * @param EnvironmentInterface $environment
+	 * @param User $user
+	 * @param Context $context
 	 * @return bool
 	 */
 	public function execute(EnvironmentInterface $environment, User $user, Context $context)
 	{
-		$hasAccess = $user->hasRole($this->config['action'], $this->config['domain']);
+		return $user->hasRole($this->action, $this->domain);
+	}
 
-		return $this->applyConfigInverse($hasAccess);
+
+	/**
+	 * @param mixed $domain
+	 *
+	 * @return $this
+	 */
+	public function setDomain($domain)
+	{
+		$this->domain = $domain;
+
+		return $this;
+	}
+
+
+	/**
+	 * @return mixed
+	 */
+	public function getDomain()
+	{
+		return $this->domain;
+	}
+
+
+	/**
+	 * @param mixed $action
+	 *
+	 * @return $this
+	 */
+	public function setAction($action)
+	{
+		$this->action = $action;
+
+		return $this;
+	}
+
+
+	/**
+	 * @return mixed
+	 */
+	public function getAction()
+	{
+		return $this->action;
 	}
 
 }

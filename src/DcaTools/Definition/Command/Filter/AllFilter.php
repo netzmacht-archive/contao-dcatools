@@ -9,31 +9,34 @@
  *
  */
 
-namespace DcaTools\Definition\Command\Condition;
-
+namespace DcaTools\Definition\Command\Filter;
 
 use ContaoCommunityAlliance\DcGeneral\Data\ModelInterface;
 use ContaoCommunityAlliance\DcGeneral\EnvironmentInterface;
 use DcaTools\Dca\Button;
-use DcaTools\Definition\Command\Condition;
 use DcaTools\User\User;
 
-class HideCondition extends AbstractStateCondition
+
+class AllFilter extends AbstractChildrenFilter
 {
 
 	/**
 	 * @param Button $button
 	 * @param EnvironmentInterface $environment
-	 * @param \DcaTools\User\User $user
+	 * @param User $user
 	 * @param ModelInterface $model
+	 *
 	 * @return bool
 	 */
-	public function execute(Button $button, EnvironmentInterface $environment, User $user, ModelInterface $model = null)
+	public function match(Button $button, EnvironmentInterface $environment, User $user, ModelInterface $model = null)
 	{
-		$visible = $this->getState($button, $environment, $user, $model);
-		$button->setVisible(!$visible);
+		foreach($this->children as $child) {
+			if(!$child->match($button, $environment, $user, $model)) {
+				return false;
+			}
+		}
 
-		return $visible;
+		return true;
 	}
 
 } 

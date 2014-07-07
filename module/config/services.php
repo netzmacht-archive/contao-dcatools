@@ -12,10 +12,12 @@
 
 use ContaoCommunityAlliance\Translator\Contao\LangArrayTranslator;
 use ContaoCommunityAlliance\Translator\TranslatorChain;
+use DcaTools\Condition\Command\CommandConditionFactory;
+use DcaTools\Condition\Command\CommandConditionHandler;
+use DcaTools\Condition\Permission\PermissionConditionFactory;
+use DcaTools\Condition\Permission\PermissionHandler;
 use DcaTools\Dca\Builder\DcaToolsDefinitionBuilder;
-use DcaTools\Definition\Permission\PermissionHandler;
 use DcaTools\View\ButtonRenderer;
-use DcaTools\Definition\Command\CommandConditionHandler;
 use DcaTools\View\DcGeneralBasedViewHelper;
 
 /**
@@ -50,8 +52,14 @@ $container['dcatools.permission-handler'] = $container->share(function($c) {
 
 $container['dcatools.definition-builder'] = function(\Pimple $c) {
 	$builder = new DcaToolsDefinitionBuilder(
-		(array) $GLOBALS['DCATOOLS_COMMAND_CONDITIONS'],
-		(array) $GLOBALS['DCATOOLS_PERMISSION_CONDITIONS']
+		new CommandConditionFactory(
+			new \DcaTools\Condition\Command\FilterFactory($GLOBALS['DCATOOLS_COMMAND_FILTERS']),
+			$GLOBALS['DCATOOLS_COMMAND_CONDITIONS']
+		),
+		new PermissionConditionFactory(
+			new \DcaTools\Condition\Permission\FilterFactory($GLOBALS['DCATOOLS_PERMISSION_FILTERS']),
+			$GLOBALS['DCATOOLS_PERMISSION_CONDITIONS']
+		)
 	);
 
 	return $builder;

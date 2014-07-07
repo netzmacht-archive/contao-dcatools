@@ -9,10 +9,10 @@
  *
  */
 
-namespace DcaTools\Definition\Permission\Event;
+namespace DcaTools\Condition\Permission\Event;
 
 use ContaoCommunityAlliance\DcGeneral\Event\AbstractEnvironmentAwareEvent;
-use DcaTools\Definition\Permission\Context;
+use DcaTools\Condition\Permission\Context;
 
 
 final class GetPermissionContextEvent extends AbstractEnvironmentAwareEvent
@@ -21,7 +21,7 @@ final class GetPermissionContextEvent extends AbstractEnvironmentAwareEvent
 
 
 	/**
-	 * @var \DcaTools\Definition\Permission\Context $context
+	 * @var \DcaTools\Condition\Permission\Context $context
 	 */
 	private $context;
 

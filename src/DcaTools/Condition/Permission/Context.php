@@ -9,7 +9,7 @@
  *
  */
 
-namespace DcaTools\Definition\Permission;
+namespace DcaTools\Condition\Permission;
 
 
 use ContaoCommunityAlliance\DcGeneral\Data\CollectionInterface;
@@ -22,20 +22,24 @@ interface Context
 	const MODEL      = 'model';
 	const PARENT     = 'parent';
 
+
 	/**
 	 * @return ModelInterface
 	 */
 	public function getParent();
+
 
 	/**
 	 * @return ModelInterface
 	 */
 	public function getModel();
 
+
 	/**
 	 * @return CollectionInterface|null
 	 */
 	public function getCollection();
+
 
 	/**
 	 * Check if current request matches the given context string
@@ -45,10 +49,12 @@ interface Context
 	 */
 	public function match($context);
 
+
 	/**
 	 * @return bool
 	 */
 	public function isListView();
+
 
 	/**
 	 * @return mixed

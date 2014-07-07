@@ -9,14 +9,14 @@
  *
  */
 
-namespace DcaTools\Definition\Permission\Context;
+namespace DcaTools\Condition\Permission\Context;
 
 
 use ContaoCommunityAlliance\DcGeneral\Data\CollectionInterface;
 use ContaoCommunityAlliance\DcGeneral\Data\ModelInterface;
 use ContaoCommunityAlliance\DcGeneral\EnvironmentInterface;
 use DcaTools\Data\ConfigBuilder;
-use DcaTools\Definition\Permission\Context;
+use DcaTools\Condition\Permission\Context;
 
 class LegacyContext implements Context
 {

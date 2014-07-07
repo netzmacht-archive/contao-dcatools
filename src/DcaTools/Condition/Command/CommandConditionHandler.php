@@ -9,7 +9,7 @@
  *
  */
 
-namespace DcaTools\Definition\Command;
+namespace DcaTools\Condition\Command;
 
 
 use ContaoCommunityAlliance\DcGeneral\Contao\DataDefinition\Definition\Contao2BackendViewDefinitionInterface;
@@ -105,12 +105,12 @@ class CommandConditionHandler
 	 */
 	private function render(GetOperationButtonEvent $event, array $conditions)
 	{
-		$button = new Button($event);
-		$model  = $event->getModel();
-		$input  = $event->getEnvironment()->getInputProvider();
+		$button      = new Button($event);
+		$model       = $event->getModel();
+		$environment = $event->getEnvironment();
 
 		foreach($conditions as $condition) {
-			if(!$condition->match($button, $input, $this->user, $model)) {
+			if(!$condition->match($button, $environment, $this->user, $model)) {
 				break;
 			}
 		}

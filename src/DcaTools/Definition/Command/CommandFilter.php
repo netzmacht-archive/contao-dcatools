@@ -14,30 +14,24 @@ namespace DcaTools\Definition\Command;
 
 use ContaoCommunityAlliance\DcGeneral\Data\ModelInterface;
 use ContaoCommunityAlliance\DcGeneral\EnvironmentInterface;
-use DcaTools\Condition\Command\CommandConditionFactory;
+use DcaTools\Condition\Command\FilterFactory;
 use DcaTools\Dca\Button;
 use DcaTools\User\User;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+
 
 /**
- * Class Condition
- *
- * @package DcaTools\Dca\Command
+ * Interface Filter
+ * @package spec\DcaTools\Definition\Command\Filter
  */
-interface CommandCondition
+interface CommandFilter
 {
-	const DISABLE = 'disable';
-	const HIDE    = 'hide';
-
 
 	/**
 	 * @param array $config
-	 * @param CommandFilter $filter
-	 * @param CommandConditionFactory $factory
-	 *
-	 * @return static
+	 * @param FilterFactory $factory
+	 * @return CommandFilter
 	 */
-	public static function fromConfig(array $config, CommandFilter $filter=null, CommandConditionFactory $factory);
+	public static function fromConfig(array $config, FilterFactory $factory);
 
 
 	/**
@@ -45,6 +39,7 @@ interface CommandCondition
 	 * @param EnvironmentInterface $environment
 	 * @param User $user
 	 * @param ModelInterface $model
+	 *
 	 * @return bool
 	 */
 	public function match(Button $button, EnvironmentInterface $environment, User $user, ModelInterface $model = null);

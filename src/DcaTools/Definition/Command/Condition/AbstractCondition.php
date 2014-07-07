@@ -13,76 +13,128 @@ namespace DcaTools\Definition\Command\Condition;
 
 
 use ContaoCommunityAlliance\DcGeneral\Data\ModelInterface;
-use ContaoCommunityAlliance\DcGeneral\InputProviderInterface;
+use ContaoCommunityAlliance\DcGeneral\EnvironmentInterface;
+use DcaTools\Condition\Command\CommandConditionFactory;
 use DcaTools\Dca\Button;
-use DcaTools\Definition\AbstractGenericCondition;
 use DcaTools\Definition\Command\CommandCondition;
 use DcaTools\Definition\Command\Condition;
+use DcaTools\Definition\Command\CommandFilter;
 use DcaTools\User\User;
 
 
-abstract class AbstractCondition extends AbstractGenericCondition implements CommandCondition
+abstract class AbstractCondition implements CommandCondition
 {
+	/**
+	 * @var \DcaTools\Definition\Command\CommandFilter
+	 */
+	private $filter;
+
+
+	/**
+	 * @var bool
+	 */
+	private $inverse = false;
+
+
+	/**
+	 * @param CommandFilter $filter
+	 */
+	function __construct(CommandFilter $filter=null)
+	{
+		$this->filter = $filter;
+	}
+
 
 	/**
 	 * @param array $config
-	 * @param array $filter
+	 * @param CommandFilter $filter
+	 * @param CommandConditionFactory $factory
+	 *
+	 * @return static
 	 */
-	function __construct(array $config = array(), array $filter = array())
+	public static function fromConfig(array $config, CommandFilter $filter = null, CommandConditionFactory $factory)
 	{
-		if(!array_key_exists('commands', $config)) {
-			$config['commands'] = '*';
+		/** @var AbstractCondition $condition */
+		$condition = new static($filter);
+
+		if(isset($config['inverse'])) {
+			$condition->setInverse($config['inverse']);
 		}
 
-		parent::__construct($config, $filter);
+		return $condition;
 	}
 
 
 	/**
 	 * @param Button $button
-	 * @param InputProviderInterface $input
+	 * @param EnvironmentInterface $environment
 	 * @param \DcaTools\User\User $user
 	 * @param ModelInterface $model
+	 *
 	 * @return bool
 	 */
-	public function match(Button $button, InputProviderInterface $input, User $user, ModelInterface $model = null)
+	public function match(Button $button, EnvironmentInterface $environment, User $user, ModelInterface $model = null)
 	{
-		if($this->filter($button, $input, $user, $model)) {
-			return $this->execute($button, $input, $user, $model);
+		$match = true;
+
+		if($this->filter($button, $environment, $user, $model)) {
+			$match = $this->execute($button, $environment, $user, $model);
+
+			if($this->inverse) {
+				return !$match;
+			}
 		}
 
-		return true;
+		return $match;
 	}
 
 
 	/**
 	 * @param Button $button
-	 * @param InputProviderInterface $input
+	 * @param EnvironmentInterface $environment
+	 * @param User $user
+	 * @param ModelInterface $model
+	 *
+	 * @return bool
+	 */
+	abstract protected function execute(Button $button, EnvironmentInterface $environment, User $user, ModelInterface $model = null);
+
+
+	/**
+	 * @param Button $button
+	 * @param EnvironmentInterface $environment
 	 * @param User $user
 	 * @param ModelInterface $model
 	 * @return bool
 	 */
-	public function filter(Button $button, InputProviderInterface $input, User $user, ModelInterface $model = null)
+	protected function filter(Button $button, EnvironmentInterface $environment, User $user, ModelInterface $model = null)
 	{
-		$match = true;
-
-		// always match, no further checking
-		if($this->filter['always']) {
-			$match = $this->applyFilterInverse($match);
-
-			return $match;
+		if(!$this->filter) {
+			return true;
 		}
 
-		if($this->filter['commands'] != '*' && $this->filter['commands']) {
-			$commands = (array) $this->filter['commands'];
-			$match    = in_array($button->getKey(), $commands);
-		}
+		return $this->filter->match($button, $environment, $user, $model);
+	}
 
-		if($this->filter['property']) {
-			$match = $this->matchPropertyFilter($model);
-		}
+	/**
+	 * @param boolean $inverse
+	 *
+	 * @return $this
+	 */
+	public function setInverse($inverse)
+	{
+		$this->inverse = (bool) $inverse;
 
-		return $this->applyFilterInverse($match);
+		return $this;
+	}
+
+
+	/**
+	 * @return boolean
+	 */
+	public function isInverse()
+	{
+		return $this->inverse;
 	}
 
 } 

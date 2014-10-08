@@ -11,14 +11,12 @@
 
 namespace DcaTools\Dca\Legacy;
 
-
 use ContaoCommunityAlliance\DcGeneral\DC_General;
 use ContaoCommunityAlliance\DcGeneral\DcGeneral;
 use ContaoCommunityAlliance\DcGeneral\Factory\DcGeneralFactory;
 use DcaTools\Definition\DcaToolsDefinition;
 use DcaTools\Exception\InvalidArgumentException;
 use DcaTools\View\ViewHelper;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Class DcaToolsIntegration works as connector between the dca callbacks and the tools DcaTools provides
@@ -28,78 +26,72 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 class DcaToolsIntegration
 {
 
-	/**
+    /**
 	 * @var DcaToolsIntegration
 	 */
-	private static $instance;
+    private static $instance;
 
-
-	/**
+    /**
 	 * Singleton to make sure every callback interacts with this instance
 	 *
 	 * @return DcaToolsIntegration
 	 */
-	public static function getInstance()
-	{
-		if(!self::$instance) {
-			self::$instance = new self();
-		}
+    public static function getInstance()
+    {
+        if (!self::$instance) {
+            self::$instance = new self();
+        }
 
-		return self::$instance;
-	}
+        return self::$instance;
+    }
 
-
-	/**
+    /**
 	 * @var CallbackManager
 	 */
-	private $callbackManager;
+    private $callbackManager;
 
-
-	/**
+    /**
 	 * @var CallbackDispatcher
 	 */
-	private $callbackDispatcher;
+    private $callbackDispatcher;
 
-
-	/**
+    /**
 	 * @param $name
 	 */
-	public function onLoadDataContainer($name)
-	{
-		// dcatools is not enabled
-		if(!isset($GLOBALS['TL_DCA'][$name]['dcatools']) || !isset($GLOBALS['TL_DCA'][$name]['dcatools']['legacy']) ||
-			!$GLOBALS['TL_DCA'][$name]['dcatools']['legacy']) {
-			return;
-		}
+    public function onLoadDataContainer($name)
+    {
+        // dcatools is not enabled
+        if(!isset($GLOBALS['TL_DCA'][$name]['dcatools']) || !isset($GLOBALS['TL_DCA'][$name]['dcatools']['legacy']) ||
+            !$GLOBALS['TL_DCA'][$name]['dcatools']['legacy']) {
+            return;
+        }
 
-		// no not activate for dc general
-		if($GLOBALS['TL_DCA'][$name]['config']['dataContainer'] == 'General') {
-			return;
-		}
+        // no not activate for dc general
+        if ($GLOBALS['TL_DCA'][$name]['config']['dataContainer'] == 'General') {
+            return;
+        }
 
-		// set initilialize instance
-		$GLOBALS['TL_DCA'][$name]['config']['onload_callback']['dcatools'] = array(get_called_class(), 'initialize');
-	}
+        // set initilialize instance
+        $GLOBALS['TL_DCA'][$name]['config']['onload_callback']['dcatools'] = array(get_called_class(), 'initialize');
+    }
 
-
-	/**
+    /**
 	 * @param \DataContainer $dataContainer
 	 */
-	public function initialize(\DataContainer $dataContainer)
-	{
-		// check again against dc general to avoid that a subclass would be used
-		if(!$dataContainer instanceof DC_General) {
-			$dcGeneral  = $this->createDcGeneral($dataContainer->table);
-			$viewHelper = $this->createViewHelper($dcGeneral);
+    public function initialize(\DataContainer $dataContainer)
+    {
+        // check again against dc general to avoid that a subclass would be used
+        if (!$dataContainer instanceof DC_General) {
+            $dcGeneral  = $this->createDcGeneral($dataContainer->table);
+            $viewHelper = $this->createViewHelper($dcGeneral);
 
-			$this->callbackDispatcher = new CallbackDispatcher($dcGeneral, $viewHelper);
-			$this->initializeCallbackManager($dcGeneral);
-		}
+            $this->callbackDispatcher = new CallbackDispatcher($dcGeneral, $viewHelper);
+            $this->initializeCallbackManager($dcGeneral);
+        }
 
-	}
+    }
 
-
-	/**
+    /**
 	 * Create instance of DcGeneral.
 	 *
 	 * Not only environment is required because ContainerOnLoadEvent requires the DcGeneral
@@ -108,95 +100,91 @@ class DcaToolsIntegration
 	 * @param $name
 	 * @return \ContaoCommunityAlliance\DcGeneral\DcGeneral
 	 */
-	private function createDcGeneral($name)
-	{
-		/** @var \Pimple $container */
-		global $container;
+    private function createDcGeneral($name)
+    {
+        /** @var \Pimple $container */
+        global $container;
 
-		$driver    = $GLOBALS['TL_DCA'][$name]['config']['dataContainer'];
-		$GLOBALS['TL_DCA'][$name]['config']['dataContainer'] = 'General';
+        $driver    = $GLOBALS['TL_DCA'][$name]['config']['dataContainer'];
+        $GLOBALS['TL_DCA'][$name]['config']['dataContainer'] = 'General';
 
-		$factory   = new DcGeneralFactory();
-		$dcGeneral = $factory
-			->setEventPropagator($container['dcatools.event-propagator'])
-			->setTranslator($container['dcatools.translator'])
-			->setContainerName($name)
-			->createDcGeneral();
+        $factory   = new DcGeneralFactory();
+        $dcGeneral = $factory
+            ->setEventPropagator($container['dcatools.event-propagator'])
+            ->setTranslator($container['dcatools.translator'])
+            ->setContainerName($name)
+            ->createDcGeneral();
 
-		$GLOBALS['TL_DCA'][$name]['config']['dataContainer'] = $driver;
+        $GLOBALS['TL_DCA'][$name]['config']['dataContainer'] = $driver;
 
-		return $dcGeneral;
-	}
+        return $dcGeneral;
+    }
 
-
-	/**
+    /**
 	 * @param DcGeneral $dcGeneral
 	 */
-	private function initializeCallbackManager(DcGeneral $dcGeneral)
-	{
-		$this->callbackManager = new CallbackManager(get_called_class());
+    private function initializeCallbackManager(DcGeneral $dcGeneral)
+    {
+        $this->callbackManager = new CallbackManager(get_called_class());
 
-		/** @var DcaToolsDefinition $definition */
-		$definition = $dcGeneral->getEnvironment()->getDataDefinition()->getDefinition(DcaToolsDefinition::NAME);
-		$name       = $dcGeneral->getEnvironment()->getDataDefinition()->getName();
+        /** @var DcaToolsDefinition $definition */
+        $definition = $dcGeneral->getEnvironment()->getDataDefinition()->getDefinition(DcaToolsDefinition::NAME);
+        $name       = $dcGeneral->getEnvironment()->getDataDefinition()->getName();
 
-		foreach($definition->getCallbacks() as $callback => $for) {
-			if(!$for) {
-				$this->callbackManager->enableCallback($callback, $name);
-				continue;
-			}
+        foreach ($definition->getCallbacks() as $callback => $for) {
+            if (!$for) {
+                $this->callbackManager->enableCallback($callback, $name);
+                continue;
+            }
 
-			foreach((array)$for as $value) {
-				$this->callbackManager->enableCallback($callback, $name, $value);
-			}
-		}
-	}
+            foreach ((array) $for as $value) {
+                $this->callbackManager->enableCallback($callback, $name, $value);
+            }
+        }
+    }
 
-
-	/**
+    /**
 	 * @param $method
 	 * @param $arguments
 	 * @return mixed
 	 * @throws \DcaTools\Exception\InvalidArgumentException
 	 */
-	public function __call($method, $arguments)
-	{
-		// extract button name
-		if(strncmp($method, 'modelOperationButton', 20) === 0 || strncmp($method, 'containerGlobalButton', 21) === 0) {
-			list($method, $button) = explode('_', $method, 2);
-			array_unshift($arguments, $button);
-		}
+    public function __call($method, $arguments)
+    {
+        // extract button name
+        if (strncmp($method, 'modelOperationButton', 20) === 0 || strncmp($method, 'containerGlobalButton', 21) === 0) {
+            list($method, $button) = explode('_', $method, 2);
+            array_unshift($arguments, $button);
+        }
 
-		if(!method_exists($this->callbackDispatcher, $method)) {
-			throw new InvalidArgumentException('Method does not exists', 0, null, $method);
-		}
+        if (!method_exists($this->callbackDispatcher, $method)) {
+            throw new InvalidArgumentException('Method does not exists', 0, null, $method);
+        }
 
-		return call_user_func_array(array($this->callbackDispatcher, $method), $arguments);
-	}
+        return call_user_func_array(array($this->callbackDispatcher, $method), $arguments);
+    }
 
-
-	/**
+    /**
 	 * @param $dcGeneral
 	 * @return ViewHelper
 	 */
-	private function createViewHelper(DcGeneral $dcGeneral)
-	{
-		global $container;
+    private function createViewHelper(DcGeneral $dcGeneral)
+    {
+        global $container;
 
-		/** @var DcaToolsDefinition $definition */
-		$definition = $dcGeneral->getEnvironment()->getDataDefinition()->getDefinition(DcaToolsDefinition::NAME);
+        /** @var DcaToolsDefinition $definition */
+        $definition = $dcGeneral->getEnvironment()->getDataDefinition()->getDefinition(DcaToolsDefinition::NAME);
 
-		if($definition->getLegacyMode()) {
-			$viewHelper = $container['dcatools.view-helper.legacy'];
-		}
-		else {
-			$viewHelper = $container['dcatools.view-helper.default'];
-		}
+        if ($definition->getLegacyMode()) {
+            $viewHelper = $container['dcatools.view-helper.legacy'];
+        } else {
+            $viewHelper = $container['dcatools.view-helper.default'];
+        }
 
-		/** @var ViewHelper $viewHelper */
-		$viewHelper->setEnvironment($dcGeneral->getEnvironment());
+        /** @var ViewHelper $viewHelper */
+        $viewHelper->setEnvironment($dcGeneral->getEnvironment());
 
-		return $viewHelper;
-	}
+        return $viewHelper;
+    }
 
-} 
+}

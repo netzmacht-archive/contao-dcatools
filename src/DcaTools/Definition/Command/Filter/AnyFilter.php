@@ -11,12 +11,10 @@
 
 namespace DcaTools\Definition\Command\Filter;
 
-
 use ContaoCommunityAlliance\DcGeneral\Data\ModelInterface;
 use ContaoCommunityAlliance\DcGeneral\EnvironmentInterface;
 use DcaTools\Dca\Button;
 use DcaTools\User\User;
-
 
 /**
  * Class AnyFilter
@@ -25,7 +23,7 @@ use DcaTools\User\User;
 class AnyFilter extends AbstractChildrenFilter
 {
 
-	/**
+    /**
 	 * @param Button $button
 	 * @param EnvironmentInterface $environment
 	 * @param User $user
@@ -33,19 +31,19 @@ class AnyFilter extends AbstractChildrenFilter
 	 *
 	 * @return bool
 	 */
-	public function match(Button $button, EnvironmentInterface $environment, User $user, ModelInterface $model = null)
-	{
-		if(empty($this->children)) {
-			return true;
-		}
+    public function match(Button $button, EnvironmentInterface $environment, User $user, ModelInterface $model = null)
+    {
+        if (empty($this->children)) {
+            return true;
+        }
 
-		foreach($this->children as $child) {
-			if($child->match($button, $environment, $user, $model)) {
-				return true;
-			}
-		}
+        foreach ($this->children as $child) {
+            if ($child->match($button, $environment, $user, $model)) {
+                return true;
+            }
+        }
 
-		return false;
-	}
+        return false;
+    }
 
-} 
+}

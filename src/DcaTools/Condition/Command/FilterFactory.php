@@ -11,60 +11,57 @@
 
 namespace DcaTools\Condition\Command;
 
-
 use DcaTools\Assertion;
 use DcaTools\Definition\Command\CommandFilter;
 use DcaTools\Exception\InvalidArgumentException;
 
 class FilterFactory
 {
-	/**
+    /**
 	 * @var array
 	 */
-	private $map;
+    private $map;
 
-
-	/**
+    /**
 	 * @param $map
 	 */
-	function __construct(array $map)
-	{
-		$this->map = $map;
-	}
+    public function __construct(array $map)
+    {
+        $this->map = $map;
+    }
 
-
-	/**
+    /**
 	 * @param $name
 	 * @param $config
 	 *
 	 * @return \DcaTools\Definition\Command\CommandFilter
 	 */
-	public function createByName($name, array $config)
-	{
-		Assertion::keyExists($this->map, $name, 'Unknown filter name');
+    public function createByName($name, array $config)
+    {
+        Assertion::keyExists($this->map, $name, 'Unknown filter name');
 
-		$filter = $this->map[$name];
+        $filter = $this->map[$name];
 
-		if(is_callable($filter)) {
-			return call_user_func($filter, $config, $this);
-		}
+        if (is_callable($filter)) {
+            return call_user_func($filter, $config, $this);
+        }
 
-		/** @var \DcaTools\Definition\Command\CommandFilter $filter */
-		return $filter::fromConfig($config, $this);
-	}
+        /** @var \DcaTools\Definition\Command\CommandFilter $filter */
 
+        return $filter::fromConfig($config, $this);
+    }
 
-	/**
+    /**
 	 * @param array $config
 	 *
 	 * @throws InvalidArgumentException
 	 * @return CommandFilter
 	 */
-	public function createFromConfig(array $config)
-	{
-		Assertion::keyExists($config, 'filter', 'No filter name given');
+    public function createFromConfig(array $config)
+    {
+        Assertion::keyExists($config, 'filter', 'No filter name given');
 
-		return $this->createByName($config['filter'], $config);
-	}
+        return $this->createByName($config['filter'], $config);
+    }
 
-} 
+}

@@ -11,7 +11,6 @@
 
 namespace DcaTools\Definition\Command\Condition;
 
-
 use ContaoCommunityAlliance\DcGeneral\Data\ModelInterface;
 use ContaoCommunityAlliance\DcGeneral\EnvironmentInterface;
 use DcaTools\Condition\Command\CommandConditionFactory;
@@ -21,51 +20,46 @@ use DcaTools\Definition\Command\Condition;
 use DcaTools\Definition\Command\CommandFilter;
 use DcaTools\User\User;
 
-
 abstract class AbstractCondition implements CommandCondition
 {
-	/**
+    /**
 	 * @var \DcaTools\Definition\Command\CommandFilter
 	 */
-	private $filter;
+    private $filter;
 
-
-	/**
+    /**
 	 * @var bool
 	 */
-	private $inverse = false;
+    private $inverse = false;
 
-
-	/**
+    /**
 	 * @param CommandFilter $filter
 	 */
-	function __construct(CommandFilter $filter=null)
-	{
-		$this->filter = $filter;
-	}
+    public function __construct(CommandFilter $filter=null)
+    {
+        $this->filter = $filter;
+    }
 
-
-	/**
+    /**
 	 * @param array $config
 	 * @param CommandFilter $filter
 	 * @param CommandConditionFactory $factory
 	 *
 	 * @return static
 	 */
-	public static function fromConfig(array $config, CommandFilter $filter = null, CommandConditionFactory $factory)
-	{
-		/** @var AbstractCondition $condition */
-		$condition = new static($filter);
+    public static function fromConfig(array $config, CommandFilter $filter = null, CommandConditionFactory $factory)
+    {
+        /** @var AbstractCondition $condition */
+        $condition = new static($filter);
 
-		if(isset($config['inverse'])) {
-			$condition->setInverse($config['inverse']);
-		}
+        if (isset($config['inverse'])) {
+            $condition->setInverse($config['inverse']);
+        }
 
-		return $condition;
-	}
+        return $condition;
+    }
 
-
-	/**
+    /**
 	 * @param Button $button
 	 * @param EnvironmentInterface $environment
 	 * @param \DcaTools\User\User $user
@@ -73,23 +67,22 @@ abstract class AbstractCondition implements CommandCondition
 	 *
 	 * @return bool
 	 */
-	public function match(Button $button, EnvironmentInterface $environment, User $user, ModelInterface $model = null)
-	{
-		$match = true;
+    public function match(Button $button, EnvironmentInterface $environment, User $user, ModelInterface $model = null)
+    {
+        $match = true;
 
-		if($this->filter($button, $environment, $user, $model)) {
-			$match = $this->execute($button, $environment, $user, $model);
+        if ($this->filter($button, $environment, $user, $model)) {
+            $match = $this->execute($button, $environment, $user, $model);
 
-			if($this->inverse) {
-				return !$match;
-			}
-		}
+            if ($this->inverse) {
+                return !$match;
+            }
+        }
 
-		return $match;
-	}
+        return $match;
+    }
 
-
-	/**
+    /**
 	 * @param Button $button
 	 * @param EnvironmentInterface $environment
 	 * @param User $user
@@ -97,44 +90,42 @@ abstract class AbstractCondition implements CommandCondition
 	 *
 	 * @return bool
 	 */
-	abstract protected function execute(Button $button, EnvironmentInterface $environment, User $user, ModelInterface $model = null);
+    abstract protected function execute(Button $button, EnvironmentInterface $environment, User $user, ModelInterface $model = null);
 
-
-	/**
+    /**
 	 * @param Button $button
 	 * @param EnvironmentInterface $environment
 	 * @param User $user
 	 * @param ModelInterface $model
 	 * @return bool
 	 */
-	protected function filter(Button $button, EnvironmentInterface $environment, User $user, ModelInterface $model = null)
-	{
-		if(!$this->filter) {
-			return true;
-		}
+    protected function filter(Button $button, EnvironmentInterface $environment, User $user, ModelInterface $model = null)
+    {
+        if (!$this->filter) {
+            return true;
+        }
 
-		return $this->filter->match($button, $environment, $user, $model);
-	}
+        return $this->filter->match($button, $environment, $user, $model);
+    }
 
-	/**
+    /**
 	 * @param boolean $inverse
 	 *
 	 * @return $this
 	 */
-	public function setInverse($inverse)
-	{
-		$this->inverse = (bool) $inverse;
+    public function setInverse($inverse)
+    {
+        $this->inverse = (bool) $inverse;
 
-		return $this;
-	}
+        return $this;
+    }
 
-
-	/**
+    /**
 	 * @return boolean
 	 */
-	public function isInverse()
-	{
-		return $this->inverse;
-	}
+    public function isInverse()
+    {
+        return $this->inverse;
+    }
 
-} 
+}

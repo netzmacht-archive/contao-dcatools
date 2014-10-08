@@ -11,9 +11,7 @@
 
 namespace DcaTools\Definition\Command;
 
-
 class GlobalCommandConditions extends AbstractCommandConditions
 {
 
-
-} 
+}

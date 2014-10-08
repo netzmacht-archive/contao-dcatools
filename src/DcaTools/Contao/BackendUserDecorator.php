@@ -17,69 +17,63 @@ use DcaTools\User\User;
 
 class BackendUserDecorator implements User
 {
-	/**
+    /**
 	 * @var \BackendUser
 	 */
-	private $user;
+    private $user;
 
-
-	/**
+    /**
 	 * @param \BackendUser $user
 	 */
-	function __construct(\BackendUser $user)
-	{
-		$this->user = $user;
-	}
+    public function __construct(\BackendUser $user)
+    {
+        $this->user = $user;
+    }
 
-
-	/**
+    /**
 	 * @param $role
 	 * @param $domain
 	 * @return bool
 	 */
-	public function hasRole($role, $domain=null)
-	{
-		if($domain === null && $role == static::ROLE_ADMIN) {
-			return $this->user->isAdmin;
-		}
+    public function hasRole($role, $domain=null)
+    {
+        if ($domain === null && $role == static::ROLE_ADMIN) {
+            return $this->user->isAdmin;
+        }
 
-		return $this->user->hasAccess($role, $domain);
-	}
+        return $this->user->hasAccess($role, $domain);
+    }
 
-
-	/**
+    /**
 	 * @param $action
 	 * @param ModelInterface $model
 	 * @return mixed
 	 */
-	public function isAllowed($action, ModelInterface $model)
-	{
-		Assertion::eq('tl_page', $model->getProviderName(), 'Contao only supports User::isAllowed for tl_page');
+    public function isAllowed($action, ModelInterface $model)
+    {
+        Assertion::eq('tl_page', $model->getProviderName(), 'Contao only supports User::isAllowed for tl_page');
 
-		return $this->user->isAllowed($action, $model->getPropertiesAsArray());
-	}
+        return $this->user->isAllowed($action, $model->getPropertiesAsArray());
+    }
 
-
-	/**
+    /**
 	 * Get Current user id
 	 *
 	 * @return int
 	 */
-	public function getId()
-	{
-		return $this->user->id;
-	}
+    public function getId()
+    {
+        return $this->user->id;
+    }
 
-
-	/**
+    /**
 	 * Get username of current user
 	 *
 	 * @return string
 	 */
-	public function getUsername()
-	{
-		return $this->user->username;
-	}
+    public function getUsername()
+    {
+        return $this->user->username;
+    }
 
-
-} 
+}

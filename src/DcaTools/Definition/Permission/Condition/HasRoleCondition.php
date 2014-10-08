@@ -20,102 +20,95 @@ use DcaTools\User\User;
 
 class HasRoleCondition extends AbstractCondition
 {
-	/**
+    /**
 	 * @var
 	 */
-	private $role;
+    private $role;
 
-	/**
+    /**
 	 * @var
 	 */
-	private $domain;
+    private $domain;
 
-
-	/**
+    /**
 	 * @param array $config
 	 * @param PermissionConditionFactory $factory
 	 *
 	 * @return PermissionCondition
 	 */
-	public static function fromConfig(array $config, PermissionConditionFactory $factory)
-	{
-		Assertion::keyExists($config, 'role', 'Role is required');
-		Assertion::keyExists($config, 'domain', 'Domain is required');
+    public static function fromConfig(array $config, PermissionConditionFactory $factory)
+    {
+        Assertion::keyExists($config, 'role', 'Role is required');
+        Assertion::keyExists($config, 'domain', 'Domain is required');
 
-		/** @var HasRoleCondition $condition */
-		$condition = parent::fromConfig($config, $factory);
-		$condition->setRole($config['role']);
-		$condition->setDomain($config['domain']);
+        /** @var HasRoleCondition $condition */
+        $condition = parent::fromConfig($config, $factory);
+        $condition->setRole($config['role']);
+        $condition->setDomain($config['domain']);
 
-		return $condition;
-	}
+        return $condition;
+    }
 
-
-	/**
+    /**
 	 * @param EnvironmentInterface $environment
 	 * @param User $user
 	 * @param Context $context
 	 * @return string
 	 */
-	public function describe(EnvironmentInterface $environment, User $user, Context $context)
-	{
-		return sprintf('Role %s.%s required for user "%s"', $this->domain, $this->role, $user->getId());
-	}
+    public function describe(EnvironmentInterface $environment, User $user, Context $context)
+    {
+        return sprintf('Role %s.%s required for user "%s"', $this->domain, $this->role, $user->getId());
+    }
 
-
-	/**
+    /**
 	 * @param EnvironmentInterface $environment
 	 * @param User $user
 	 * @param Context $context
 	 * @return bool
 	 */
-	public function execute(EnvironmentInterface $environment, User $user, Context $context)
-	{
-		return $user->hasRole($this->role, $this->domain);
-	}
+    public function execute(EnvironmentInterface $environment, User $user, Context $context)
+    {
+        return $user->hasRole($this->role, $this->domain);
+    }
 
-
-	/**
+    /**
 	 * @param mixed $domain
 	 *
 	 * @return $this
 	 */
-	public function setDomain($domain)
-	{
-		$this->domain = $domain;
+    public function setDomain($domain)
+    {
+        $this->domain = $domain;
 
-		return $this;
-	}
+        return $this;
+    }
 
-
-	/**
+    /**
 	 * @return mixed
 	 */
-	public function getDomain()
-	{
-		return $this->domain;
-	}
+    public function getDomain()
+    {
+        return $this->domain;
+    }
 
-
-	/**
+    /**
 	 * @param mixed $action
 	 *
 	 * @return $this
 	 */
-	public function setRole($action)
-	{
-		$this->role = $action;
+    public function setRole($action)
+    {
+        $this->role = $action;
 
-		return $this;
-	}
+        return $this;
+    }
 
-
-	/**
+    /**
 	 * @return mixed
 	 */
-	public function getRole()
-	{
-		return $this->role;
-	}
+    public function getRole()
+    {
+        return $this->role;
+    }
 
 }

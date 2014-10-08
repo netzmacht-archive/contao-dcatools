@@ -11,7 +11,6 @@
 
 namespace DcaTools\Condition\Permission;
 
-
 use ContaoCommunityAlliance\Contao\Bindings\ContaoEvents;
 use ContaoCommunityAlliance\Contao\Bindings\Events\Controller\RedirectEvent;
 use ContaoCommunityAlliance\DcGeneral\Factory\Event\CreateDcGeneralEvent;
@@ -26,22 +25,20 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class PermissionHandler implements EventSubscriberInterface
 {
-	/**
+    /**
 	 * @var User
 	 */
-	private $user;
+    private $user;
 
-
-	/**
+    /**
 	 * @param User $user
 	 */
-	function __construct(User $user)
-	{
-		$this->user = $user;
-	}
+    public function __construct(User $user)
+    {
+        $this->user = $user;
+    }
 
-
-	/**
+    /**
 	 * Returns an array of event names this subscriber wants to listen to.
 	 *
 	 * The array keys are event names and the value can be:
@@ -61,77 +58,75 @@ class PermissionHandler implements EventSubscriberInterface
 	 *
 	 * @api
 	 */
-	public static function getSubscribedEvents()
-	{
-		return array(
-			CreateDcGeneralEvent::NAME => 'checkPermission',
-			GetPermissionContextEvent::NAME => array('getPermissionContext', -100)
-		);
-	}
+    public static function getSubscribedEvents()
+    {
+        return array(
+            CreateDcGeneralEvent::NAME => 'checkPermission',
+            GetPermissionContextEvent::NAME => array('getPermissionContext', -100)
+        );
+    }
 
-
-	/**
+    /**
 	 * @param CreateDcGeneralEvent $event
 	 */
-	public function checkPermission(CreateDcGeneralEvent $event)
-	{
-		/** @var DcaToolsDefinition $definition */
-		$environment = $event->getDcGeneral()->getEnvironment();
-		$propagator  = $environment->getEventPropagator();
-		$definition  = $environment->getDataDefinition()->getDefinition(DcaToolsDefinition::NAME);
-		$conditions  = $definition->getPermissionConditions();
+    public function checkPermission(CreateDcGeneralEvent $event)
+    {
+        /** @var DcaToolsDefinition $definition */
+        $environment = $event->getDcGeneral()->getEnvironment();
+        $propagator  = $environment->getEventPropagator();
+        $definition  = $environment->getDataDefinition()->getDefinition(DcaToolsDefinition::NAME);
+        $conditions  = $definition->getPermissionConditions();
 
-		$event = new GetPermissionContextEvent($environment);;
-		$propagator->propagate($event::NAME, $event, array($environment->getDataDefinition()->getName()));
+        $event = new GetPermissionContextEvent($environment);;
+        $propagator->propagate($event::NAME, $event, array($environment->getDataDefinition()->getName()));
 
-		$context = $event->getContext();
-		Assertion::isInstanceOf($context, 'DcaTools\Condition\Permission\Context', 'No permission context created');
+        $context = $event->getContext();
+        Assertion::isInstanceOf($context, 'DcaTools\Condition\Permission\Context', 'No permission context created');
 
-		foreach($conditions as $condition) {
-			/** @var PermissionCondition $condition */
-			if(!$condition->match($environment, $this->user, $context)) {
-				\Controller::log(
-					$condition->getError(),
-					get_class($condition) . '::__INVOKE__',
-					TL_ERROR)
+        foreach ($conditions as $condition) {
+            /** @var PermissionCondition $condition */
+            if (!$condition->match($environment, $this->user, $context)) {
+                \Controller::log(
+                    $condition->getError(),
+                    get_class($condition) . '::__INVOKE__',
+                    TL_ERROR)
 
-				;
-				$redirect   = new RedirectEvent('contao/main.php?act=error');
+                ;
+                $redirect   = new RedirectEvent('contao/main.php?act=error');
 
-				$propagator->propagate(ContaoEvents::CONTROLLER_REDIRECT, $redirect);
-				exit;
-			}
-		}
-	}
+                $propagator->propagate(ContaoEvents::CONTROLLER_REDIRECT, $redirect);
+                exit;
+            }
+        }
+    }
 
-
-	/**
+    /**
 	 * @param GetPermissionContextEvent $event
 	 * @return Context
 	 */
-	public function getPermissionContext(GetPermissionContextEvent $event)
-	{
-		/** @var DcaToolsDefinition $definition */
-		$environment = $event->getEnvironment();
-		$definition  = $environment->getDataDefinition()->getDefinition(DcaToolsDefinition::NAME);
+    public function getPermissionContext(GetPermissionContextEvent $event)
+    {
+        /** @var DcaToolsDefinition $definition */
+        $environment = $event->getEnvironment();
+        $definition  = $environment->getDataDefinition()->getDefinition(DcaToolsDefinition::NAME);
 
-		if($event->getContext()) {
-			return;
-		}
+        if ($event->getContext()) {
+            return;
+        }
 
-		if($definition->getLegacyMode()) {
-			// todo: build collection
+        if ($definition->getLegacyMode()) {
+            // todo: build collection
 
-			$context = new LegacyContext($environment);
-			$event->setContext($context);
+            $context = new LegacyContext($environment);
+            $event->setContext($context);
 
-			return;
-		}
+            return;
+        }
 
-		$view    = $environment->getView();
-		$context = new DcGeneralContext($environment, $view);
+        $view    = $environment->getView();
+        $context = new DcGeneralContext($environment, $view);
 
-		$event->setContext($context);
-	}
+        $event->setContext($context);
+    }
 
-} 
+}

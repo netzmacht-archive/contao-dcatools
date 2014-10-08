@@ -11,7 +11,6 @@
 
 namespace DcaTools\Definition\Permission\Filter;
 
-
 use ContaoCommunityAlliance\DcGeneral\EnvironmentInterface;
 use DcaTools\Assertion;
 use DcaTools\Condition\Permission\Context;
@@ -21,59 +20,57 @@ use DcaTools\User\User;
 
 class ContextFilter extends AbstractFilter
 {
-	/**
+    /**
 	 * @var string
 	 */
-	private $context;
+    private $context;
 
-	/**
+    /**
 	 * @param array $config
 	 * @param FilterFactory $factory
 	 * @return PermissionFilter|static
 	 */
-	public static function fromConfig(array $config, FilterFactory $factory)
-	{
-		Assertion::keyExists($config, 'context', 'Context has to be defined');
+    public static function fromConfig(array $config, FilterFactory $factory)
+    {
+        Assertion::keyExists($config, 'context', 'Context has to be defined');
 
-		/** @var ContextFilter $filter */
-		$filter = parent::fromConfig($config, $factory);
-		$filter->setContext($config['context']);
+        /** @var ContextFilter $filter */
+        $filter = parent::fromConfig($config, $factory);
+        $filter->setContext($config['context']);
 
-		return $filter;
-	}
+        return $filter;
+    }
 
-
-	/**
+    /**
 	 * @param EnvironmentInterface $environment
 	 * @param User $user
 	 * @param Context $context
 	 *
 	 * @return bool
 	 */
-	public function match(EnvironmentInterface $environment, User $user, Context $context)
-	{
-		return $context->match($this->context);
-	}
+    public function match(EnvironmentInterface $environment, User $user, Context $context)
+    {
+        return $context->match($this->context);
+    }
 
-
-	/**
+    /**
 	 * @param string $context
 	 *
 	 * @return $this
 	 */
-	public function setContext($context)
-	{
-		$this->context = $context;
+    public function setContext($context)
+    {
+        $this->context = $context;
 
-		return $this;
-	}
+        return $this;
+    }
 
-	/**
+    /**
 	 * @return string
 	 */
-	public function getContext()
-	{
-		return $this->context;
-	}
+    public function getContext()
+    {
+        return $this->context;
+    }
 
-} 
+}

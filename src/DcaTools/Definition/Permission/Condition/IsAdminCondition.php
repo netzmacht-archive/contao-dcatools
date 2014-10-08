@@ -15,7 +15,6 @@ use ContaoCommunityAlliance\DcGeneral\EnvironmentInterface;
 use DcaTools\Condition\Permission\Context;
 use DcaTools\User\User;
 
-
 /**
  * Class IsAdminCondition
  * @package DcaTools\Condition\Permission
@@ -23,23 +22,22 @@ use DcaTools\User\User;
 final class IsAdminCondition extends AbstractCondition
 {
 
-	/**
+    /**
 	 * @param EnvironmentInterface $environment
 	 * @param User $user
 	 * @param Context $context
 	 * @return string
 	 */
-	public function describe(EnvironmentInterface $environment, User $user, Context $context)
-	{
-		if($this->isInverse()) {
-			return sprintf('User "%s" has not to be admin', $user->getId());
-		}
+    public function describe(EnvironmentInterface $environment, User $user, Context $context)
+    {
+        if ($this->isInverse()) {
+            return sprintf('User "%s" has not to be admin', $user->getId());
+        }
 
-		return sprintf('User "%s" has to be admin', $user->getId());
-	}
+        return sprintf('User "%s" has to be admin', $user->getId());
+    }
 
-
-	/**
+    /**
 	 * Execute the condition
 	 *
 	 * @param EnvironmentInterface $environment
@@ -47,9 +45,9 @@ final class IsAdminCondition extends AbstractCondition
 	 * @param Context $context
 	 * @return bool
 	 */
-	public function execute(EnvironmentInterface $environment, User $user, Context $context)
-	{
-		return $user->hasRole(User::ROLE_ADMIN);
-	}
+    public function execute(EnvironmentInterface $environment, User $user, Context $context)
+    {
+        return $user->hasRole(User::ROLE_ADMIN);
+    }
 
-} 
+}

@@ -11,8 +11,7 @@
 
 namespace DcaTools\Exception;
 
-
 class InvalidArgumentException extends \Assert\InvalidArgumentException
 {
 
-} 
+}

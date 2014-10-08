@@ -11,13 +11,11 @@
 
 namespace DcaTools\Definition\Command;
 
-
 use ContaoCommunityAlliance\DcGeneral\Data\ModelInterface;
 use ContaoCommunityAlliance\DcGeneral\EnvironmentInterface;
 use DcaTools\Condition\Command\FilterFactory;
 use DcaTools\Dca\Button;
 use DcaTools\User\User;
-
 
 /**
  * Interface Filter
@@ -26,15 +24,14 @@ use DcaTools\User\User;
 interface CommandFilter
 {
 
-	/**
+    /**
 	 * @param array $config
 	 * @param FilterFactory $factory
 	 * @return CommandFilter
 	 */
-	public static function fromConfig(array $config, FilterFactory $factory);
+    public static function fromConfig(array $config, FilterFactory $factory);
 
-
-	/**
+    /**
 	 * @param Button $button
 	 * @param EnvironmentInterface $environment
 	 * @param User $user
@@ -42,6 +39,6 @@ interface CommandFilter
 	 *
 	 * @return bool
 	 */
-	public function match(Button $button, EnvironmentInterface $environment, User $user, ModelInterface $model = null);
+    public function match(Button $button, EnvironmentInterface $environment, User $user, ModelInterface $model = null);
 
-} 
+}

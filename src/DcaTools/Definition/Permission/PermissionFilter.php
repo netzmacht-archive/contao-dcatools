@@ -11,7 +11,6 @@
 
 namespace DcaTools\Definition\Permission;
 
-
 use ContaoCommunityAlliance\DcGeneral\EnvironmentInterface;
 use DcaTools\Condition\Permission\FilterFactory;
 use DcaTools\Condition\Permission\Context;
@@ -24,21 +23,20 @@ use DcaTools\User\User;
 interface PermissionFilter
 {
 
-	/**
+    /**
 	 * @param array $config
 	 * @param FilterFactory $factory
 	 * @return PermissionFilter
 	 */
-	public static function fromConfig(array $config, FilterFactory $factory);
+    public static function fromConfig(array $config, FilterFactory $factory);
 
-
-	/**
+    /**
 	 * @param EnvironmentInterface $environment
 	 * @param User $user
 	 * @param Context $context
 	 *
 	 * @return bool
 	 */
-	public function match(EnvironmentInterface $environment, User $user, Context $context);
+    public function match(EnvironmentInterface $environment, User $user, Context $context);
 
-} 
+}

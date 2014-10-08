@@ -11,7 +11,6 @@
 
 namespace DcaTools\Definition\Command\Filter;
 
-
 use DcaTools\Assertion;
 use DcaTools\Condition\Command\FilterFactory;
 use DcaTools\Definition\Command\CommandFilter;
@@ -19,55 +18,52 @@ use DcaTools\Exception\InvalidArgumentException;
 
 abstract class AbstractChildrenFilter implements CommandFilter
 {
-	/**
+    /**
 	 * @var CommandFilter[]
 	 */
-	protected $children = array();
+    protected $children = array();
 
-
-	/**
+    /**
 	 * @param array $config
 	 * @param FilterFactory $factory
 	 * @return CommandFilter
 	 */
-	public static function fromConfig(array $config, FilterFactory $factory)
-	{
-		/** @var AbstractChildrenFilter $filter */
-		$filter   = new static;
-		$children = array();
+    public static function fromConfig(array $config, FilterFactory $factory)
+    {
+        /** @var AbstractChildrenFilter $filter */
+        $filter   = new static();
+        $children = array();
 
-		foreach($config as $child) {
-			$children[] = $factory->createFromConfig($child);
-		}
+        foreach ($config as $child) {
+            $children[] = $factory->createFromConfig($child);
+        }
 
-		$filter->setChildren($children);
+        $filter->setChildren($children);
 
-		return $filter;
-	}
+        return $filter;
+    }
 
-
-	/**
+    /**
 	 * @param CommandFilter[] $children
 	 *
 	 * @throws InvalidArgumentException
 	 * @return $this;
 	 */
-	public function setChildren(array $children)
-	{
-		Assertion::allIsInstanceOf($children, 'DcaTools\Definition\Command\CommandFilter');
+    public function setChildren(array $children)
+    {
+        Assertion::allIsInstanceOf($children, 'DcaTools\Definition\Command\CommandFilter');
 
-		$this->children = $children;
+        $this->children = $children;
 
-		return $this;
-	}
+        return $this;
+    }
 
-
-	/**
+    /**
 	 * @return CommandFilter[]
 	 */
-	public function getChildren()
-	{
-		return $this->children;
-	}
+    public function getChildren()
+    {
+        return $this->children;
+    }
 
-} 
+}

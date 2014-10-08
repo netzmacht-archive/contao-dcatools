@@ -18,10 +18,9 @@ use ContaoCommunityAlliance\DcGeneral\Contao\View\Contao2BackendView\Event\GetPa
 use ContaoCommunityAlliance\DcGeneral\DataDefinition\Definition\View\ToggleCommandInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
-
 class CompatibilitySubscriber implements EventSubscriberInterface
 {
-	/**
+    /**
 	 * Returns an array of event names this subscriber wants to listen to.
 	 *
 	 * The array keys are event names and the value can be:
@@ -41,90 +40,84 @@ class CompatibilitySubscriber implements EventSubscriberInterface
 	 *
 	 * @api
 	 */
-	public static function getSubscribedEvents()
-	{
-		return array(
-			GetPasteButtonEvent::NAME . '[tl_article]' => 'articlePasteButtons',
-			ContaoEvents::IMAGE_GET_HTML 			   => 'generateDisabledIcon',
-		//	GetOperationButtonEvent::NAME . '[tl_article][toggle]' => array('toggle', 100),
-		);
-	}
+    public static function getSubscribedEvents()
+    {
+        return array(
+            GetPasteButtonEvent::NAME . '[tl_article]' => 'articlePasteButtons',
+            ContaoEvents::IMAGE_GET_HTML               => 'generateDisabledIcon',
+        //	GetOperationButtonEvent::NAME . '[tl_article][toggle]' => array('toggle', 100),
+        );
+    }
 
-
-	/**
+    /**
 	 * @param GenerateHtmlEvent $event
 	 */
-	public function generateDisabledIcon(GenerateHtmlEvent $event)
-	{
-		if(strpos($event->getSrc(), '_1.') === false) {
-			return;
-		}
+    public function generateDisabledIcon(GenerateHtmlEvent $event)
+    {
+        if (strpos($event->getSrc(), '_1.') === false) {
+            return;
+        }
 
-		$html = \Image::getHtml($event->getSrc(), $event->getAlt(), $event->getAttributes());
+        $html = \Image::getHtml($event->getSrc(), $event->getAlt(), $event->getAttributes());
 
-		if(!$html) {
-			$src  = str_replace('_1.', '_.', $event->getSrc());
-			$html = \Image::getHtml($src, $event->getAlt(), $event->getAttributes());
+        if (!$html) {
+            $src  = str_replace('_1.', '_.', $event->getSrc());
+            $html = \Image::getHtml($src, $event->getAlt(), $event->getAttributes());
 
-			if(!$html) {
-				return;
-			}
+            if (!$html) {
+                return;
+            }
 
-			$event->stopPropagation();
-		}
+            $event->stopPropagation();
+        }
 
-		$event->setHtml($html);
-	}
+        $event->setHtml($html);
+    }
 
-
-	/**
+    /**
 	 * @param GetPasteButtonEvent $event
 	 */
-	public function articlePasteButtons(GetPasteButtonEvent $event)
-	{
-		$model = $event->getModel();
+    public function articlePasteButtons(GetPasteButtonEvent $event)
+    {
+        $model = $event->getModel();
 
-		if($model->getProviderName() == 'tl_page') {
-			if($model->getProperty('type') == 'root') {
-				$event->setPasteIntoDisabled(true);
-			}
-			$event->setHtmlPasteAfter('');
-		}
-		else {
-			$event->setHtmlPasteInto('');
-		}
-	}
+        if ($model->getProviderName() == 'tl_page') {
+            if ($model->getProperty('type') == 'root') {
+                $event->setPasteIntoDisabled(true);
+            }
+            $event->setHtmlPasteAfter('');
+        } else {
+            $event->setHtmlPasteInto('');
+        }
+    }
 
+    public function toggle(GetOperationButtonEvent $event)
+    {
+        $environment = $event->getEnvironment();
+        $input       = $environment->getInputProvider();
 
-	public function toggle(GetOperationButtonEvent $event)
-	{
-		$environment = $event->getEnvironment();
-		$input       = $environment->getInputProvider();
+        if ($input->hasParameter('id')) {
+            $serializedId = $input->getParameter('id');
+        }
 
-		if ($input->hasParameter('id')) {
-			$serializedId = $input->getParameter('id');
-		}
+        if (!(isset($serializedId) && $event->getModel()->getProviderName() == $environment->getDataDefinition()->getName())) {
+            return;
+        } else {
+            $serializedId = $event->getModel();
+        }
 
-		if (!(isset($serializedId) && $event->getModel()->getProviderName() == $environment->getDataDefinition()->getName()))
-		{
-			return;
-		}
-		else {
-			$serializedId = $event->getModel();
-		}
+        /** @var ToggleCommandInterface $operation */
+        $operation    = $event->getCommand();
+        $dataProvider = $environment->getDataProvider();
+        $newState     = $operation->isInverse()
+            ? $input->getParameter('state') == 1 ? '' : '1'
+            : $input->getParameter('state') == 1 ? '1' : '';
 
-		/** @var ToggleCommandInterface $operation */
-		$operation    = $event->getCommand();
-		$dataProvider = $environment->getDataProvider();
-		$newState     = $operation->isInverse()
-			? $input->getParameter('state') == 1 ? '' : '1'
-			: $input->getParameter('state') == 1 ? '1' : '';
+        $model = $dataProvider->fetch($dataProvider->getEmptyConfig()->setId($serializedId->getId()));
 
-		$model = $dataProvider->fetch($dataProvider->getEmptyConfig()->setId($serializedId->getId()));
+        $model->setProperty($operation->getToggleProperty(), $newState);
 
-		$model->setProperty($operation->getToggleProperty(), $newState);
-
-		$dataProvider->save($model);
-	}
+        $dataProvider->save($model);
+    }
 
 }

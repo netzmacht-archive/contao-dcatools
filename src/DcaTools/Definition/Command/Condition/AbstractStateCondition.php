@@ -28,76 +28,73 @@ use DcaTools\Util\Comparison;
  */
 abstract class AbstractStateCondition extends AbstractCondition
 {
-	/**
+    /**
 	 * @var CommandCondition
 	 */
-	private $condition;
+    private $condition;
 
-	/**
+    /**
 	 * @var string
 	 */
-	private $property;
+    private $property;
 
-	/**
+    /**
 	 * @var mixed
 	 */
-	private $value;
+    private $value;
 
-	/**
+    /**
 	 * @var string
 	 */
-	private $operator = Comparison::EQUAL;
+    private $operator = Comparison::EQUAL;
 
-	/**
+    /**
 	 * @var callable
 	 */
-	private $callback;
+    private $callback;
 
-
-	/**
+    /**
 	 * @param array $config
 	 * @param CommandFilter $filter
 	 * @param CommandConditionFactory $factory
 	 *
 	 * @return static
 	 */
-	public static function fromConfig(array $config, CommandFilter $filter=null, CommandConditionFactory $factory)
-	{
-		/** @var AbstractStateCondition $condition */
-		$condition = parent::fromConfig($config, $filter, $factory);
+    public static function fromConfig(array $config, CommandFilter $filter=null, CommandConditionFactory $factory)
+    {
+        /** @var AbstractStateCondition $condition */
+        $condition = parent::fromConfig($config, $filter, $factory);
 
-		if(isset($config['condition'])) {
-			if(is_array($config['condition'])) {
-				$child = $factory->createFromConfig($config['condition']);
-			}
-			else {
-				$child = $factory->createByName($config['condition']);
-			}
+        if (isset($config['condition'])) {
+            if (is_array($config['condition'])) {
+                $child = $factory->createFromConfig($config['condition']);
+            } else {
+                $child = $factory->createByName($config['condition']);
+            }
 
-			$condition->setCondition($child);
-		}
+            $condition->setCondition($child);
+        }
 
-		if(isset($config['property'])) {
-			$condition->setProperty($config['property']);
-		}
+        if (isset($config['property'])) {
+            $condition->setProperty($config['property']);
+        }
 
-		if(isset($config['operator'])) {
-			$condition->setOperator($config['operator']);
-		}
+        if (isset($config['operator'])) {
+            $condition->setOperator($config['operator']);
+        }
 
-		if(isset($config['value'])) {
-			$condition->setValue($config['value']);
-		}
+        if (isset($config['value'])) {
+            $condition->setValue($config['value']);
+        }
 
-		if(isset($config['callback'])) {
-			$condition->setCallback($config['callback']);
-		}
+        if (isset($config['callback'])) {
+            $condition->setCallback($config['callback']);
+        }
 
-		return $condition;
-	}
+        return $condition;
+    }
 
-
-	/**
+    /**
 	 * @param Button $button
 	 * @param EnvironmentInterface $environment
 	 * @param User $user
@@ -105,134 +102,124 @@ abstract class AbstractStateCondition extends AbstractCondition
 	 *
 	 * @return bool
 	 */
-	protected function getState(Button $button, EnvironmentInterface $environment, User $user, ModelInterface $model=null)
-	{
-		$state = false;
+    protected function getState(Button $button, EnvironmentInterface $environment, User $user, ModelInterface $model=null)
+    {
+        $state = false;
 
-		if($this->condition) {
-			$state = $this->condition->match($button, $environment, $user, $model);
-		}
-		elseif($this->callback) {
-			$state = call_user_func($this->callback, $this, $button, $environment, $user, $model);
-		}
-		elseif($this->property) {
-			$state = Comparison::compare($this->operator, $this->property, $this->value);
-		}
+        if ($this->condition) {
+            $state = $this->condition->match($button, $environment, $user, $model);
+        } elseif ($this->callback) {
+            $state = call_user_func($this->callback, $this, $button, $environment, $user, $model);
+        } elseif ($this->property) {
+            $state = Comparison::compare($this->operator, $this->property, $this->value);
+        }
 
-		if($this->isInverse()) {
-			return !$state;
-		}
+        if ($this->isInverse()) {
+            return !$state;
+        }
 
-		return $state;
-	}
+        return $state;
+    }
 
-
-	/**
+    /**
 	 * @param CommandCondition $condition
 	 *
 	 * @return $this
 	 */
-	public function setCondition(CommandCondition $condition)
-	{
-		$this->condition = $condition;
+    public function setCondition(CommandCondition $condition)
+    {
+        $this->condition = $condition;
 
-		return $this;
-	}
+        return $this;
+    }
 
-
-	/**
+    /**
 	 * @param $property
 	 *
 	 * @return $this
 	 */
-	public function setProperty($property)
-	{
-		$this->property = $property;
+    public function setProperty($property)
+    {
+        $this->property = $property;
 
-		return $this;
-	}
+        return $this;
+    }
 
-
-	/**
+    /**
 	 * @param $operator
 	 * @return $this
 	 */
-	public function setOperator($operator)
-	{
-		Assertion::true(Comparison::supportsOperator($operator), sprintf('Comparison operator "%s" is not supported', $operator));
+    public function setOperator($operator)
+    {
+        Assertion::true(Comparison::supportsOperator($operator), sprintf('Comparison operator "%s" is not supported', $operator));
 
-		$this->operator = $operator;
+        $this->operator = $operator;
 
-		return $this;
-	}
+        return $this;
+    }
 
-
-	/**
+    /**
 	 * @param mixed $value
 	 *
 	 * @return $this
 	 */
-	public function setValue($value)
-	{
-		$this->value = $value;
+    public function setValue($value)
+    {
+        $this->value = $value;
 
-		return $this;
-	}
+        return $this;
+    }
 
-
-	/**
+    /**
 	 * @return mixed
 	 */
-	public function getValue()
-	{
-		return $this->value;
-	}
+    public function getValue()
+    {
+        return $this->value;
+    }
 
-
-	/**
+    /**
 	 * @param callable $callback
 	 *
 	 * @return $this
 	 */
-	public function setCallback($callback)
-	{
-		$this->callback = $callback;
+    public function setCallback($callback)
+    {
+        $this->callback = $callback;
 
-		return $this;
-	}
+        return $this;
+    }
 
-	/**
+    /**
 	 * @return callable
 	 */
-	public function getCallback()
-	{
-		return $this->callback;
-	}
+    public function getCallback()
+    {
+        return $this->callback;
+    }
 
-	/**
+    /**
 	 * @return \DcaTools\Definition\Command\CommandCondition
 	 */
-	public function getCondition()
-	{
-		return $this->condition;
-	}
+    public function getCondition()
+    {
+        return $this->condition;
+    }
 
-
-	/**
+    /**
 	 * @return string
 	 */
-	public function getOperator()
-	{
-		return $this->operator;
-	}
+    public function getOperator()
+    {
+        return $this->operator;
+    }
 
-
-	/**
+    /**
 	 * @return string
 	 */
-	public function getProperty()
-	{
-		return $this->property;
-	}
+    public function getProperty()
+    {
+        return $this->property;
+    }
 
 }

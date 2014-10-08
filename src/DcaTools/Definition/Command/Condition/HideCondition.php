@@ -11,7 +11,6 @@
 
 namespace DcaTools\Definition\Command\Condition;
 
-
 use ContaoCommunityAlliance\DcGeneral\Data\ModelInterface;
 use ContaoCommunityAlliance\DcGeneral\EnvironmentInterface;
 use DcaTools\Dca\Button;
@@ -21,19 +20,19 @@ use DcaTools\User\User;
 class HideCondition extends AbstractStateCondition
 {
 
-	/**
+    /**
 	 * @param Button $button
 	 * @param EnvironmentInterface $environment
 	 * @param \DcaTools\User\User $user
 	 * @param ModelInterface $model
 	 * @return bool
 	 */
-	public function execute(Button $button, EnvironmentInterface $environment, User $user, ModelInterface $model = null)
-	{
-		$visible = $this->getState($button, $environment, $user, $model);
-		$button->setVisible(!$visible);
+    public function execute(Button $button, EnvironmentInterface $environment, User $user, ModelInterface $model = null)
+    {
+        $visible = $this->getState($button, $environment, $user, $model);
+        $button->setVisible(!$visible);
 
-		return $visible;
-	}
+        return $visible;
+    }
 
-} 
+}

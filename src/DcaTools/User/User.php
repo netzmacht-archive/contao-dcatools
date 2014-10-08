@@ -11,43 +11,38 @@
 
 namespace DcaTools\User;
 
-
 use ContaoCommunityAlliance\DcGeneral\Data\ModelInterface;
 
 interface User
 {
-	const ROLE_ADMIN = 'admin';
+    const ROLE_ADMIN = 'admin';
 
-
-	/**
+    /**
 	 * @param $role
 	 * @param $domain
 	 * @return bool
 	 */
-	public function hasRole($role, $domain=null);
+    public function hasRole($role, $domain=null);
 
-
-	/**
+    /**
 	 * @param $action
 	 * @param ModelInterface $model
 	 * @return mixed
 	 */
-	public function isAllowed($action, ModelInterface $model);
+    public function isAllowed($action, ModelInterface $model);
 
-
-	/**
+    /**
 	 * Get Current user id
 	 *
 	 * @return int
 	 */
-	public function getId();
+    public function getId();
 
-
-	/**
+    /**
 	 * Get username of current user
 	 *
 	 * @return string
 	 */
-	public function getUsername();
+    public function getUsername();
 
-} 
+}

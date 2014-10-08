@@ -36,51 +36,47 @@ use ContaoCommunityAlliance\DcGeneral\Factory\Event\CreateDcGeneralEvent;
 use DcaTools\Data\ModelFactory;
 use DcaTools\View\ViewHelper;
 
-
 class CallbackDispatcher
 {
-	/**
+    /**
 	 * @var DcGeneral
 	 */
-	private $dcGeneral;
+    private $dcGeneral;
 
-	/**
+    /**
 	 * @var array
 	 */
-	private $callbacks = array();
+    private $callbacks = array();
 
-	/**
+    /**
 	 * @var ViewHelper
 	 */
-	private $viewHelper = array();
+    private $viewHelper = array();
 
-
-	/**
+    /**
 	 * @param \ContaoCommunityAlliance\DcGeneral\DcGeneral $dcGeneral
 	 * @param \DcaTools\View\ViewHelper $viewHelper
 	 */
-	function __construct(DcGeneral $dcGeneral, ViewHelper $viewHelper)
-	{
-		$this->dcGeneral  = $dcGeneral;
-		$this->viewHelper = $viewHelper;
-	}
+    public function __construct(DcGeneral $dcGeneral, ViewHelper $viewHelper)
+    {
+        $this->dcGeneral  = $dcGeneral;
+        $this->viewHelper = $viewHelper;
+    }
 
-
-	/**
+    /**
 	 * @param $tableName
 	 * @param $eventName
 	 * @param $callback
 	 * @return $this
 	 */
-	public function registerCallback($tableName, $eventName, $callback)
-	{
-		$this->callbacks[$tableName][$eventName][] = $callback;
+    public function registerCallback($tableName, $eventName, $callback)
+    {
+        $this->callbacks[$tableName][$eventName][] = $callback;
 
-		return $this;
-	}
+        return $this;
+    }
 
-
-	/**
+    /**
 	 * @param key
 	 * @param $href
 	 * @param $label
@@ -89,98 +85,92 @@ class CallbackDispatcher
 	 * @param $attributes
 	 * @return string
 	 */
-	public function containerGlobalButton($key, $href, $label, $title, $class, $attributes)
-	{
-		$environment = $this->dcGeneral->getEnvironment();
-		$event 		 = new GetGlobalButtonEvent($environment);
+    public function containerGlobalButton($key, $href, $label, $title, $class, $attributes)
+    {
+        $environment = $this->dcGeneral->getEnvironment();
+        $event         = new GetGlobalButtonEvent($environment);
 
-		$event
-			->setKey($key)
-			->setHref($href)
-			->setLabel($label)
-			->setTitle($title)
-			->setClass($class)
-			->setAttributes($attributes);
+        $event
+            ->setKey($key)
+            ->setHref($href)
+            ->setLabel($label)
+            ->setTitle($title)
+            ->setClass($class)
+            ->setAttributes($attributes);
 
-		$environment->getEventPropagator()->propagate($event::NAME, $event);
+        $environment->getEventPropagator()->propagate($event::NAME, $event);
 
-		return $event->getHtml();
-	}
+        return $event->getHtml();
+    }
 
-
-	/**
+    /**
 	 * @param $additional
 	 * @return array
 	 */
-	public function containerHeader($additional)
-	{
-		$environment = $this->dcGeneral->getEnvironment();
-		$event 		 = new GetParentHeaderEvent($environment);
+    public function containerHeader($additional)
+    {
+        $environment = $this->dcGeneral->getEnvironment();
+        $event         = new GetParentHeaderEvent($environment);
 
-		$event->setAdditional($additional);
-		$environment->getEventPropagator()->propagate($event::NAME, $event);
+        $event->setAdditional($additional);
+        $environment->getEventPropagator()->propagate($event::NAME, $event);
 
-		return $event->getAdditional();
-	}
+        return $event->getAdditional();
+    }
 
-
-	/**
+    /**
 	 * @param $id
 	 * @param \DataContainer $dc
 	 */
-	public function containerOnCopy($id, \DataContainer $dc)
-	{
-		$environment = $this->dcGeneral->getEnvironment();
-		$sourceModel = ModelFactory::createByDc($environment, $dc);
-		$oldModel    = ModelFactory::createById($environment, $id);
-		$event 		 = new PostDuplicateModelEvent($environment, $sourceModel, $oldModel);
+    public function containerOnCopy($id, \DataContainer $dc)
+    {
+        $environment = $this->dcGeneral->getEnvironment();
+        $sourceModel = ModelFactory::createByDc($environment, $dc);
+        $oldModel    = ModelFactory::createById($environment, $id);
+        $event         = new PostDuplicateModelEvent($environment, $sourceModel, $oldModel);
 
-		$environment->getEventPropagator()->propagate($event::NAME, $event);
-	}
+        $environment->getEventPropagator()->propagate($event::NAME, $event);
+    }
 
-
-	/**
+    /**
 	 * @param \DataContainer $dc
 	 */
-	public function containerOnCut(\DataContainer $dc)
-	{
-		$environment = $this->dcGeneral->getEnvironment();
-		$model       = ModelFactory::createByDc($environment, $dc);
-		$event 		 = new PostPasteModelEvent($environment, $model);
+    public function containerOnCut(\DataContainer $dc)
+    {
+        $environment = $this->dcGeneral->getEnvironment();
+        $model       = ModelFactory::createByDc($environment, $dc);
+        $event         = new PostPasteModelEvent($environment, $model);
 
-		$environment->getEventPropagator()->propagate($event::NAME, $event);
-	}
+        $environment->getEventPropagator()->propagate($event::NAME, $event);
+    }
 
-
-	/**
+    /**
 	 * @param \DataContainer $dc
 	 * @param $undoId
 	 */
-	public function containerOnDelete(\DataContainer $dc, $undoId)
-	{
-		$environment = $this->dcGeneral->getEnvironment();
-		$model 		 = ModelFactory::createByDc($environment, $dc);
-		$model->setMeta('last-undo-id', $undoId);
+    public function containerOnDelete(\DataContainer $dc, $undoId)
+    {
+        $environment = $this->dcGeneral->getEnvironment();
+        $model         = ModelFactory::createByDc($environment, $dc);
+        $model->setMeta('last-undo-id', $undoId);
 
-		$event 		 = new PostDeleteModelEvent($environment, $model);
+        $event         = new PostDeleteModelEvent($environment, $model);
 
-		$environment->getEventPropagator()->propagate($event::NAME, $event, array($environment->getDataDefinition()->getName()));
-	}
+        $environment->getEventPropagator()->propagate($event::NAME, $event, array($environment->getDataDefinition()->getName()));
+    }
 
-
-	/**
+    /**
 	 *
 	 */
-	public function containerOnLoad()
-	{
-		$environment = $this->dcGeneral->getEnvironment();
-		$event 		 = new CreateDcGeneralEvent($this->dcGeneral);
+    public function containerOnLoad()
+    {
+        $environment = $this->dcGeneral->getEnvironment();
+        $event         = new CreateDcGeneralEvent($this->dcGeneral);
 
-		$environment->getEventPropagator()->propagate($event::NAME, $event);
-	}
+        $environment->getEventPropagator()->propagate($event::NAME, $event);
+    }
 
-
-	/**
+    /**
 	 * @param \DataContainer $dc
 	 * @param $row
 	 * @param $dataContainerName
@@ -190,126 +180,121 @@ class CallbackDispatcher
 	 * @param null $next
 	 * @return string
 	 */
-	public function containerPasteButton(\DataContainer $dc, $row, $dataContainerName, $isCircular, $containedIds, $previous, $next)
-	{
-		$environment = $this->dcGeneral->getEnvironment();
-		$propagator  = $environment->getEventPropagator();
-		$model 		 = ModelFactory::createByArray($environment, $row, $dataContainerName);
-		$collection  = new DefaultCollection();
-		$clipboard   = $environment->getClipboard();
+    public function containerPasteButton(\DataContainer $dc, $row, $dataContainerName, $isCircular, $containedIds, $previous, $next)
+    {
+        $environment = $this->dcGeneral->getEnvironment();
+        $propagator  = $environment->getEventPropagator();
+        $model         = ModelFactory::createByArray($environment, $row, $dataContainerName);
+        $collection  = new DefaultCollection();
+        $clipboard   = $environment->getClipboard();
 
-		foreach($containedIds as $id) {
-			$collection->push(ModelFactory::createById($environment, $id, $dataContainerName, false));
-		}
+        foreach ($containedIds as $id) {
+            $collection->push(ModelFactory::createById($environment, $id, $dataContainerName, false));
+        }
 
-		/** @var AddToUrlEvent $urlAfter */
-		$add2UrlAfter = sprintf('act=copy&mode=2&pid=%s&id=%s', $model->getProperty('pid'), $model->getId());
-		$urlAfter     = $propagator->propagate(ContaoEvents::BACKEND_ADD_TO_URL, new AddToUrlEvent($add2UrlAfter));
+        /** @var AddToUrlEvent $urlAfter */
+        $add2UrlAfter = sprintf('act=copy&mode=2&pid=%s&id=%s', $model->getProperty('pid'), $model->getId());
+        $urlAfter     = $propagator->propagate(ContaoEvents::BACKEND_ADD_TO_URL, new AddToUrlEvent($add2UrlAfter));
 
-		/** @var AddToUrlEvent $urlInto */
-		$add2UrlInto = sprintf('act=copy&mode=1&pid=%s&id=%s', $model->getProperty('pid'), $model->getId());
-		$urlInto     = $propagator->propagate(ContaoEvents::BACKEND_ADD_TO_URL,	new AddToUrlEvent($add2UrlInto));
+        /** @var AddToUrlEvent $urlInto */
+        $add2UrlInto = sprintf('act=copy&mode=1&pid=%s&id=%s', $model->getProperty('pid'), $model->getId());
+        $urlInto     = $propagator->propagate(ContaoEvents::BACKEND_ADD_TO_URL,    new AddToUrlEvent($add2UrlInto));
 
-		$buttonEvent = new GetPasteButtonEvent($environment);
-		$buttonEvent
-			->setModel($model)
-			->setCircularReference($isCircular)
-			->setPrevious(ModelFactory::createById($environment, $previous, $dataContainerName, false))
-			->setNext(ModelFactory::createById($environment, $next, $dataContainerName, false))
-			->setHrefAfter($urlAfter->getUrl())
-			->setHrefInto($urlInto->getUrl())
-			// Check if the id is in the ignore list.
-			->setPasteAfterDisabled($clipboard->isCut() && $isCircular)
-			->setPasteIntoDisabled($clipboard->isCut() && $isCircular)
-			->setContainedModels($collection);
+        $buttonEvent = new GetPasteButtonEvent($environment);
+        $buttonEvent
+            ->setModel($model)
+            ->setCircularReference($isCircular)
+            ->setPrevious(ModelFactory::createById($environment, $previous, $dataContainerName, false))
+            ->setNext(ModelFactory::createById($environment, $next, $dataContainerName, false))
+            ->setHrefAfter($urlAfter->getUrl())
+            ->setHrefInto($urlInto->getUrl())
+            // Check if the id is in the ignore list.
+            ->setPasteAfterDisabled($clipboard->isCut() && $isCircular)
+            ->setPasteIntoDisabled($clipboard->isCut() && $isCircular)
+            ->setContainedModels($collection);
 
-		$propagator->propagate(
-			$buttonEvent::NAME,
-			$buttonEvent,
-			array($environment->getDataDefinition()->getName())
-		);
+        $propagator->propagate(
+            $buttonEvent::NAME,
+            $buttonEvent,
+            array($environment->getDataDefinition()->getName())
+        );
 
-		$buffer  = $this->viewHelper->renderPasteAfterButton($buttonEvent);
+        $buffer  = $this->viewHelper->renderPasteAfterButton($buttonEvent);
 
-		if ($environment->getDataDefinition()->getBasicDefinition()->getMode() == BasicDefinitionInterface::MODE_HIERARCHICAL) {
-			$buffer .= ' ' . $this->viewHelper->renderPasteIntoButton($buttonEvent);
-		}
+        if ($environment->getDataDefinition()->getBasicDefinition()->getMode() == BasicDefinitionInterface::MODE_HIERARCHICAL) {
+            $buffer .= ' ' . $this->viewHelper->renderPasteIntoButton($buttonEvent);
+        }
 
-		return $buffer;
-	}
+        return $buffer;
+    }
 
-
-	/**
+    /**
 	 * @param \DataContainer $dc
 	 */
-	public function containerOnSubmit(\DataContainer $dc)
-	{
-		$environment = $this->dcGeneral->getEnvironment();
-		$model 		 = ModelFactory::createByDc($environment, $dc);
-		$event 		 = new PostPersistModelEvent($environment, $model);
+    public function containerOnSubmit(\DataContainer $dc)
+    {
+        $environment = $this->dcGeneral->getEnvironment();
+        $model         = ModelFactory::createByDc($environment, $dc);
+        $event         = new PostPersistModelEvent($environment, $model);
 
-		$environment->getEventPropagator()->propagate($event::NAME, $event);
-	}
+        $environment->getEventPropagator()->propagate($event::NAME, $event);
+    }
 
-
-	/**
+    /**
 	 * @param array $row
 	 * @return string
 	 */
-	public function modelChildRecord($row)
-	{
-		$environment = $this->dcGeneral->getEnvironment();
-		$model 		 = ModelFactory::createByArray($environment, $row);
-		$event		 = new ParentViewChildRecordEvent($environment, $model);
+    public function modelChildRecord($row)
+    {
+        $environment = $this->dcGeneral->getEnvironment();
+        $model         = ModelFactory::createByArray($environment, $row);
+        $event         = new ParentViewChildRecordEvent($environment, $model);
 
-		$environment->getEventPropagator()->propagate($event::NAME, $event);
+        $environment->getEventPropagator()->propagate($event::NAME, $event);
 
-		return $event->getHtml();
-	}
+        return $event->getHtml();
+    }
 
-
-	/**
+    /**
 	 * @param $groupField
 	 * @param $groupMode
 	 * @param $value
 	 * @param $row
 	 * @return string
 	 */
-	public function modelGroup($groupField, $groupMode, $value, $row)
-	{
-		$environment = $this->dcGeneral->getEnvironment();
-		$model 		 = ModelFactory::createByArray($environment, $row);
-		$event		 = new GetGroupHeaderEvent($environment, $model, $groupField, $value, $groupMode);
+    public function modelGroup($groupField, $groupMode, $value, $row)
+    {
+        $environment = $this->dcGeneral->getEnvironment();
+        $model         = ModelFactory::createByArray($environment, $row);
+        $event         = new GetGroupHeaderEvent($environment, $model, $groupField, $value, $groupMode);
 
-		$environment->getEventPropagator()->propagate($event::NAME, $event);
+        $environment->getEventPropagator()->propagate($event::NAME, $event);
 
-		return $event->getValue();
-	}
+        return $event->getValue();
+    }
 
-
-	/**
+    /**
 	 * @param $row
 	 * @param $label
 	 * @param \DataContainer $dc
 	 * @param null $arguments
 	 * @return string
 	 */
-	public function modelLabel($row, $label, \DataContainer $dc, $arguments=null)
-	{
-		$environment = $this->dcGeneral->getEnvironment();
-		$model 		 = ModelFactory::createByArray($environment, $row);
-		$event		 = new ModelToLabelEvent($environment, $model);
+    public function modelLabel($row, $label, \DataContainer $dc, $arguments=null)
+    {
+        $environment = $this->dcGeneral->getEnvironment();
+        $model         = ModelFactory::createByArray($environment, $row);
+        $event         = new ModelToLabelEvent($environment, $model);
 
-		$event->setLabel($label);
-		$event->setArgs($arguments);
+        $event->setLabel($label);
+        $event->setArgs($arguments);
 
-		$environment->getEventPropagator()->propagate($event::NAME, $event, array($environment->getDataDefinition()->getName()));
+        $environment->getEventPropagator()->propagate($event::NAME, $event, array($environment->getDataDefinition()->getName()));
 
-		return $event->getLabel();
-	}
+        return $event->getLabel();
+    }
 
-
-	/**
+    /**
 	 * @param $key
 	 * @param $row
 	 * @param $href
@@ -325,99 +310,95 @@ class CallbackDispatcher
 	 * @param null $next
 	 * @return string
 	 */
-	public function modelOperationButton($key, $row, $href, $label, $title, $icon, $attributes, $dataContainerName, $rootEntries=null, $childRecordIds=null, $circularReference=null, $previous=null, $next=null)
-	{
-		$environment = $this->dcGeneral->getEnvironment();
-		$model 		 = ModelFactory::createByArray($environment, $row, $dataContainerName);
-		$previous    = $previous ? ModelFactory::createById($environment, $previous, $dataContainerName, false) : null;
-		$next        = $next ? ModelFactory::createById($environment, $next, $dataContainerName, false) : null;
+    public function modelOperationButton($key, $row, $href, $label, $title, $icon, $attributes, $dataContainerName, $rootEntries=null, $childRecordIds=null, $circularReference=null, $previous=null, $next=null)
+    {
+        $environment = $this->dcGeneral->getEnvironment();
+        $model         = ModelFactory::createByArray($environment, $row, $dataContainerName);
+        $previous    = $previous ? ModelFactory::createById($environment, $previous, $dataContainerName, false) : null;
+        $next        = $next ? ModelFactory::createById($environment, $next, $dataContainerName, false) : null;
 
-		/** @var Contao2BackendViewDefinitionInterface $definition */
-		$definition = $environment
-			->getDataDefinition()
-			->getDefinition(Contao2BackendViewDefinitionInterface::NAME);
+        /** @var Contao2BackendViewDefinitionInterface $definition */
+        $definition = $environment
+            ->getDataDefinition()
+            ->getDefinition(Contao2BackendViewDefinitionInterface::NAME);
 
-		$command = $definition
-			->getModelCommands()
-			->getCommandNamed($key);
+        $command = $definition
+            ->getModelCommands()
+            ->getCommandNamed($key);
 
-		$buffer = $this->viewHelper->renderCommand($command, $model, $circularReference, $childRecordIds, $previous, $next);
+        $buffer = $this->viewHelper->renderCommand($command, $model, $circularReference, $childRecordIds, $previous, $next);
 
-		return $buffer;
-	}
+        return $buffer;
+    }
 
-
-	/**
+    /**
 	 * @param \DataContainer $dc
 	 * @return array
 	 */
-	public function modelOptionsCallback(\DataContainer $dc)
-	{
-		$environment = $this->dcGeneral->getEnvironment();
-		$model       = ModelFactory::createByDc($environment, $dc);
-		$event		 = new GetPropertyOptionsEvent($environment, $model);
+    public function modelOptionsCallback(\DataContainer $dc)
+    {
+        $environment = $this->dcGeneral->getEnvironment();
+        $model       = ModelFactory::createByDc($environment, $dc);
+        $event         = new GetPropertyOptionsEvent($environment, $model);
 
-		$environment->getEventPropagator()->propagate($event::NAME, $event);
+        $environment->getEventPropagator()->propagate($event::NAME, $event);
 
-		return $event->getOptions();
-	}
+        return $event->getOptions();
+    }
 
-
-	/**
+    /**
 	 * @param $property
 	 * @param \DataContainer $dc
 	 * @return \Widget
 	 */
-	public function propertyInputField($property, \DataContainer $dc)
-	{
-		$environment = $this->dcGeneral->getEnvironment();
-		$model		 = ModelFactory::createByDc($environment, $dc);
-		$event 		 = new BuildWidgetEvent($environment, $model, $property);
+    public function propertyInputField($property, \DataContainer $dc)
+    {
+        $environment = $this->dcGeneral->getEnvironment();
+        $model         = ModelFactory::createByDc($environment, $dc);
+        $event         = new BuildWidgetEvent($environment, $model, $property);
 
-		$environment->getEventPropagator()->propagate($event::NAME, $event);
+        $environment->getEventPropagator()->propagate($event::NAME, $event);
 
-		return $event->getWidget();
-	}
+        return $event->getWidget();
+    }
 
-
-	/**
+    /**
 	 * @param $value
 	 * @param \DataContainer $dc
 	 * @return mixed
 	 */
-	public function propertyOnLoad($value, \DataContainer $dc)
-	{
-		$environment = $this->dcGeneral->getEnvironment();
-		$model		 = ModelFactory::createByDc($environment, $dc);
-		$event 		 = new DecodePropertyValueForWidgetEvent($environment, $model);
-		$event
-			->setValue($value)
-			->setProperty($dc->field);
+    public function propertyOnLoad($value, \DataContainer $dc)
+    {
+        $environment = $this->dcGeneral->getEnvironment();
+        $model         = ModelFactory::createByDc($environment, $dc);
+        $event         = new DecodePropertyValueForWidgetEvent($environment, $model);
+        $event
+            ->setValue($value)
+            ->setProperty($dc->field);
 
-		$environment->getEventPropagator()->propagate($event::NAME, $event);
+        $environment->getEventPropagator()->propagate($event::NAME, $event);
 
-		return $event->getValue();
-	}
+        return $event->getValue();
+    }
 
-
-	/**
+    /**
 	 * @param $value
 	 * @param \DataContainer $dc
 	 * @return mixed
 	 */
-	public function propertyOnSave($value, \DataContainer $dc)
-	{
-		$environment = $this->dcGeneral->getEnvironment();
-		$model		 = ModelFactory::createByDc($environment, $dc);
+    public function propertyOnSave($value, \DataContainer $dc)
+    {
+        $environment = $this->dcGeneral->getEnvironment();
+        $model         = ModelFactory::createByDc($environment, $dc);
         $values      = new PropertyValueBag($dc->activeRecord->row());
-		$event 		 = new EncodePropertyValueFromWidgetEvent($environment, $model, $values);
-		$event
-			->setValue($value)
-			->setProperty($dc->field);
+        $event         = new EncodePropertyValueFromWidgetEvent($environment, $model, $values);
+        $event
+            ->setValue($value)
+            ->setProperty($dc->field);
 
-		$environment->getEventPropagator()->propagate($event::NAME, $event);
+        $environment->getEventPropagator()->propagate($event::NAME, $event);
 
-		return $event->getValue();
-	}
+        return $event->getValue();
+    }
 
 }

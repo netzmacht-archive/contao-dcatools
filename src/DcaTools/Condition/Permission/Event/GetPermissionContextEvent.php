@@ -14,33 +14,29 @@ namespace DcaTools\Condition\Permission\Event;
 use ContaoCommunityAlliance\DcGeneral\Event\AbstractEnvironmentAwareEvent;
 use DcaTools\Condition\Permission\Context;
 
-
 final class GetPermissionContextEvent extends AbstractEnvironmentAwareEvent
 {
-	const NAME = 'dcatools.get-permission-context';
+    const NAME = 'dcatools.get-permission-context';
 
-
-	/**
+    /**
 	 * @var \DcaTools\Condition\Permission\Context $context
 	 */
-	private $context;
+    private $context;
 
-
-	/**
+    /**
 	 * @param mixed $context
 	 */
-	public function setContext($context)
-	{
-		$this->context = $context;
-	}
+    public function setContext($context)
+    {
+        $this->context = $context;
+    }
 
-
-	/**
+    /**
 	 * @return mixed
 	 */
-	public function getContext()
-	{
-		return $this->context;
-	}
+    public function getContext()
+    {
+        return $this->context;
+    }
 
-} 
+}

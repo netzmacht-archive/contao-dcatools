@@ -11,7 +11,6 @@
 
 namespace DcaTools\Definition\Permission\Condition;
 
-
 use ContaoCommunityAlliance\DcGeneral\EnvironmentInterface;
 use DcaTools\Assertion;
 use DcaTools\Condition\Permission\Context;
@@ -19,108 +18,100 @@ use DcaTools\Condition\Permission\PermissionConditionFactory;
 use DcaTools\Definition\Permission\PermissionCondition;
 use DcaTools\User\User;
 
-
 /**
  * @package DcaTools\Condition\Permission
  */
 final class HasAccessCondition extends AbstractCondition
 {
-	/**
+    /**
 	 * @var
 	 */
-	private $action;
+    private $action;
 
-	/**
+    /**
 	 * @var
 	 */
-	private $domain;
+    private $domain;
 
-
-	/**
+    /**
 	 * @param array $config
 	 * @param PermissionConditionFactory $factory
 	 *
 	 * @return PermissionCondition
 	 */
-	public static function fromConfig(array $config, PermissionConditionFactory $factory)
-	{
-		Assertion::keyExists($config, 'action', 'Action is required');
-		Assertion::keyExists($config, 'domain', 'Domain is required');
+    public static function fromConfig(array $config, PermissionConditionFactory $factory)
+    {
+        Assertion::keyExists($config, 'action', 'Action is required');
+        Assertion::keyExists($config, 'domain', 'Domain is required');
 
-		/** @var HasAccessCondition $condition */
-		$condition = parent::fromConfig($config, $factory);
-		$condition->setAction($config['action']);
-		$condition->setDomain($config['domain']);
+        /** @var HasAccessCondition $condition */
+        $condition = parent::fromConfig($config, $factory);
+        $condition->setAction($config['action']);
+        $condition->setDomain($config['domain']);
 
-		return $condition;
-	}
+        return $condition;
+    }
 
-
-	/**
+    /**
 	 * @param EnvironmentInterface $environment
 	 * @param User $user
 	 * @param Context $context
 	 * @return string
 	 */
-	public function describe(EnvironmentInterface $environment, User $user, Context $context)
-	{
-		return sprintf('Access %s.%s required for User "%s"', $this->domain, $this->action, $user->getId());
-	}
+    public function describe(EnvironmentInterface $environment, User $user, Context $context)
+    {
+        return sprintf('Access %s.%s required for User "%s"', $this->domain, $this->action, $user->getId());
+    }
 
-
-	/**
+    /**
 	 * @param EnvironmentInterface $environment
 	 * @param User $user
 	 * @param Context $context
 	 * @return bool
 	 */
-	public function execute(EnvironmentInterface $environment, User $user, Context $context)
-	{
-		return $user->hasRole($this->action, $this->domain);
-	}
+    public function execute(EnvironmentInterface $environment, User $user, Context $context)
+    {
+        return $user->hasRole($this->action, $this->domain);
+    }
 
-
-	/**
+    /**
 	 * @param mixed $domain
 	 *
 	 * @return $this
 	 */
-	public function setDomain($domain)
-	{
-		$this->domain = $domain;
+    public function setDomain($domain)
+    {
+        $this->domain = $domain;
 
-		return $this;
-	}
+        return $this;
+    }
 
-
-	/**
+    /**
 	 * @return mixed
 	 */
-	public function getDomain()
-	{
-		return $this->domain;
-	}
+    public function getDomain()
+    {
+        return $this->domain;
+    }
 
-
-	/**
+    /**
 	 * @param mixed $action
 	 *
 	 * @return $this
 	 */
-	public function setAction($action)
-	{
-		$this->action = $action;
+    public function setAction($action)
+    {
+        $this->action = $action;
 
-		return $this;
-	}
+        return $this;
+    }
 
-
-	/**
+    /**
 	 * @return mixed
 	 */
-	public function getAction()
-	{
-		return $this->action;
-	}
+    public function getAction()
+    {
+        return $this->action;
+    }
 
 }

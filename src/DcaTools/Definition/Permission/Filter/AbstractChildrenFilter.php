@@ -11,7 +11,6 @@
 
 namespace DcaTools\Definition\Permission\Filter;
 
-
 use DcaTools\Assertion;
 use DcaTools\Condition\Permission\FilterFactory;
 use DcaTools\Definition\Permission\PermissionFilter;
@@ -19,55 +18,52 @@ use DcaTools\Exception\InvalidArgumentException;
 
 abstract class AbstractChildrenFilter implements PermissionFilter
 {
-	/**
+    /**
 	 * @var PermissionFilter[]
 	 */
-	protected $children = array();
+    protected $children = array();
 
-
-	/**
+    /**
 	 * @param array $config
 	 * @param FilterFactory $factory
 	 * @return PermissionFilter
 	 */
-	public static function fromConfig(array $config, FilterFactory $factory)
-	{
-		/** @var AbstractChildrenFilter $filter */
-		$filter   = new static;
-		$children = array();
+    public static function fromConfig(array $config, FilterFactory $factory)
+    {
+        /** @var AbstractChildrenFilter $filter */
+        $filter   = new static();
+        $children = array();
 
-		foreach($config as $child) {
-			$children[] = $factory->createFromConfig($child);
-		}
+        foreach ($config as $child) {
+            $children[] = $factory->createFromConfig($child);
+        }
 
-		$filter->setChildren($children);
+        $filter->setChildren($children);
 
-		return $filter;
-	}
+        return $filter;
+    }
 
-
-	/**
+    /**
 	 * @param PermissionFilter[] $children
 	 *
 	 * @throws InvalidArgumentException
 	 * @return $this;
 	 */
-	public function setChildren(array $children)
-	{
-		Assertion::allIsInstanceOf($children, 'DcaTools\Definition\Permission\PermissionFilter');
+    public function setChildren(array $children)
+    {
+        Assertion::allIsInstanceOf($children, 'DcaTools\Definition\Permission\PermissionFilter');
 
-		$this->children = $children;
+        $this->children = $children;
 
-		return $this;
-	}
+        return $this;
+    }
 
-
-	/**
+    /**
 	 * @return PermissionFilter[]
 	 */
-	public function getChildren()
-	{
-		return $this->children;
-	}
+    public function getChildren()
+    {
+        return $this->children;
+    }
 
-} 
+}

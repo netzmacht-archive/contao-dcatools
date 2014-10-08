@@ -11,34 +11,31 @@
 
 namespace DcaTools\Util;
 
-
 final class State
 {
-	/**
+    /**
 	 * @param $value
 	 * @return bool
 	 */
-	public static function toggle($value)
-	{
-		return !(bool) $value;
-	}
+    public static function toggle($value)
+    {
+        return !(bool) $value;
+    }
 
-
-	/**
+    /**
 	 * @param $array
 	 * @param $key
 	 * @return mixed
 	 */
-	public static function toggleKey(&$array, $key)
-	{
-		if(isset($array[$key])) {
-			$array[$key] = true;
-		}
-		else {
-			$array[$key] = static::toggle($array[$key]);
-		}
+    public static function toggleKey(&$array, $key)
+    {
+        if (isset($array[$key])) {
+            $array[$key] = true;
+        } else {
+            $array[$key] = static::toggle($array[$key]);
+        }
 
-		return $array[$key];
-	}
+        return $array[$key];
+    }
 
-} 
+}

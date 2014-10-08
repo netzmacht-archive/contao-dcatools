@@ -24,29 +24,27 @@ use DcaTools\Definition\Permission\PermissionConditions;
 class DcaToolsDefinitionBuilder extends DcaReadingDataDefinitionBuilder
 {
 
-	/**
+    /**
 	 * @var CommandConditionFactory
 	 */
-	private $commandConditionFactory;
+    private $commandConditionFactory;
 
-	/**
+    /**
 	 * @var PermissionConditionFactory
 	 */
-	private $permissionConditionFactory;
+    private $permissionConditionFactory;
 
-
-	/**
+    /**
 	 * @param CommandConditionFactory $commandConditionFactory
 	 * @param PermissionConditionFactory $permissionConditionFactory
 	 */
-	function __construct(CommandConditionFactory $commandConditionFactory, PermissionConditionFactory $permissionConditionFactory)
-	{
-		$this->commandConditionFactory = $commandConditionFactory;
-		$this->permissionConditionFactory = $permissionConditionFactory;
-	}
+    public function __construct(CommandConditionFactory $commandConditionFactory, PermissionConditionFactory $permissionConditionFactory)
+    {
+        $this->commandConditionFactory = $commandConditionFactory;
+        $this->permissionConditionFactory = $permissionConditionFactory;
+    }
 
-
-	/**
+    /**
 	 * Build a data definition and store it into the environments container.
 	 *
 	 * @param ContainerInterface $container The data definition container to populate.
@@ -55,53 +53,51 @@ class DcaToolsDefinitionBuilder extends DcaReadingDataDefinitionBuilder
 	 *
 	 * @return void
 	 */
-	public function build(ContainerInterface $container, BuildDataDefinitionEvent $event)
-	{
-		$definition = new DcaToolsDefinition();
-		$this->loadDca($container->getName(), $event->getDispatcher());
+    public function build(ContainerInterface $container, BuildDataDefinitionEvent $event)
+    {
+        $definition = new DcaToolsDefinition();
+        $this->loadDca($container->getName(), $event->getDispatcher());
 
-		$definition->setLegacyMode($this->getFromDca('dcatools/legacy'));
-		$definition->setCallbacks((array)$this->getFromDca('dcatools/callbacks'));
+        $definition->setLegacyMode($this->getFromDca('dcatools/legacy'));
+        $definition->setCallbacks((array) $this->getFromDca('dcatools/callbacks'));
 
-		$this->buildCommandConditions(
-			$definition->getCommandConditions(),
-			(array) $this->getFromDca('dcatools/command_conditions')
-		);
+        $this->buildCommandConditions(
+            $definition->getCommandConditions(),
+            (array) $this->getFromDca('dcatools/command_conditions')
+        );
 
-		$this->buildPermissionConditions(
-			$definition->getPermissionConditions(),
-			(array) $this->getFromDca('dcatools/permission_conditions')
-		);
+        $this->buildPermissionConditions(
+            $definition->getPermissionConditions(),
+            (array) $this->getFromDca('dcatools/permission_conditions')
+        );
 
-		$container->setDefinition($definition::NAME, $definition);
-	}
+        $container->setDefinition($definition::NAME, $definition);
+    }
 
-
-	/**
+    /**
 	 * @param \DcaTools\Definition\Command\CommandConditions $conditions
 	 * @param $definitions
 	 */
-	private function buildCommandConditions(CommandConditions $conditions, $definitions)
-	{
-		foreach($definitions as $definition) {
-			$condition = $this->commandConditionFactory->createFromConfig($definition);
+    private function buildCommandConditions(CommandConditions $conditions, $definitions)
+    {
+        foreach ($definitions as $definition) {
+            $condition = $this->commandConditionFactory->createFromConfig($definition);
 
-			$conditions->addCondition($condition);
-		}
-	}
+            $conditions->addCondition($condition);
+        }
+    }
 
-
-	/**
+    /**
 	 * @param \DcaTools\Definition\Permission\PermissionConditions $conditions
 	 * @param $definitions
 	 */
-	private function buildPermissionConditions(PermissionConditions $conditions, $definitions)
-	{
-		foreach($definitions as $definition) {
-			$condition = $condition = $this->permissionConditionFactory->createFromConfig($definition);
+    private function buildPermissionConditions(PermissionConditions $conditions, $definitions)
+    {
+        foreach ($definitions as $definition) {
+            $condition = $condition = $this->permissionConditionFactory->createFromConfig($definition);
 
-			$conditions->addCondition($condition);
-		}
-	}
+            $conditions->addCondition($condition);
+        }
+    }
 
-} 
+}

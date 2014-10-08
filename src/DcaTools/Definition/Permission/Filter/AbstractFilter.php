@@ -11,65 +11,60 @@
 
 namespace DcaTools\Definition\Permission\Filter;
 
-
 use DcaTools\Condition\Permission\FilterFactory;
 use DcaTools\Definition\Permission\PermissionFilter;
 
 abstract class AbstractFilter implements PermissionFilter
 {
-	/**
+    /**
 	 * @var bool
 	 */
-	protected $inverse=false;
+    protected $inverse=false;
 
-
-	/**
+    /**
 	 * @param array $config
 	 * @param FilterFactory $factory
 	 * @return PermissionFilter|static
 	 */
-	public static function fromConfig(array $config, FilterFactory $factory)
-	{
-		/** @var AbstractFilter $filter */
-		$filter = new static();
+    public static function fromConfig(array $config, FilterFactory $factory)
+    {
+        /** @var AbstractFilter $filter */
+        $filter = new static();
 
-		if(isset($config['inverse'])) {
-			$filter->setInverse($config['inverse']);
-		}
+        if (isset($config['inverse'])) {
+            $filter->setInverse($config['inverse']);
+        }
 
-		return $filter;
-	}
+        return $filter;
+    }
 
-
-	/**
+    /**
 	 * @param boolean $inverse
 	 */
-	public function setInverse($inverse)
-	{
-		$this->inverse = (bool) $inverse;
-	}
+    public function setInverse($inverse)
+    {
+        $this->inverse = (bool) $inverse;
+    }
 
-
-	/**
+    /**
 	 * @return boolean
 	 */
-	public function isInverse()
-	{
-		return $this->inverse;
-	}
+    public function isInverse()
+    {
+        return $this->inverse;
+    }
 
-
-	/**
+    /**
 	 * @param $state
 	 * @return bool
 	 */
-	protected function applyInverse($state)
-	{
-		if($this->inverse) {
-			return !$state;
-		}
+    protected function applyInverse($state)
+    {
+        if ($this->inverse) {
+            return !$state;
+        }
 
-		return $state;
-	}
+        return $state;
+    }
 
-} 
+}

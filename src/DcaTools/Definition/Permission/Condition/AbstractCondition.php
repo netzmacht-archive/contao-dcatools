@@ -11,14 +11,12 @@
 
 namespace DcaTools\Definition\Permission\Condition;
 
-
 use ContaoCommunityAlliance\DcGeneral\EnvironmentInterface;
 use DcaTools\Condition\Permission\Context;
 use DcaTools\Condition\Permission\PermissionConditionFactory;
 use DcaTools\Definition\Permission\PermissionCondition;
 use DcaTools\Definition\Permission\PermissionFilter;
 use DcaTools\User\User;
-
 
 /**
  * Class AbstractCondition
@@ -27,111 +25,103 @@ use DcaTools\User\User;
 abstract class AbstractCondition implements PermissionCondition
 {
 
-	/**
+    /**
 	 * @var PermissionFilter
 	 */
-	private $filter;
+    private $filter;
 
-	/**
+    /**
 	 * @var bool
 	 */
-	private $inverse = false;
+    private $inverse = false;
 
-	/**
+    /**
 	 * @var string
 	 */
-	protected $error;
+    protected $error;
 
-
-	/**
+    /**
 	 * @param PermissionFilter $filter
 	 */
-	function __construct(PermissionFilter $filter = null)
-	{
-		$this->filter = $filter;
-	}
+    public function __construct(PermissionFilter $filter = null)
+    {
+        $this->filter = $filter;
+    }
 
-
-	/**
+    /**
 	 * @param array $config
 	 * @param PermissionFilter $filter
 	 * @param PermissionConditionFactory $factory
 	 * @return PermissionCondition
 	 */
-	public static function fromConfig(array $config, PermissionFilter $filter=null, PermissionConditionFactory $factory)
-	{
-		/** @var AbstractCondition $condition */
-		$condition = new static($filter);
+    public static function fromConfig(array $config, PermissionFilter $filter=null, PermissionConditionFactory $factory)
+    {
+        /** @var AbstractCondition $condition */
+        $condition = new static($filter);
 
-		if(isset($config['inverse'])) {
-			$condition->setInverse($config['inverse']);
-		}
+        if (isset($config['inverse'])) {
+            $condition->setInverse($config['inverse']);
+        }
 
-		return $condition;
-	}
+        return $condition;
+    }
 
-
-	/**
+    /**
 	 * @return string
 	 */
-	public function getError()
-	{
-		return $this->error;
-	}
+    public function getError()
+    {
+        return $this->error;
+    }
 
-
-	/**
+    /**
 	 * @param EnvironmentInterface $environment
 	 * @param User $user
 	 * @param Context $context
 	 * @return bool
 	 */
-	public function match(EnvironmentInterface $environment, User $user, Context $context)
-	{
-		$match = true;
+    public function match(EnvironmentInterface $environment, User $user, Context $context)
+    {
+        $match = true;
 
-		$this->error = 'Permission denied. Condition failed: ' . $this->describe($environment, $user, $context);
+        $this->error = 'Permission denied. Condition failed: ' . $this->describe($environment, $user, $context);
 
-		if($this->filter($environment, $user, $context)) {
-			$match = $this->execute($environment, $user, $context);
+        if ($this->filter($environment, $user, $context)) {
+            $match = $this->execute($environment, $user, $context);
 
-			if($this->inverse) {
-				return !$match;
-			}
-		}
+            if ($this->inverse) {
+                return !$match;
+            }
+        }
 
-		return $match;
-	}
+        return $match;
+    }
 
-
-	/**
+    /**
 	 * @param boolean $inverse
 	 */
-	public function setInverse($inverse)
-	{
-		$this->inverse = (bool) $inverse;
-	}
+    public function setInverse($inverse)
+    {
+        $this->inverse = (bool) $inverse;
+    }
 
-
-	/**
+    /**
 	 * @return boolean
 	 */
-	public function isInverse()
-	{
-		return $this->inverse;
-	}
+    public function isInverse()
+    {
+        return $this->inverse;
+    }
 
-
-	/**
+    /**
 	 * @param EnvironmentInterface $environment
 	 * @param User $user
 	 * @param Context $context
 	 * @return bool
 	 */
-	abstract protected function execute(EnvironmentInterface $environment, User $user, Context $context);
+    abstract protected function execute(EnvironmentInterface $environment, User $user, Context $context);
 
-
-	/**
+    /**
 	 * Match the filter
 	 *
 	 * @param EnvironmentInterface $environment
@@ -139,13 +129,13 @@ abstract class AbstractCondition implements PermissionCondition
 	 * @param Context $context
 	 * @return mixed
 	 */
-	protected  function filter(EnvironmentInterface $environment, User $user, Context $context)
-	{
-		if($this->filter) {
-			return $this->filter->match($environment, $user, $context);
-		}
+    protected function filter(EnvironmentInterface $environment, User $user, Context $context)
+    {
+        if ($this->filter) {
+            return $this->filter->match($environment, $user, $context);
+        }
 
-		return false;
-	}
+        return false;
+    }
 
-} 
+}

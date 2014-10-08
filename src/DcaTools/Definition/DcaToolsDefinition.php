@@ -13,10 +13,8 @@ namespace DcaTools\Definition;
 
 use ContaoCommunityAlliance\DcGeneral\DataDefinition\Definition\DefinitionInterface;
 use DcaTools\Definition\Command\CommandConditions;
-use DcaTools\Definition\Command\Condition;
 use DcaTools\Definition\Command\GlobalCommandConditions;
 use DcaTools\Definition\Permission\PermissionConditions;
-
 
 /**
  * Class DcaToolsDefinition
@@ -24,115 +22,108 @@ use DcaTools\Definition\Permission\PermissionConditions;
  */
 class DcaToolsDefinition implements DefinitionInterface
 {
-	const NAME = 'dcatools';
-
-	/**
-	 * @var CommandConditions
-	 */
-	private $commandConditions;
-
-	/**
-	 * @var PermissionConditions
-	 */
-	private $permissionConditions;
-
-	/**
-	 * @var bool
-	 */
-	private $legacyMode = false;
-
-	/**
-	 * @var array
-	 */
-	private $callbacks = array();
-
-	/**
-	 * @var CommandConditions
-	 */
-	private $globalCommandConditions;
-
+    const NAME = 'dcatools';
 
     /**
-     * @param CommandConditions $commandConditions
-     * @param GlobalCommandConditions $globalCommandConditions
-     * @param PermissionConditions $permissionConditions
-     */
-	public function __construct(
-		CommandConditions $commandConditions=null,
-		GlobalCommandConditions $globalCommandConditions=null,
-		PermissionConditions $permissionConditions=null
-	) {
-		$this->commandConditions       = $commandConditions ?: new CommandConditions();
-		$this->globalCommandConditions = $globalCommandConditions ?: new GlobalCommandConditions();
-		$this->permissionConditions    = $permissionConditions ?: new PermissionConditions();
-	}
+	 * @var CommandConditions
+	 */
+    private $commandConditions;
 
-	/**
+    /**
+	 * @var PermissionConditions
+	 */
+    private $permissionConditions;
+
+    /**
+	 * @var bool
+	 */
+    private $legacyMode = false;
+
+    /**
+	 * @var array
+	 */
+    private $callbacks = array();
+
+    /**
+	 * @var CommandConditions
+	 */
+    private $globalCommandConditions;
+
+    /**
+     * @param CommandConditions       $commandConditions
+     * @param GlobalCommandConditions $globalCommandConditions
+     * @param PermissionConditions    $permissionConditions
+     */
+    public function __construct(
+        CommandConditions $commandConditions=null,
+        GlobalCommandConditions $globalCommandConditions=null,
+        PermissionConditions $permissionConditions=null
+    ) {
+        $this->commandConditions       = $commandConditions ?: new CommandConditions();
+        $this->globalCommandConditions = $globalCommandConditions ?: new GlobalCommandConditions();
+        $this->permissionConditions    = $permissionConditions ?: new PermissionConditions();
+    }
+
+    /**
 	 * @param mixed $legacyMode
 	 * @return $this
 	 */
-	public function setLegacyMode($legacyMode)
-	{
-		$this->legacyMode = $legacyMode;
+    public function setLegacyMode($legacyMode)
+    {
+        $this->legacyMode = $legacyMode;
 
-		return $this;
-	}
+        return $this;
+    }
 
-
-	/**
+    /**
 	 * @return mixed
 	 */
-	public function getLegacyMode()
-	{
-		return $this->legacyMode;
-	}
+    public function getLegacyMode()
+    {
+        return $this->legacyMode;
+    }
 
-
-	/**
+    /**
 	 * @return CommandConditions
 	 */
-	public function getCommandConditions()
-	{
-		return $this->commandConditions;
-	}
+    public function getCommandConditions()
+    {
+        return $this->commandConditions;
+    }
 
-
-	/**
+    /**
 	 * @return CommandConditions
 	 */
-	public function getGlobalCommandConditions()
-	{
-		return $this->globalCommandConditions;
-	}
+    public function getGlobalCommandConditions()
+    {
+        return $this->globalCommandConditions;
+    }
 
-
-	/**
+    /**
 	 * @return PermissionConditions
 	 */
-	public function getPermissionConditions()
-	{
-		return $this->permissionConditions;
-	}
+    public function getPermissionConditions()
+    {
+        return $this->permissionConditions;
+    }
 
-
-	/**
+    /**
 	 * @param array $callbacks
 	 * @return $this;
 	 */
-	public function setCallbacks(array $callbacks)
-	{
-		$this->callbacks = $callbacks;
+    public function setCallbacks(array $callbacks)
+    {
+        $this->callbacks = $callbacks;
 
-		return $this;
-	}
+        return $this;
+    }
 
-
-	/**
+    /**
 	 * @return array
 	 */
-	public function getCallbacks()
-	{
-		return $this->callbacks;
-	}
+    public function getCallbacks()
+    {
+        return $this->callbacks;
+    }
 
 }

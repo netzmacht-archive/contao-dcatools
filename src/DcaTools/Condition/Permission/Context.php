@@ -11,54 +11,46 @@
 
 namespace DcaTools\Condition\Permission;
 
-
 use ContaoCommunityAlliance\DcGeneral\Data\CollectionInterface;
 use ContaoCommunityAlliance\DcGeneral\Data\ModelInterface;
 
-
 interface Context
 {
-	const COLLECTION = 'collection';
-	const MODEL      = 'model';
-	const PARENT     = 'parent';
+    const COLLECTION = 'collection';
+    const MODEL      = 'model';
+    const PARENT     = 'parent';
 
-
-	/**
+    /**
 	 * @return ModelInterface
 	 */
-	public function getParent();
+    public function getParent();
 
-
-	/**
+    /**
 	 * @return ModelInterface
 	 */
-	public function getModel();
+    public function getModel();
 
-
-	/**
+    /**
 	 * @return CollectionInterface|null
 	 */
-	public function getCollection();
+    public function getCollection();
 
-
-	/**
+    /**
 	 * Check if current request matches the given context string
 	 *
 	 * @param $context
 	 * @return mixed
 	 */
-	public function match($context);
+    public function match($context);
 
-
-	/**
+    /**
 	 * @return bool
 	 */
-	public function isListView();
+    public function isListView();
 
-
-	/**
+    /**
 	 * @return mixed
 	 */
-	public function isParentMode();
+    public function isParentMode();
 
-} 
+}

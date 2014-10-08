@@ -11,11 +11,9 @@
 
 namespace DcaTools\Definition\Permission\Filter;
 
-
 use ContaoCommunityAlliance\DcGeneral\EnvironmentInterface;
 use DcaTools\Condition\Permission\Context;
 use DcaTools\User\User;
-
 
 /**
  * Class AnyFilter
@@ -24,26 +22,26 @@ use DcaTools\User\User;
 class AnyFilter extends AbstractChildrenFilter
 {
 
-	/**
+    /**
 	 * @param EnvironmentInterface $environment
 	 * @param User $user
 	 * @param Context $context
 	 *
 	 * @return bool
 	 */
-	public function match(EnvironmentInterface $environment, User $user, Context $context)
-	{
-		if(empty($this->children)) {
-			return true;
-		}
+    public function match(EnvironmentInterface $environment, User $user, Context $context)
+    {
+        if (empty($this->children)) {
+            return true;
+        }
 
-		foreach($this->children as $child) {
-			if($child->match($environment, $user, $context)) {
-				return true;
-			}
-		}
+        foreach ($this->children as $child) {
+            if ($child->match($environment, $user, $context)) {
+                return true;
+            }
+        }
 
-		return false;
-	}
+        return false;
+    }
 
-} 
+}

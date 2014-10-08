@@ -30,11 +30,14 @@ abstract class AbstractChildrenFilter implements PermissionFilter
 	 */
     public static function fromConfig(array $config, FilterFactory $factory)
     {
+        Assertion::keyExists($config, 'children', 'Children has to be defined');
+        Assertion::isArray($config['children'], 'Children has to be an array');
+
         /** @var AbstractChildrenFilter $filter */
         $filter   = new static();
         $children = array();
 
-        foreach ($config as $child) {
+        foreach ($config['children'] as $child) {
             $children[] = $factory->createFromConfig($child);
         }
 

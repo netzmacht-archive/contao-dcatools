@@ -12,6 +12,7 @@
 namespace DcaTools\Condition\Permission;
 
 use DcaTools\Assertion;
+use DcaTools\Definition\Permission\PermissionFilter;
 use DcaTools\Exception\InvalidArgumentException;
 
 class FilterFactory
@@ -33,7 +34,7 @@ class FilterFactory
 	 * @param $name
 	 * @param $config
 	 *
-	 * @return Filter
+	 * @return PermissionFilter
 	 */
     public function createByName($name, array $config)
     {
@@ -45,7 +46,7 @@ class FilterFactory
             return call_user_func($filter, $config, $this);
         }
 
-        /** @var Filter $filter */
+        /** @var PermissionFilter $filter */
 
         return $filter::fromConfig($config, $this);
     }
@@ -54,7 +55,7 @@ class FilterFactory
 	 * @param array $config
 	 *
 	 * @throws InvalidArgumentException
-	 * @return Filter
+	 * @return PermissionFilter
 	 */
     public function createFromConfig(array $config)
     {

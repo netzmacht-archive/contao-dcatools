@@ -52,9 +52,11 @@ class DcaToolsDefinition implements DefinitionInterface
 	private $globalCommandConditions;
 
 
-	/**
-	 *
-	 */
+    /**
+     * @param CommandConditions $commandConditions
+     * @param GlobalCommandConditions $globalCommandConditions
+     * @param PermissionConditions $permissionConditions
+     */
 	public function __construct(
 		CommandConditions $commandConditions=null,
 		GlobalCommandConditions $globalCommandConditions=null,

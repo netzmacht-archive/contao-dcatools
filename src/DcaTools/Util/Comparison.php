@@ -42,6 +42,14 @@ class Comparison
 			case static::LESSER_THAN:
 				return static::lesserThan($valueA, $valueB);
 				break;
+
+            case static::NOT_EQUAL:
+                return static::notEqual($valueA, $valueB);
+                break;
+
+            case static::IDENTICAL:
+                return static::identical($valueA, $valueB);
+                break;
 		}
 
 		return false;

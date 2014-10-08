@@ -25,6 +25,7 @@ use ContaoCommunityAlliance\DcGeneral\Contao\View\Contao2BackendView\Event\GetPr
 use ContaoCommunityAlliance\DcGeneral\Contao\View\Contao2BackendView\Event\ModelToLabelEvent;
 use ContaoCommunityAlliance\DcGeneral\Contao\View\Contao2BackendView\Event\ParentViewChildRecordEvent;
 use ContaoCommunityAlliance\DcGeneral\Data\DefaultCollection;
+use ContaoCommunityAlliance\DcGeneral\Data\PropertyValueBag;
 use ContaoCommunityAlliance\DcGeneral\DataDefinition\Definition\BasicDefinitionInterface;
 use ContaoCommunityAlliance\DcGeneral\DcGeneral;
 use ContaoCommunityAlliance\DcGeneral\Event\PostDeleteModelEvent;
@@ -408,7 +409,8 @@ class CallbackDispatcher
 	{
 		$environment = $this->dcGeneral->getEnvironment();
 		$model		 = ModelFactory::createByDc($environment, $dc);
-		$event 		 = new EncodePropertyValueFromWidgetEvent($environment, $model);
+        $values      = new PropertyValueBag($dc->activeRecord->row());
+		$event 		 = new EncodePropertyValueFromWidgetEvent($environment, $model, $values);
 		$event
 			->setValue($value)
 			->setProperty($dc->field);

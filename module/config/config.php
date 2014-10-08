@@ -27,8 +27,8 @@ $GLOBALS['DCATOOLS_COMMAND_CONDITIONS']['isAllowed'] = 'DcaTools\Definition\Comm
 $GLOBALS['DCATOOLS_COMMAND_CONDITIONS']['hasAccess'] = 'DcaTools\Definition\Command\Condition\HasAccessCondition';
 $GLOBALS['DCATOOLS_COMMAND_CONDITIONS']['isAdmin']   = 'DcaTools\Definition\Command\Condition\IsAdminCondition';
 
-$GLOBALS['DCATOOLS_COMMAND_FILTERS']['all'] = 'DcaTools\Definition\Command\Filter\AllFilter';
-$GLOBALS['DCATOOLS_COMMAND_FILTERS']['any'] = 'DcaTools\Definition\Command\Filter\AnyFilter';
+$GLOBALS['DCATOOLS_COMMAND_FILTERS']['all']      = 'DcaTools\Definition\Command\Filter\AllFilter';
+$GLOBALS['DCATOOLS_COMMAND_FILTERS']['any']      = 'DcaTools\Definition\Command\Filter\AnyFilter';
 $GLOBALS['DCATOOLS_COMMAND_FILTERS']['commands'] = 'DcaTools\Definition\Command\Filter\CommandsFilter';
 $GLOBALS['DCATOOLS_COMMAND_FILTERS']['property'] = 'DcaTools\Definition\Command\Filter\PropertyFilter';
 
@@ -39,15 +39,14 @@ $GLOBALS['DCATOOLS_PERMISSION_CONDITIONS']['isAllowed'] = 'DcaTools\Definition\P
 $GLOBALS['DCATOOLS_PERMISSION_CONDITIONS']['owner']     = 'DcaTools\Definition\Permission\Condition\OwnerCondition';
 $GLOBALS['DCATOOLS_PERMISSION_CONDITIONS']['or']        = 'DcaTools\Definition\Permission\Condition\OrCondition';
 
-$GLOBALS['DCATOOLS_PERMISSION_FILTERS']['action'] = 'DcaTools\Definition\Permission\Filter\ActionFilter';
-$GLOBALS['DCATOOLS_PERMISSION_FILTERS']['all'] = 'DcaTools\Definition\Permission\Filter\AllFilter';
-$GLOBALS['DCATOOLS_PERMISSION_FILTERS']['any'] = 'DcaTools\Definition\Permission\Filter\AnyFilter';
-$GLOBALS['DCATOOLS_PERMISSION_FILTERS']['context'] = 'DcaTools\Definition\Permission\Filter\ContextFilter';
-$GLOBALS['DCATOOLS_PERMISSION_FILTERS']['param'] = 'DcaTools\Definition\Permission\Filter\ParamFilter';
+$GLOBALS['DCATOOLS_PERMISSION_FILTERS']['action']   = 'DcaTools\Definition\Permission\Filter\ActionFilter';
+$GLOBALS['DCATOOLS_PERMISSION_FILTERS']['all']      = 'DcaTools\Definition\Permission\Filter\AllFilter';
+$GLOBALS['DCATOOLS_PERMISSION_FILTERS']['any']      = 'DcaTools\Definition\Permission\Filter\AnyFilter';
+$GLOBALS['DCATOOLS_PERMISSION_FILTERS']['context']  = 'DcaTools\Definition\Permission\Filter\ContextFilter';
+$GLOBALS['DCATOOLS_PERMISSION_FILTERS']['param']    = 'DcaTools\Definition\Permission\Filter\ParamFilter';
 $GLOBALS['DCATOOLS_PERMISSION_FILTERS']['property'] = 'DcaTools\Definition\Permission\Filter\PropertyFilter';
 
-//$GLOBALS['TL_EVENTS'][]
-
+//
 $GLOBALS['TL_EVENT_SUBSCRIBERS'][] = 'DcaTools\Contao\CompatibilitySubscriber';
 $GLOBALS['TL_EVENT_SUBSCRIBERS'][] = function() {
 	global $container;

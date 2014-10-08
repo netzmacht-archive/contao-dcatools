@@ -52,7 +52,7 @@ final class ModelFactory
 	 */
 	public static function createByLegacyModel(\Model $model)
 	{
-		return new DatabaseResultDecorator($model->getTable(), $model->getResult());
+		return new DatabaseResultDecorator($model->getTable(), $model);
 	}
 
 
@@ -79,11 +79,11 @@ final class ModelFactory
 
 	/**
 	 * @param EnvironmentInterface $environment
-	 * @param $row
+	 * @param array $row
 	 * @param null $source
 	 * @return ModelInterface
 	 */
-	public static function createByArray(EnvironmentInterface $environment, $row, $source=null)
+	public static function createByArray(EnvironmentInterface $environment, array $row, $source=null)
 	{
 		$model = $environment->getDataProvider($source)->getEmptyModel();
 		$model->setPropertiesAsArray($row);

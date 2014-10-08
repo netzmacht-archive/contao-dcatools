@@ -20,8 +20,6 @@ use DcaTools\Definition\Command\Condition;
 use DcaTools\Definition\Command\CommandConditions;
 use DcaTools\Definition\DcaToolsDefinition;
 use DcaTools\Definition\Permission\PermissionConditions;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-
 
 class DcaToolsDefinitionBuilder extends DcaReadingDataDefinitionBuilder
 {

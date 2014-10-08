@@ -71,7 +71,7 @@ class PropertyFilter implements CommandFilter
         $filter = new static($config['property']);
 
         if (isset($config['operator'])) {
-            $filter->setValue($config['operator']);
+            $filter->setOperator($config['operator']);
         }
 
         if (isset($config['value'])) {
@@ -79,7 +79,7 @@ class PropertyFilter implements CommandFilter
         }
 
         if (isset($config['callback'])) {
-            $filter->setValue($config['callback']);
+            $filter->setCallback($config['callback']);
         }
 
         return $filter;

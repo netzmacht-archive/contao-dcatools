@@ -29,7 +29,7 @@ final class State
 	 */
     public static function toggleKey(&$array, $key)
     {
-        if (isset($array[$key])) {
+        if (!isset($array[$key])) {
             $array[$key] = true;
         } else {
             $array[$key] = static::toggle($array[$key]);

@@ -51,7 +51,8 @@ class CommandConditionFactory
         $condition = $this->map[$name];
 
         if (!empty($filter)) {
-            $filter = $this->filterFactory->createByName('all', $filter);
+            $config = array('children'  => $filter);
+            $filter = $this->filterFactory->createByName('all', $config);
         }
 
         if (is_callable($condition)) {

@@ -34,7 +34,7 @@ abstract class AbstractChildrenFilter implements CommandFilter
         $filter   = new static();
         $children = array();
 
-        foreach ($config as $child) {
+        foreach ($config['children'] as $child) {
             $children[] = $factory->createFromConfig($child);
         }
 
